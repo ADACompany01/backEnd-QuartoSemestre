@@ -1,21 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Cliente } from './cliente.entity';
+import { InjectModel } from '@nestjs/sequelize';
+import { Cliente } from '../../database/models/cliente.model';
 
 @Injectable()
 export class ClienteService {
   constructor(
-    @InjectRepository(Cliente)
-    private clienteRepository: Repository<Cliente>,
+    @InjectModel(Cliente)
+    private clienteModel: typeof Cliente,
   ) {}
 
   async findAll(): Promise<Cliente[]> {
-    return this.clienteRepository.find({ where: { ativo: true } });
+    return this.clienteModel.findAll();
   }
 
   async findOne(id: string): Promise<Cliente> {
-    const cliente = await this.clienteRepository.findOne({ where: { id, ativo: true } });
+    const cliente = await this.clienteModel.findByPk(id);
     if (!cliente) {
       throw new NotFoundException(`Cliente com ID ${id} não encontrado`);
     }
@@ -23,19 +22,16 @@ export class ClienteService {
   }
 
   async create(clienteData: Partial<Cliente>): Promise<Cliente> {
-    const cliente = this.clienteRepository.create(clienteData);
-    return this.clienteRepository.save(cliente);
+    return this.clienteModel.create(clienteData as any);
   }
 
-  async update(id: string, clienteData: Partial<Cliente>): Promise<Cliente> {
+  async update(id: string, clienteData: Partial<Cliente>): Promise<void> {
     const cliente = await this.findOne(id);
-    Object.assign(cliente, clienteData);
-    return this.clienteRepository.save(cliente);
+    await cliente.update(clienteData);
   }
 
   async remove(id: string): Promise<void> {
     const cliente = await this.findOne(id);
-    cliente.ativo = false;
-    await this.clienteRepository.save(cliente);
+    await cliente.destroy();
   }
 }

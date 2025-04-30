@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { OrcamentoController } from './orcamento.controller';
 import { OrcamentoService } from './orcamento.service';
-import { Orcamento } from './orcamento.entity';
+import { Orcamento } from '../../database/models/orcamento.model';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Orcamento])],
+  imports: [SequelizeModule.forFeature([Orcamento])],
   controllers: [OrcamentoController],
   providers: [OrcamentoService],
   exports: [OrcamentoService],

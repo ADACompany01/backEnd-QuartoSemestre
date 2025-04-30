@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { FuncionarioController } from './funcionario.controller';
 import { FuncionarioService } from './funcionario.service';
-import { Funcionario } from './funcionario.entity';
+import { Funcionario } from '../../database/models/funcionario.model';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Funcionario])],
+  imports: [SequelizeModule.forFeature([Funcionario])],
   controllers: [FuncionarioController],
   providers: [FuncionarioService],
   exports: [FuncionarioService],

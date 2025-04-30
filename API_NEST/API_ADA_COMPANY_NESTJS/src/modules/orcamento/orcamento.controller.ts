@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Patch } from '@nestjs/common';
 import { OrcamentoService } from './orcamento.service';
-import { Orcamento } from './orcamento.entity';
+import { Orcamento } from '../../database/models/orcamento.model';
 
 @Controller('orcamentos')
 export class OrcamentoController {
@@ -12,7 +12,7 @@ export class OrcamentoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Orçamentos encontrados com sucesso',
-      data: orcamentos,
+      data: orcamentos.map(orcamento => orcamento.toJSON()),
     };
   }
 
@@ -22,7 +22,7 @@ export class OrcamentoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Orçamento encontrado com sucesso',
-      data: orcamento,
+      data: orcamento.toJSON(),
     };
   }
 
@@ -32,7 +32,7 @@ export class OrcamentoController {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Orçamento criado com sucesso',
-      data: orcamento,
+      data: orcamento.toJSON(),
     };
   }
 
@@ -42,7 +42,7 @@ export class OrcamentoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Orçamento atualizado com sucesso',
-      data: orcamento,
+      data: orcamento.toJSON(),
     };
   }
 
@@ -52,7 +52,7 @@ export class OrcamentoController {
     return {
       statusCode: HttpStatus.OK,
       message: `Status do orçamento alterado para ${status} com sucesso`,
-      data: orcamento,
+      data: orcamento.toJSON(),
     };
   }
 

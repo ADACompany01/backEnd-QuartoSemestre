@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus } from '@nestjs/common';
 import { ServicoService } from './servico.service';
-import { Servico } from './servico.entity';
+import { Servico } from '../../database/models/servico.model';
 
 @Controller('servicos')
 export class ServicoController {
@@ -12,7 +12,7 @@ export class ServicoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Serviços encontrados com sucesso',
-      data: servicos,
+      data: servicos.map(servico => servico.toJSON()),
     };
   }
 
@@ -22,7 +22,7 @@ export class ServicoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Serviço encontrado com sucesso',
-      data: servico,
+      data: servico.toJSON(),
     };
   }
 
@@ -32,7 +32,7 @@ export class ServicoController {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Serviço criado com sucesso',
-      data: servico,
+      data: servico.toJSON(),
     };
   }
 
@@ -42,7 +42,7 @@ export class ServicoController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Serviço atualizado com sucesso',
-      data: servico,
+      data: servico.toJSON(),
     };
   }
 

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus } from '@nestjs/common';
 import { FuncionarioService } from './funcionario.service';
-import { Funcionario } from './funcionario.entity';
+import { Funcionario } from '../../database/models/funcionario.model';
 
 @Controller('funcionarios')
 export class FuncionarioController {
@@ -11,7 +11,7 @@ export class FuncionarioController {
     const funcionarios = await this.funcionarioService.findAll();
     // Remover a senha dos resultados
     const funcionariosSemSenha = funcionarios.map(f => {
-      const { senha, ...funcionarioSemSenha } = f;
+      const { senha, ...funcionarioSemSenha } = f.toJSON();
       return funcionarioSemSenha;
     });
     
@@ -25,7 +25,7 @@ export class FuncionarioController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const funcionario = await this.funcionarioService.findOne(id);
-    const { senha, ...funcionarioSemSenha } = funcionario;
+    const { senha, ...funcionarioSemSenha } = funcionario.toJSON();
     
     return {
       statusCode: HttpStatus.OK,
@@ -37,7 +37,7 @@ export class FuncionarioController {
   @Post()
   async create(@Body() funcionarioData: Partial<Funcionario>) {
     const funcionario = await this.funcionarioService.create(funcionarioData);
-    const { senha, ...funcionarioSemSenha } = funcionario;
+    const { senha, ...funcionarioSemSenha } = funcionario.toJSON();
     
     return {
       statusCode: HttpStatus.CREATED,
@@ -49,7 +49,7 @@ export class FuncionarioController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() funcionarioData: Partial<Funcionario>) {
     const funcionario = await this.funcionarioService.update(id, funcionarioData);
-    const { senha, ...funcionarioSemSenha } = funcionario;
+    const { senha, ...funcionarioSemSenha } = funcionario.toJSON();
     
     return {
       statusCode: HttpStatus.OK,

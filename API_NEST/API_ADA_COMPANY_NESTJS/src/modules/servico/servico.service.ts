@@ -1,26 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Servico } from './servico.entity';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Servico } from '../../database/models/servico.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class ServicoService {
   constructor(
-    @InjectRepository(Servico)
-    private servicoRepository: Repository<Servico>,
+    @InjectModel(Servico)
+    private servicoModel: typeof Servico,
   ) {}
 
   async findAll(): Promise<Servico[]> {
-    return this.servicoRepository.find({ 
+    return this.servicoModel.findAll({ 
       where: { ativo: true },
-      relations: ['funcionario'] 
+      include: ['funcionario']
     });
   }
 
   async findOne(id: string): Promise<Servico> {
-    const servico = await this.servicoRepository.findOne({ 
+    const servico = await this.servicoModel.findOne({ 
       where: { id, ativo: true },
-      relations: ['funcionario']
+      include: ['funcionario']
     });
     
     if (!servico) {
@@ -31,19 +31,47 @@ export class ServicoService {
   }
 
   async create(servicoData: Partial<Servico>): Promise<Servico> {
-    const servico = this.servicoRepository.create(servicoData);
-    return this.servicoRepository.save(servico);
+    // Verificar se já existe um serviço ativo com o mesmo nome para o mesmo funcionário
+    const existingServico = await this.servicoModel.findOne({
+      where: {
+        nome: servicoData.nome,
+        funcionarioId: servicoData.funcionarioId,
+        ativo: true
+      }
+    });
+
+    if (existingServico) {
+      throw new ConflictException(`Já existe um serviço ativo com o nome '${servicoData.nome}' para este funcionário`);
+    }
+
+    return this.servicoModel.create(servicoData);
   }
 
   async update(id: string, servicoData: Partial<Servico>): Promise<Servico> {
     const servico = await this.findOne(id);
-    Object.assign(servico, servicoData);
-    return this.servicoRepository.save(servico);
+    
+    // Se estiver atualizando o nome, verificar se já existe outro serviço com esse nome
+    if (servicoData.nome && servicoData.nome !== servico.nome) {
+      const existingServico = await this.servicoModel.findOne({
+        where: {
+          nome: servicoData.nome,
+          funcionarioId: servico.funcionarioId,
+          ativo: true,
+          id: { [Op.ne]: id } // Excluir o serviço atual da verificação
+        }
+      });
+
+      if (existingServico) {
+        throw new ConflictException(`Já existe um serviço ativo com o nome '${servicoData.nome}' para este funcionário`);
+      }
+    }
+    
+    await servico.update(servicoData);
+    return servico.reload();
   }
 
   async remove(id: string): Promise<void> {
     const servico = await this.findOne(id);
-    servico.ativo = false;
-    await this.servicoRepository.save(servico);
+    await servico.update({ ativo: false });
   }
 }

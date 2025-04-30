@@ -1,26 +1,38 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Orcamento } from './orcamento.entity';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Orcamento } from '../../database/models/orcamento.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class OrcamentoService {
   constructor(
-    @InjectRepository(Orcamento)
-    private orcamentoRepository: Repository<Orcamento>,
+    @InjectModel(Orcamento)
+    private orcamentoModel: typeof Orcamento,
   ) {}
 
   async findAll(): Promise<Orcamento[]> {
-    return this.orcamentoRepository.find({ 
-      where: { ativo: true }, 
-      relations: ['cliente', 'servico', 'servico.funcionario'] 
+    return this.orcamentoModel.findAll({ 
+      where: { ativo: true },
+      include: [
+        'cliente',
+        {
+          association: 'servico',
+          include: ['funcionario']
+        }
+      ]
     });
   }
 
   async findOne(id: string): Promise<Orcamento> {
-    const orcamento = await this.orcamentoRepository.findOne({ 
+    const orcamento = await this.orcamentoModel.findOne({ 
       where: { id, ativo: true },
-      relations: ['cliente', 'servico', 'servico.funcionario']
+      include: [
+        'cliente',
+        {
+          association: 'servico',
+          include: ['funcionario']
+        }
+      ]
     });
     
     if (!orcamento) {
@@ -31,25 +43,61 @@ export class OrcamentoService {
   }
 
   async create(orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
-    const orcamento = this.orcamentoRepository.create(orcamentoData);
-    return this.orcamentoRepository.save(orcamento);
+    // Verificar se já existe um orçamento para o mesmo cliente e serviço na mesma data
+    const existingOrcamento = await this.orcamentoModel.findOne({
+      where: {
+        clienteId: orcamentoData.clienteId,
+        servicoId: orcamentoData.servicoId,
+        dataServico: orcamentoData.dataServico,
+        ativo: true,
+        status: { [Op.ne]: 'cancelado' } // Ignorar orçamentos cancelados
+      }
+    });
+
+    if (existingOrcamento) {
+      throw new ConflictException(`Já existe um orçamento ativo para este cliente e serviço na data especificada`);
+    }
+
+    return this.orcamentoModel.create(orcamentoData);
   }
 
   async update(id: string, orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
     const orcamento = await this.findOne(id);
-    Object.assign(orcamento, orcamentoData);
-    return this.orcamentoRepository.save(orcamento);
+    
+    // Verificar se a atualização não cria duplicata
+    if (
+      (orcamentoData.clienteId && orcamentoData.clienteId !== orcamento.clienteId) ||
+      (orcamentoData.servicoId && orcamentoData.servicoId !== orcamento.servicoId) ||
+      (orcamentoData.dataServico && orcamentoData.dataServico !== orcamento.dataServico)
+    ) {
+      const existingOrcamento = await this.orcamentoModel.findOne({
+        where: {
+          clienteId: orcamentoData.clienteId || orcamento.clienteId,
+          servicoId: orcamentoData.servicoId || orcamento.servicoId,
+          dataServico: orcamentoData.dataServico || orcamento.dataServico,
+          ativo: true,
+          id: { [Op.ne]: id }, // Excluir o orçamento atual da verificação
+          status: { [Op.ne]: 'cancelado' } // Ignorar orçamentos cancelados
+        }
+      });
+
+      if (existingOrcamento) {
+        throw new ConflictException(`Já existe um orçamento ativo para este cliente e serviço na data especificada`);
+      }
+    }
+    
+    await orcamento.update(orcamentoData);
+    return orcamento.reload();
   }
 
   async changeStatus(id: string, status: string): Promise<Orcamento> {
     const orcamento = await this.findOne(id);
-    orcamento.status = status;
-    return this.orcamentoRepository.save(orcamento);
+    await orcamento.update({ status });
+    return orcamento.reload();
   }
 
   async remove(id: string): Promise<void> {
     const orcamento = await this.findOne(id);
-    orcamento.ativo = false;
-    await this.orcamentoRepository.save(orcamento);
+    await orcamento.update({ ativo: false });
   }
 }

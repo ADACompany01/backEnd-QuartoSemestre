@@ -6,11 +6,12 @@ import { AuthService } from './auth.service';
 
 @Module({
   imports: [
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
         signOptions: { expiresIn: '1h' },
       }),
     }),

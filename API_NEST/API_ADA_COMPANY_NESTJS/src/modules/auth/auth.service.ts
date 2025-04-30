@@ -11,7 +11,7 @@ export class AuthService {
 
   gerarTokenValido(): string {
     const payload = { id: '123', role: 'admin' };
-    const secret = this.configService.get<string>('JWT_SECRET') || '';
+    const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
     
     return this.jwtService.sign(payload, {
       secret: secret,

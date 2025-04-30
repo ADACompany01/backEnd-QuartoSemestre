@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
-import { Cliente } from './cliente.entity';
+import { Cliente } from '../../database/models/cliente.model';
 
 @Controller('clientes')
 export class ClienteController {
@@ -12,7 +12,7 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Clientes encontrados com sucesso',
-      data: clientes,
+      data: clientes.map(cliente => cliente.toJSON()),
     };
   }
 
@@ -22,7 +22,7 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Cliente encontrado com sucesso',
-      data: cliente,
+      data: cliente.toJSON(),
     };
   }
 
@@ -32,17 +32,18 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Cliente criado com sucesso',
-      data: cliente,
+      data: cliente.toJSON(),
     };
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() clienteData: Partial<Cliente>) {
-    const cliente = await this.clienteService.update(id, clienteData);
+    await this.clienteService.update(id, clienteData);
+    const clienteAtualizado = await this.clienteService.findOne(id);
     return {
       statusCode: HttpStatus.OK,
       message: 'Cliente atualizado com sucesso',
-      data: cliente,
+      data: clienteAtualizado.toJSON(),
     };
   }
 

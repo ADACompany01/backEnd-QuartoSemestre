@@ -1,0 +1,1 @@
+{"version":3,"file":"swagger.config.js","sourceRoot":"","sources":["../../docs/swagger.config.ts"],"names":[],"mappings":";;;AAAa,QAAA,aAAa,GAAG;IAC3B,OAAO,EAAE,OAAO;IAChB,IAAI,EAAE;QACJ,KAAK,EAAE,YAAY;QACnB,OAAO,EAAE,KAAK;QACd,WAAW,EAAE,0CAA0C;KACxD;CACF,CAAC"}
