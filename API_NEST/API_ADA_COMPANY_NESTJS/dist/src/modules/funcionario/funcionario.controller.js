@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FuncionarioController = void 0;
 const common_1 = require("@nestjs/common");
 const funcionario_service_1 = require("./funcionario.service");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 let FuncionarioController = class FuncionarioController {
     constructor(funcionarioService) {
         this.funcionarioService = funcionarioService;
@@ -81,6 +82,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], FuncionarioController.prototype, "findOne", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),

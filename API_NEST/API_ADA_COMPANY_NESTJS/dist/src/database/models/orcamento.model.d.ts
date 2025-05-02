@@ -1,4 +1,6 @@
 import { Model } from 'sequelize-typescript';
+import { Cliente } from './cliente.model';
+import { Servico } from './servico.model';
 export declare class Orcamento extends Model {
     id: string;
     dataServico: Date;
@@ -8,5 +10,7 @@ export declare class Orcamento extends Model {
     ativo: boolean;
     dataCriacao: Date;
     clienteId: string;
+    cliente: Cliente;
     servicoId: string;
+    servico: Servico;
 }

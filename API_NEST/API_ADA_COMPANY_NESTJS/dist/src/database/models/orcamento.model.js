@@ -40,8 +40,11 @@ __decorate([
 ], Orcamento.prototype, "valorTotal", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.ENUM('AGUARDANDO', 'APROVADO', 'REPROVADO', 'FINALIZADO'),
-        defaultValue: 'AGUARDANDO',
+        type: sequelize_typescript_1.DataType.STRING,
+        defaultValue: 'pendente',
+        validate: {
+            isIn: [['pendente', 'aprovado', 'recusado', 'cancelado', 'finalizado']]
+        }
     }),
     __metadata("design:type", String)
 ], Orcamento.prototype, "status", void 0);
@@ -75,6 +78,10 @@ __decorate([
     __metadata("design:type", String)
 ], Orcamento.prototype, "clienteId", void 0);
 __decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => cliente_model_1.Cliente),
+    __metadata("design:type", cliente_model_1.Cliente)
+], Orcamento.prototype, "cliente", void 0);
+__decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => servico_model_1.Servico),
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.UUID,
@@ -82,6 +89,10 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Orcamento.prototype, "servicoId", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => servico_model_1.Servico),
+    __metadata("design:type", servico_model_1.Servico)
+], Orcamento.prototype, "servico", void 0);
 exports.Orcamento = Orcamento = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: 'orcamentos',

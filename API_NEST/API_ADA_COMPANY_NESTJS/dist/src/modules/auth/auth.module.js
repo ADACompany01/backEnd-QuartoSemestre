@@ -12,6 +12,8 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
+const funcionario_module_1 = require("../funcionario/funcionario.module");
+const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -19,6 +21,7 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule,
+            funcionario_module_1.FuncionarioModule,
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],
@@ -29,8 +32,8 @@ exports.AuthModule = AuthModule = __decorate([
             }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService],
-        exports: [auth_service_1.AuthService],
+        providers: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard],
+        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

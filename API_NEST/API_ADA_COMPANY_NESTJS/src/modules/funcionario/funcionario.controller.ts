@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus } from '@nestjs/common';
 import { FuncionarioService } from './funcionario.service';
 import { Funcionario } from '../../database/models/funcionario.model';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('funcionarios')
 export class FuncionarioController {
@@ -34,6 +35,7 @@ export class FuncionarioController {
     };
   }
 
+  @Public()
   @Post()
   async create(@Body() funcionarioData: Partial<Funcionario>) {
     const funcionario = await this.funcionarioService.create(funcionarioData);

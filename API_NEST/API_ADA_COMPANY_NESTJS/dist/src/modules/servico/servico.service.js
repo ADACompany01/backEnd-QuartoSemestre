@@ -23,12 +23,14 @@ let ServicoService = class ServicoService {
     }
     async findAll() {
         return this.servicoModel.findAll({
-            where: { ativo: true }
+            where: { ativo: true },
+            include: ['funcionario']
         });
     }
     async findOne(id) {
         const servico = await this.servicoModel.findOne({
-            where: { id, ativo: true }
+            where: { id, ativo: true },
+            include: ['funcionario']
         });
         if (!servico) {
             throw new common_1.NotFoundException(`Serviço com ID ${id} não encontrado`);
@@ -49,10 +51,7 @@ let ServicoService = class ServicoService {
         return this.servicoModel.create(servicoData);
     }
     async update(id, servicoData) {
-        const servico = await this.servicoModel.findOne({ where: { id, ativo: true } });
-        if (!servico) {
-            throw new common_1.NotFoundException(`Serviço com ID ${id} não encontrado`);
-        }
+        const servico = await this.findOne(id);
         if (servicoData.nome && servicoData.nome !== servico.nome) {
             const existingServico = await this.servicoModel.findOne({
                 where: {
@@ -70,10 +69,7 @@ let ServicoService = class ServicoService {
         return servico.reload();
     }
     async remove(id) {
-        const servico = await this.servicoModel.findOne({ where: { id, ativo: true } });
-        if (!servico) {
-            throw new common_1.NotFoundException(`Serviço com ID ${id} não encontrado`);
-        }
+        const servico = await this.findOne(id);
         await servico.update({ ativo: false });
     }
 };

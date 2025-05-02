@@ -23,12 +23,26 @@ let OrcamentoService = class OrcamentoService {
     }
     async findAll() {
         return this.orcamentoModel.findAll({
-            where: { ativo: true }
+            where: { ativo: true },
+            include: [
+                'cliente',
+                {
+                    association: 'servico',
+                    include: ['funcionario']
+                }
+            ]
         });
     }
     async findOne(id) {
         const orcamento = await this.orcamentoModel.findOne({
-            where: { id, ativo: true }
+            where: { id, ativo: true },
+            include: [
+                'cliente',
+                {
+                    association: 'servico',
+                    include: ['funcionario']
+                }
+            ]
         });
         if (!orcamento) {
             throw new common_1.NotFoundException(`Orçamento com ID ${id} não encontrado`);
@@ -51,10 +65,7 @@ let OrcamentoService = class OrcamentoService {
         return this.orcamentoModel.create(orcamentoData);
     }
     async update(id, orcamentoData) {
-        const orcamento = await this.orcamentoModel.findOne({ where: { id, ativo: true } });
-        if (!orcamento) {
-            throw new common_1.NotFoundException(`Orçamento com ID ${id} não encontrado`);
-        }
+        const orcamento = await this.findOne(id);
         if ((orcamentoData.clienteId && orcamentoData.clienteId !== orcamento.clienteId) ||
             (orcamentoData.servicoId && orcamentoData.servicoId !== orcamento.servicoId) ||
             (orcamentoData.dataServico && orcamentoData.dataServico !== orcamento.dataServico)) {
@@ -76,18 +87,12 @@ let OrcamentoService = class OrcamentoService {
         return orcamento.reload();
     }
     async changeStatus(id, status) {
-        const orcamento = await this.orcamentoModel.findOne({ where: { id, ativo: true } });
-        if (!orcamento) {
-            throw new common_1.NotFoundException(`Orçamento com ID ${id} não encontrado`);
-        }
+        const orcamento = await this.findOne(id);
         await orcamento.update({ status });
         return orcamento.reload();
     }
     async remove(id) {
-        const orcamento = await this.orcamentoModel.findOne({ where: { id, ativo: true } });
-        if (!orcamento) {
-            throw new common_1.NotFoundException(`Orçamento com ID ${id} não encontrado`);
-        }
+        const orcamento = await this.findOne(id);
         await orcamento.update({ ativo: false });
     }
 };
