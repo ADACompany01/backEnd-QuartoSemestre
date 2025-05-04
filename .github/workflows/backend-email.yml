@@ -1,0 +1,44 @@
+name: Send Email on Backend Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run tests
+        run: mvn clean test
+
+      - name: Send email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: Backend Build ${{ job.status }} - ${{ github.repository }}
+          to: seu.email@example.com
+          from: GitHub Actions <seu.email@example.com>
+          body: |
+            O workflow de build para ${{ github.repository }} foi concluído.
+            Status: ${{ job.status }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref }}
+            Veja os detalhes: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
