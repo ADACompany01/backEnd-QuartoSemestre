@@ -31,11 +31,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 465
           secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
           subject: Backend Build ${{ job.status }} - ${{ github.repository }}
-          to: seu.email@example.com
-          from: GitHub Actions <seu.email@example.com>
+          to: samuelpregnolatto@gmail.com
+          from: GitHub Actions <samuelpregnolatto@gmail.com>
           body: |
             O workflow de build para ${{ github.repository }} foi concluído.
             Status: ${{ job.status }}
