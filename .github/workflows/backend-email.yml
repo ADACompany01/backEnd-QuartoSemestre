@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: List directory contents
-        run: ls -la
+        run: ls -la API_NEST/ada-company
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,10 +24,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: cd API_NEST && npm install
+        run: cd API_NEST/ada-company && npm install
 
       - name: Run tests
-        run: cd API_NEST && npm run test
+        run: cd API_NEST/ada-company && npm run test
 
       - name: Send email
         if: always()
