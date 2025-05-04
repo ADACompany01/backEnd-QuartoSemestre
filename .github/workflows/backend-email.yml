@@ -15,16 +15,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: List directory contents
+        run: ls -la
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: cd API_NEST && npm install
 
       - name: Run tests
-        run: npm run test
+        run: cd API_NEST && npm run test
 
       - name: Send email
         if: always()
