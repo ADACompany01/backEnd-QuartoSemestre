@@ -9,18 +9,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrcamentoModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
+const orcamento_model_1 = require("../../database/models/orcamento.model");
+const orcamento_repository_1 = require("../../database/repositories/orcamento.repository");
 const orcamento_controller_1 = require("./orcamento.controller");
 const orcamento_service_1 = require("./orcamento.service");
-const orcamento_model_1 = require("../../database/models/orcamento.model");
+const cliente_module_1 = require("../cliente/cliente.module");
+const servico_module_1 = require("../servico/servico.module");
+const database_module_1 = require("../../database/database.module");
 let OrcamentoModule = class OrcamentoModule {
 };
 exports.OrcamentoModule = OrcamentoModule;
 exports.OrcamentoModule = OrcamentoModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([orcamento_model_1.Orcamento])],
+        imports: [
+            database_module_1.DatabaseModule,
+            sequelize_1.SequelizeModule.forFeature([orcamento_model_1.Orcamento]),
+            cliente_module_1.ClienteModule,
+            servico_module_1.ServicoModule,
+        ],
         controllers: [orcamento_controller_1.OrcamentoController],
-        providers: [orcamento_service_1.OrcamentoService],
-        exports: [orcamento_service_1.OrcamentoService],
+        providers: [
+            orcamento_service_1.OrcamentoService,
+            orcamento_repository_1.OrcamentoRepository
+        ],
+        exports: [orcamento_repository_1.OrcamentoRepository]
     })
 ], OrcamentoModule);
 //# sourceMappingURL=orcamento.module.js.map

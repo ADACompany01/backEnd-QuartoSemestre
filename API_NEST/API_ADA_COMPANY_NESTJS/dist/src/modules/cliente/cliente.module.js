@@ -8,18 +8,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClienteModule = void 0;
 const common_1 = require("@nestjs/common");
-const cliente_controller_1 = require("./cliente.controller");
-const cliente_service_1 = require("./cliente.service");
 const sequelize_1 = require("@nestjs/sequelize");
 const cliente_model_1 = require("../../database/models/cliente.model");
+const cliente_repository_1 = require("../../database/repositories/cliente.repository");
+const cliente_controller_1 = require("./cliente.controller");
+const cliente_service_1 = require("./cliente.service");
+const database_module_1 = require("../../database/database.module");
 let ClienteModule = class ClienteModule {
 };
 exports.ClienteModule = ClienteModule;
 exports.ClienteModule = ClienteModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([cliente_model_1.Cliente])],
+        imports: [
+            database_module_1.DatabaseModule,
+            sequelize_1.SequelizeModule.forFeature([cliente_model_1.Cliente])
+        ],
         controllers: [cliente_controller_1.ClienteController],
-        providers: [cliente_service_1.ClienteService],
+        providers: [
+            cliente_service_1.ClienteService,
+            cliente_repository_1.ClienteRepository
+        ],
+        exports: [cliente_repository_1.ClienteRepository]
     })
 ], ClienteModule);
 //# sourceMappingURL=cliente.module.js.map

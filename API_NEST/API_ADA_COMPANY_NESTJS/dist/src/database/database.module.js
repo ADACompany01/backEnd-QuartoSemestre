@@ -11,8 +11,8 @@ const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
 const cliente_model_1 = require("./models/cliente.model");
 const funcionario_model_1 = require("./models/funcionario.model");
-const orcamento_model_1 = require("./models/orcamento.model");
 const servico_model_1 = require("./models/servico.model");
+const orcamento_model_1 = require("./models/orcamento.model");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -21,12 +21,19 @@ exports.DatabaseModule = DatabaseModule = __decorate([
         imports: [
             sequelize_1.SequelizeModule.forRoot({
                 dialect: 'sqlite',
-                storage: 'database.sqlite',
+                storage: './database.sqlite',
                 autoLoadModels: true,
                 synchronize: true,
-                models: [cliente_model_1.Cliente, funcionario_model_1.Funcionario, orcamento_model_1.Orcamento, servico_model_1.Servico],
+                models: [cliente_model_1.Cliente, funcionario_model_1.Funcionario, servico_model_1.Servico, orcamento_model_1.Orcamento],
             }),
+            sequelize_1.SequelizeModule.forFeature([
+                cliente_model_1.Cliente,
+                funcionario_model_1.Funcionario,
+                servico_model_1.Servico,
+                orcamento_model_1.Orcamento,
+            ]),
         ],
+        exports: [sequelize_1.SequelizeModule],
     })
 ], DatabaseModule);
 //# sourceMappingURL=database.module.js.map

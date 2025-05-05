@@ -1,13 +1,21 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { Servico } from '../../database/models/servico.model';
+import { ServicoRepository } from '../../database/repositories/servico.repository';
 import { ServicoController } from './servico.controller';
 import { ServicoService } from './servico.service';
-import { Servico } from '../../database/models/servico.model';
+import { DatabaseModule } from '../../database/database.module';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Servico])],
+  imports: [
+    DatabaseModule,
+    SequelizeModule.forFeature([Servico])
+  ],
   controllers: [ServicoController],
-  providers: [ServicoService],
-  exports: [ServicoService],
+  providers: [
+    ServicoService,
+    ServicoRepository
+  ],
+  exports: [ServicoRepository]
 })
 export class ServicoModule {}

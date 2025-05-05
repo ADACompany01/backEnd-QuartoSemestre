@@ -31,7 +31,6 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     OrcamentoModule,
     ServicoModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_GUARD,

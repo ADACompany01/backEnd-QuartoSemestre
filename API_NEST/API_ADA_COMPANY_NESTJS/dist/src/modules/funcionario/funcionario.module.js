@@ -9,18 +9,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FuncionarioModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
+const funcionario_model_1 = require("../../database/models/funcionario.model");
+const funcionario_repository_1 = require("../../database/repositories/funcionario.repository");
 const funcionario_controller_1 = require("./funcionario.controller");
 const funcionario_service_1 = require("./funcionario.service");
-const funcionario_model_1 = require("../../database/models/funcionario.model");
+const database_module_1 = require("../../database/database.module");
 let FuncionarioModule = class FuncionarioModule {
 };
 exports.FuncionarioModule = FuncionarioModule;
 exports.FuncionarioModule = FuncionarioModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([funcionario_model_1.Funcionario])],
+        imports: [
+            database_module_1.DatabaseModule,
+            sequelize_1.SequelizeModule.forFeature([funcionario_model_1.Funcionario])
+        ],
         controllers: [funcionario_controller_1.FuncionarioController],
-        providers: [funcionario_service_1.FuncionarioService],
-        exports: [funcionario_service_1.FuncionarioService],
+        providers: [
+            funcionario_service_1.FuncionarioService,
+            funcionario_repository_1.FuncionarioRepository
+        ],
+        exports: [funcionario_repository_1.FuncionarioRepository]
     })
 ], FuncionarioModule);
 //# sourceMappingURL=funcionario.module.js.map

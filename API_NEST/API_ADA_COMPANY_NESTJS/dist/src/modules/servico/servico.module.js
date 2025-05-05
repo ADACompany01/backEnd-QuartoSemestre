@@ -9,18 +9,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServicoModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
+const servico_model_1 = require("../../database/models/servico.model");
+const servico_repository_1 = require("../../database/repositories/servico.repository");
 const servico_controller_1 = require("./servico.controller");
 const servico_service_1 = require("./servico.service");
-const servico_model_1 = require("../../database/models/servico.model");
+const database_module_1 = require("../../database/database.module");
 let ServicoModule = class ServicoModule {
 };
 exports.ServicoModule = ServicoModule;
 exports.ServicoModule = ServicoModule = __decorate([
     (0, common_1.Module)({
-        imports: [sequelize_1.SequelizeModule.forFeature([servico_model_1.Servico])],
+        imports: [
+            database_module_1.DatabaseModule,
+            sequelize_1.SequelizeModule.forFeature([servico_model_1.Servico])
+        ],
         controllers: [servico_controller_1.ServicoController],
-        providers: [servico_service_1.ServicoService],
-        exports: [servico_service_1.ServicoService],
+        providers: [
+            servico_service_1.ServicoService,
+            servico_repository_1.ServicoRepository
+        ],
+        exports: [servico_repository_1.ServicoRepository]
     })
 ], ServicoModule);
 //# sourceMappingURL=servico.module.js.map

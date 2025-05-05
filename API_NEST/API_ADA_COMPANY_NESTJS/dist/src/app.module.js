@@ -43,7 +43,6 @@ exports.AppModule = AppModule = __decorate([
             orcamento_module_1.OrcamentoModule,
             servico_module_1.ServicoModule,
         ],
-        controllers: [],
         providers: [
             {
                 provide: core_1.APP_GUARD,
