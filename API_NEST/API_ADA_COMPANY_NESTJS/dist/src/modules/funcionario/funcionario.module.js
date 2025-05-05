@@ -28,7 +28,7 @@ exports.FuncionarioModule = FuncionarioModule = __decorate([
             funcionario_service_1.FuncionarioService,
             funcionario_repository_1.FuncionarioRepository
         ],
-        exports: [funcionario_repository_1.FuncionarioRepository]
+        exports: [funcionario_repository_1.FuncionarioRepository, funcionario_service_1.FuncionarioService]
     })
 ], FuncionarioModule);
 //# sourceMappingURL=funcionario.module.js.map

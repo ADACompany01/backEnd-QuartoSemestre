@@ -16,6 +16,6 @@ import { DatabaseModule } from '../../database/database.module';
     FuncionarioService,
     FuncionarioRepository
   ],
-  exports: [FuncionarioRepository]
+  exports: [FuncionarioRepository, FuncionarioService]
 })
 export class FuncionarioModule {}
