@@ -13,6 +13,7 @@ const config_1 = require("@nestjs/config");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
 const funcionario_module_1 = require("../funcionario/funcionario.module");
+const cliente_module_1 = require("../cliente/cliente.module");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 let AuthModule = class AuthModule {
 };
@@ -22,6 +23,7 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             config_1.ConfigModule,
             funcionario_module_1.FuncionarioModule,
+            cliente_module_1.ClienteModule,
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],

@@ -28,7 +28,7 @@ exports.ClienteModule = ClienteModule = __decorate([
             cliente_service_1.ClienteService,
             cliente_repository_1.ClienteRepository
         ],
-        exports: [cliente_repository_1.ClienteRepository]
+        exports: [cliente_repository_1.ClienteRepository, cliente_service_1.ClienteService]
     })
 ], ClienteModule);
 //# sourceMappingURL=cliente.module.js.map

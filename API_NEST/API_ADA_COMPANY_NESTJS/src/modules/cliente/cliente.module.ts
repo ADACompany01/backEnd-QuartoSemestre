@@ -16,6 +16,6 @@ import { DatabaseModule } from '../../database/database.module';
     ClienteService,
     ClienteRepository
   ],
-  exports: [ClienteRepository]
+  exports: [ClienteRepository, ClienteService]
 })
 export class ClienteModule {}

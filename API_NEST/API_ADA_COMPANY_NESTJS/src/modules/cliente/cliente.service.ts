@@ -21,6 +21,11 @@ export class ClienteService {
     return cliente;
   }
 
+  async findByEmail(email: string): Promise<Cliente> {
+    const cliente = await this.clienteModel.findOne({ where: { email } });
+    return cliente;
+  }
+
   async create(clienteData: Partial<Cliente>): Promise<Cliente> {
     return this.clienteModel.create(clienteData as any);
   }

@@ -30,6 +30,10 @@ let ClienteService = class ClienteService {
         }
         return cliente;
     }
+    async findByEmail(email) {
+        const cliente = await this.clienteModel.findOne({ where: { email } });
+        return cliente;
+    }
     async create(clienteData) {
         return this.clienteModel.create(clienteData);
     }

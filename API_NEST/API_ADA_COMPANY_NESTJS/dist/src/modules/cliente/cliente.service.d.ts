@@ -4,6 +4,7 @@ export declare class ClienteService {
     constructor(clienteModel: typeof Cliente);
     findAll(): Promise<Cliente[]>;
     findOne(id: string): Promise<Cliente>;
+    findByEmail(email: string): Promise<Cliente>;
     create(clienteData: Partial<Cliente>): Promise<Cliente>;
     update(id: string, clienteData: Partial<Cliente>): Promise<void>;
     remove(id: string): Promise<void>;

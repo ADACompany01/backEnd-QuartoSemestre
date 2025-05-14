@@ -7,6 +7,7 @@ export declare class Cliente extends Model {
     telefone: string;
     cpf: string;
     endereco: string;
+    senha: string;
     ativo: boolean;
     dataCriacao: Date;
     orcamentos: Orcamento[];

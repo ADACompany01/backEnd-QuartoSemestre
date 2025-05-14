@@ -4,12 +4,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { FuncionarioModule } from '../funcionario/funcionario.module';
+import { ClienteModule } from '../cliente/cliente.module';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
     ConfigModule,
     FuncionarioModule,
+    ClienteModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

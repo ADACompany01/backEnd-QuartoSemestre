@@ -44,6 +44,11 @@ export class Cliente extends Model {
   endereco: string;
 
   @Column({
+    type: DataType.STRING,
+  })
+  senha: string;
+
+  @Column({
     type: DataType.BOOLEAN,
     defaultValue: true,
   })

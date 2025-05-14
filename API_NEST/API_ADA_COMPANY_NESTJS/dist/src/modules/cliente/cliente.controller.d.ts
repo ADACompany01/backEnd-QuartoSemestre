@@ -3,6 +3,7 @@ import { ClienteService } from './cliente.service';
 import { Cliente } from '../../database/models/cliente.model';
 export declare class ClienteController {
     private readonly clienteService;
+    private readonly logger;
     constructor(clienteService: ClienteService);
     findAll(): Promise<{
         statusCode: HttpStatus;

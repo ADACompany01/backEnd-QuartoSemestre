@@ -15,11 +15,13 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const bcrypt = require("bcrypt");
 const funcionario_service_1 = require("../funcionario/funcionario.service");
+const cliente_service_1 = require("../cliente/cliente.service");
 let AuthService = class AuthService {
-    constructor(jwtService, configService, funcionarioService) {
+    constructor(jwtService, configService, funcionarioService, clienteService) {
         this.jwtService = jwtService;
         this.configService = configService;
         this.funcionarioService = funcionarioService;
+        this.clienteService = clienteService;
     }
     gerarTokenValido() {
         const payload = { id: '123', role: 'admin' };
@@ -59,12 +61,41 @@ let AuthService = class AuthService {
             }
         };
     }
+    async loginCliente(loginDto) {
+        const cliente = await this.clienteService.findByEmail(loginDto.email);
+        if (!cliente) {
+            throw new common_1.UnauthorizedException('Email ou senha inválidos');
+        }
+        const isPasswordValid = await bcrypt.compare(loginDto.senha, cliente.senha);
+        if (!isPasswordValid) {
+            throw new common_1.UnauthorizedException('Email ou senha inválidos');
+        }
+        const payload = {
+            id: cliente.id,
+            email: cliente.email,
+            nome: cliente.nome,
+            role: 'cliente'
+        };
+        const secret = this.configService.get('JWT_SECRET') || 'ada_company_secret_key_2025';
+        return {
+            access_token: this.jwtService.sign(payload, {
+                secret: secret,
+                expiresIn: '1h',
+            }),
+            cliente: {
+                id: cliente.id,
+                nome: cliente.nome,
+                email: cliente.email
+            }
+        };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [jwt_1.JwtService,
         config_1.ConfigService,
-        funcionario_service_1.FuncionarioService])
+        funcionario_service_1.FuncionarioService,
+        cliente_service_1.ClienteService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map
