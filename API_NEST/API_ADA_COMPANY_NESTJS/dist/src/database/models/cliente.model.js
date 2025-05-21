@@ -34,6 +34,7 @@ __decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.STRING,
         allowNull: false,
+        unique: true,
         validate: {
             isEmail: true,
         },
@@ -49,6 +50,7 @@ __decorate([
 __decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.STRING,
+        unique: true,
     }),
     __metadata("design:type", String)
 ], Cliente.prototype, "cpf", void 0);

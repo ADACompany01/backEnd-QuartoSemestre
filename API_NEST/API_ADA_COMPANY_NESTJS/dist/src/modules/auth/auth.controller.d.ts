@@ -1,5 +1,5 @@
 import { AuthService } from '../auth/auth.service';
-import { LoginDto } from './dto/login.dto';
+import { FuncionarioLoginDto } from './dto/funcionario-login.dto';
 import { ClienteLoginDto } from './dto/cliente-login.dto';
 export declare class AuthController {
     private readonly authService;
@@ -7,9 +7,10 @@ export declare class AuthController {
     getToken(): {
         token: string;
     };
-    loginFuncionario(loginDto: LoginDto): Promise<{
-        access_token: string;
-        funcionario: {
+    loginFuncionario(loginDto: FuncionarioLoginDto): Promise<{
+        accessToken: string;
+        tipo: string;
+        usuario: {
             id: string;
             nome: string;
             email: string;
@@ -17,8 +18,9 @@ export declare class AuthController {
         };
     }>;
     loginCliente(loginDto: ClienteLoginDto): Promise<{
-        access_token: string;
-        cliente: {
+        accessToken: string;
+        tipo: string;
+        usuario: {
             id: string;
             nome: string;
             email: string;

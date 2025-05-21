@@ -1,8 +1,10 @@
 import { HttpStatus } from '@nestjs/common';
 import { FuncionarioService } from './funcionario.service';
-import { Funcionario } from '../../database/models/funcionario.model';
+import { CreateFuncionarioDto } from './dto/create-funcionario.dto';
+import { UpdateFuncionarioDto } from './dto/update-funcionario.dto';
 export declare class FuncionarioController {
     private readonly funcionarioService;
+    private readonly logger;
     constructor(funcionarioService: FuncionarioService);
     findAll(): Promise<{
         statusCode: HttpStatus;
@@ -14,12 +16,12 @@ export declare class FuncionarioController {
         message: string;
         data: any;
     }>;
-    create(funcionarioData: Partial<Funcionario>): Promise<{
+    create(createFuncionarioDto: CreateFuncionarioDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;
     }>;
-    update(id: string, funcionarioData: Partial<Funcionario>): Promise<{
+    update(id: string, updateFuncionarioDto: UpdateFuncionarioDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;

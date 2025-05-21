@@ -1,7 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FuncionarioService } from '../funcionario/funcionario.service';
-import { LoginDto } from './dto/login.dto';
+import { FuncionarioLoginDto } from './dto/funcionario-login.dto';
 import { ClienteLoginDto } from './dto/cliente-login.dto';
 import { ClienteService } from '../cliente/cliente.service';
 export declare class AuthService {
@@ -9,11 +9,13 @@ export declare class AuthService {
     private configService;
     private funcionarioService;
     private clienteService;
+    private readonly logger;
     constructor(jwtService: JwtService, configService: ConfigService, funcionarioService: FuncionarioService, clienteService: ClienteService);
     gerarTokenValido(): string;
-    loginFuncionario(loginDto: LoginDto): Promise<{
-        access_token: string;
-        funcionario: {
+    loginFuncionario(loginDto: FuncionarioLoginDto): Promise<{
+        accessToken: string;
+        tipo: string;
+        usuario: {
             id: string;
             nome: string;
             email: string;
@@ -21,8 +23,9 @@ export declare class AuthService {
         };
     }>;
     loginCliente(loginDto: ClienteLoginDto): Promise<{
-        access_token: string;
-        cliente: {
+        accessToken: string;
+        tipo: string;
+        usuario: {
             id: string;
             nome: string;
             email: string;

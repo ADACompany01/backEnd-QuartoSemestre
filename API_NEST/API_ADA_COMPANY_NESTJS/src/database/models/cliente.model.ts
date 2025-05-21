@@ -22,6 +22,7 @@ export class Cliente extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    unique: true,
     validate: {
       isEmail: true,
     },
@@ -35,6 +36,7 @@ export class Cliente extends Model {
 
   @Column({
     type: DataType.STRING,
+    unique: true,
   })
   cpf: string;
 

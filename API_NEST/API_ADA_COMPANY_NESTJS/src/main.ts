@@ -1,9 +1,38 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const port = 3000;
   const app = await NestFactory.create(AppModule);
+  
+  // Adicionar ValidationPipe global
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+  
+  // Configuração do Swagger
+  const config = new DocumentBuilder()
+    .setTitle('API ADA Company')
+    .setDescription('API para gerenciamento de serviços da ADA Company')
+    .setVersion('1.0')
+    .addTag('auth', 'Endpoints de autenticação')
+    .addTag('clientes', 'Gerenciamento de clientes')
+    .addTag('funcionarios', 'Gerenciamento de funcionários')
+    .addTag('servicos', 'Gerenciamento de serviços')
+    .addTag('orcamentos', 'Gerenciamento de orçamentos')
+    .addBearerAuth()
+    .build();
+    
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+  
   await app.listen(port);
+  
+  console.log(`Aplicação rodando na porta ${port}`);
+  console.log(`Documentação Swagger disponível em: http://localhost:${port}/api`);
 }
 bootstrap();

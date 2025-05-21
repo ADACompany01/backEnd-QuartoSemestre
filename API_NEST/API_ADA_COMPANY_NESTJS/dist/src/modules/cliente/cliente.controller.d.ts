@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
-import { Cliente } from '../../database/models/cliente.model';
+import { CreateClienteDto } from './dto/create-cliente.dto';
+import { UpdateClienteDto } from './dto/update-cliente.dto';
 export declare class ClienteController {
     private readonly clienteService;
     private readonly logger;
@@ -15,12 +16,12 @@ export declare class ClienteController {
         message: string;
         data: any;
     }>;
-    create(clienteData: Partial<Cliente>): Promise<{
+    create(createClienteDto: CreateClienteDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;
     }>;
-    update(id: string, clienteData: Partial<Cliente>): Promise<{
+    update(id: string, updateClienteDto: UpdateClienteDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;

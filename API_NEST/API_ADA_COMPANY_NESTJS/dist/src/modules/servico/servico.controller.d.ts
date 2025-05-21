@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ServicoService } from './servico.service';
-import { Servico } from '../../database/models/servico.model';
+import { CreateServicoDto } from './dto/create-servico.dto';
+import { UpdateServicoDto } from './dto/update-servico.dto';
 export declare class ServicoController {
     private readonly servicoService;
     constructor(servicoService: ServicoService);
@@ -14,12 +15,12 @@ export declare class ServicoController {
         message: string;
         data: any;
     }>;
-    create(servicoData: Partial<Servico>): Promise<{
+    create(createServicoDto: CreateServicoDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;
     }>;
-    update(id: string, servicoData: Partial<Servico>): Promise<{
+    update(id: string, updateServicoDto: UpdateServicoDto): Promise<{
         statusCode: HttpStatus;
         message: string;
         data: any;
