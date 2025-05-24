@@ -1,8 +1,8 @@
 {
-  "name": "fatec-orders-nestjs",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "api-ada-company-nestjs",
+  "version": "1.0.0",
+  "description": "API para gerenciamento de serviços da ADA Company",
+  "author": "Matheus",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

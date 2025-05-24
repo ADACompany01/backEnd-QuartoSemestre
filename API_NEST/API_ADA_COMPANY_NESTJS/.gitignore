@@ -27,6 +27,8 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 .vscode/*
+*.swp
+*.swo
 
 # Environment files
 .env
@@ -36,6 +38,7 @@ lerna-debug.log*
 # Database files
 *.sqlite
 *.sqlite3
+*.db
 
 # JWT Keys
 **/jwt/*.key
@@ -44,5 +47,17 @@ jwt-private-key.pem
 jwt-public-key.pem
 *.pem
 
-# Package lock
-package-lock.json 
+# Temporary files
+*.tmp
+*.temp
+.temp
+.tmp
+
+# Build files
+/build
+*.tsbuildinfo
+
+# Cache
+.cache
+.npm
+.eslintcache 
