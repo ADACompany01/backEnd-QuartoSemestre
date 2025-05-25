@@ -1,19 +1,19 @@
-import { IsEmail, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateFuncionarioDto {
   @ApiProperty({
-    description: 'Nome do funcionário',
-    example: 'Maria Silva',
+    description: 'Nome completo do funcionário',
+    example: 'Pedro Silva',
     required: false
   })
   @IsString()
   @IsOptional()
-  nome?: string;
+  nome_completo?: string;
 
   @ApiProperty({
     description: 'Email do funcionário',
-    example: 'maria.silva@adacompany.com',
+    example: 'pedro.silva@adacompany.com',
     required: false
   })
   @IsEmail()
@@ -22,7 +22,7 @@ export class UpdateFuncionarioDto {
 
   @ApiProperty({
     description: 'Telefone do funcionário',
-    example: '(11) 98765-4321',
+    example: '(11) 97777-7777',
     required: false
   })
   @IsString()
@@ -30,47 +30,11 @@ export class UpdateFuncionarioDto {
   telefone?: string;
 
   @ApiProperty({
-    description: 'CPF do funcionário',
-    example: '123.456.789-00',
+    description: 'ID do usuário associado',
+    example: 3,
     required: false
   })
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  cpf?: string;
-
-  @ApiProperty({
-    description: 'Cargo do funcionário',
-    example: 'Desenvolvedor Senior',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  cargo?: string;
-
-  @ApiProperty({
-    description: 'Especialidade do funcionário',
-    example: 'Backend',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  especialidade?: string;
-
-  @ApiProperty({
-    description: 'Senha do funcionário',
-    example: 'novaSenha123',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  senha?: string;
-
-  @ApiProperty({
-    description: 'Status do funcionário (ativo/inativo)',
-    example: true,
-    required: false
-  })
-  @IsBoolean()
-  @IsOptional()
-  ativo?: boolean;
+  id_usuario?: number;
 } 

@@ -8,13 +8,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_1 = require("@nestjs/jwt");
-const config_1 = require("@nestjs/config");
-const auth_controller_1 = require("./auth.controller");
+const sequelize_1 = require("@nestjs/sequelize");
 const auth_service_1 = require("./auth.service");
+const auth_controller_1 = require("./auth.controller");
+const usuario_entity_1 = require("../../database/entities/usuario.entity");
+const jwt_1 = require("@nestjs/jwt");
 const funcionario_module_1 = require("../funcionario/funcionario.module");
 const cliente_module_1 = require("../cliente/cliente.module");
-const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
+const config_1 = require("@nestjs/config");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -22,20 +23,17 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule,
+            sequelize_1.SequelizeModule.forFeature([usuario_entity_1.Usuario]),
+            jwt_1.JwtModule.register({
+                secret: 'sua_chave_secreta_aqui',
+                signOptions: { expiresIn: '1d' },
+            }),
             funcionario_module_1.FuncionarioModule,
             cliente_module_1.ClienteModule,
-            jwt_1.JwtModule.registerAsync({
-                imports: [config_1.ConfigModule],
-                inject: [config_1.ConfigService],
-                useFactory: async (configService) => ({
-                    secret: configService.get('JWT_SECRET') || 'ada_company_secret_key_2025',
-                    signOptions: { expiresIn: '1h' },
-                }),
-            }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard],
-        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard],
+        providers: [auth_service_1.AuthService],
+        exports: [auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

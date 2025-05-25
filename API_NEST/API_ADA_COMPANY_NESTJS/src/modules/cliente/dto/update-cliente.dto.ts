@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateClienteDto {
@@ -9,7 +9,16 @@ export class UpdateClienteDto {
   })
   @IsString()
   @IsOptional()
-  nome?: string;
+  nome_completo?: string;
+
+  @ApiProperty({
+    description: 'CNPJ do cliente',
+    example: '12.345.678/0001-90',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  cnpj?: string;
 
   @ApiProperty({
     description: 'Email do cliente',
@@ -28,40 +37,4 @@ export class UpdateClienteDto {
   @IsString()
   @IsOptional()
   telefone?: string;
-
-  @ApiProperty({
-    description: 'CPF do cliente',
-    example: '123.456.789-00',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  cpf?: string;
-
-  @ApiProperty({
-    description: 'Endereço do cliente',
-    example: 'Rua das Flores, 123',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  endereco?: string;
-
-  @ApiProperty({
-    description: 'Senha do cliente',
-    example: 'novaSenha123',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  senha?: string;
-
-  @ApiProperty({
-    description: 'Status do cliente (ativo/inativo)',
-    example: true,
-    required: false
-  })
-  @IsBoolean()
-  @IsOptional()
-  ativo?: boolean;
 } 

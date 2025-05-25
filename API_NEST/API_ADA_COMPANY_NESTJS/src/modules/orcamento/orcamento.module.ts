@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Orcamento } from '../../database/models/orcamento.model';
+import { Orcamento } from '../../database/entities/orcamento.entity';
 import { OrcamentoRepository } from '../../database/repositories/orcamento.repository';
 import { OrcamentoController } from './orcamento.controller';
 import { OrcamentoService } from './orcamento.service';
 import { ClienteModule } from '../cliente/cliente.module';
-import { ServicoModule } from '../servico/servico.module';
+import { PacoteModule } from '../pacote/pacote.module';
 import { DatabaseModule } from '../../database/database.module';
 
 @Module({
@@ -13,13 +13,13 @@ import { DatabaseModule } from '../../database/database.module';
     DatabaseModule,
     SequelizeModule.forFeature([Orcamento]),
     ClienteModule,
-    ServicoModule,
+    PacoteModule,
   ],
   controllers: [OrcamentoController],
   providers: [
     OrcamentoService,
     OrcamentoRepository
   ],
-  exports: [OrcamentoRepository]
+  exports: [OrcamentoRepository, OrcamentoService]
 })
 export class OrcamentoModule {}

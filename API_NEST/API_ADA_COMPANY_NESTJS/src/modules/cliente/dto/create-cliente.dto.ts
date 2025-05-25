@@ -1,65 +1,46 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateClienteDto {
   @ApiProperty({
-    description: 'Nome do cliente',
+    description: 'Nome completo do cliente',
     example: 'João Silva'
   })
-  @IsString()
-  @IsNotEmpty()
-  nome: string;
+  @IsString({ message: 'O nome deve ser uma string' })
+  @IsNotEmpty({ message: 'O nome não pode estar vazio' })
+  nome_completo: string;
+
+  @ApiProperty({
+    description: 'CNPJ do cliente',
+    example: '12.345.678/0001-90'
+  })
+  @IsString({ message: 'O CNPJ deve ser uma string' })
+  @IsNotEmpty({ message: 'O CNPJ não pode estar vazio' })
+  cnpj: string;
 
   @ApiProperty({
     description: 'Email do cliente',
     example: 'joao.silva@email.com'
   })
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Email inválido' })
+  @IsNotEmpty({ message: 'O email não pode estar vazio' })
   email: string;
 
   @ApiProperty({
     description: 'Telefone do cliente',
-    example: '(11) 98765-4321',
-    required: false
+    example: '(11) 98765-4321'
   })
-  @IsString()
-  @IsOptional()
-  telefone?: string;
-
-  @ApiProperty({
-    description: 'CPF do cliente',
-    example: '123.456.789-00',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  cpf?: string;
-
-  @ApiProperty({
-    description: 'Endereço do cliente',
-    example: 'Rua das Flores, 123',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  endereco?: string;
+  @IsString({ message: 'O telefone deve ser uma string' })
+  @IsNotEmpty({ message: 'O telefone não pode estar vazio' })
+  telefone: string;
 
   @ApiProperty({
     description: 'Senha do cliente',
-    example: 'senha123'
+    example: 'senha123',
+    minLength: 6
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'A senha deve ser uma string' })
+  @IsNotEmpty({ message: 'A senha não pode estar vazia' })
+  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres' })
   senha: string;
-
-  @ApiProperty({
-    description: 'Status do cliente (ativo/inativo)',
-    example: true,
-    default: true,
-    required: false
-  })
-  @IsBoolean()
-  @IsOptional()
-  ativo?: boolean;
 } 

@@ -13,13 +13,29 @@ export class PacoteRepository {
 
   async findAll(): Promise<Pacote[]> {
     return this.pacoteModel.findAll({
-      include: [Cliente, Orcamento],
+      include: [
+        Cliente,
+        Orcamento
+      ]
     });
   }
 
-  async findOne(id: number): Promise<Pacote | null> {
+  async findOne(id: number): Promise<Pacote> {
     return this.pacoteModel.findByPk(id, {
-      include: [Cliente, Orcamento],
+      include: [
+        Cliente,
+        Orcamento
+      ]
+    });
+  }
+
+  async findByCliente(id_cliente: number): Promise<Pacote[]> {
+    return this.pacoteModel.findAll({
+      where: { id_cliente },
+      include: [
+        Cliente,
+        Orcamento
+      ]
     });
   }
 
@@ -28,23 +44,15 @@ export class PacoteRepository {
   }
 
   async update(id: number, data: Partial<Pacote>): Promise<[number, Pacote[]]> {
-    const [affectedCount, affectedRows] = await this.pacoteModel.update(data, {
+    return this.pacoteModel.update(data, {
       where: { id_pacote: id },
-      returning: true,
+      returning: true
     });
-    return [affectedCount, affectedRows];
   }
 
   async delete(id: number): Promise<number> {
     return this.pacoteModel.destroy({
-      where: { id_pacote: id },
-    });
-  }
-
-  async findByCliente(id_cliente: number): Promise<Pacote[]> {
-    return this.pacoteModel.findAll({
-      where: { id_cliente },
-      include: [Cliente, Orcamento],
+      where: { id_pacote: id }
     });
   }
 } 

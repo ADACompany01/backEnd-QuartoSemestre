@@ -16,47 +16,75 @@ exports.OrcamentoRepository = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
 const orcamento_entity_1 = require("../entities/orcamento.entity");
-const cliente_entity_1 = require("../entities/cliente.entity");
 const pacote_entity_1 = require("../entities/pacote.entity");
+const cliente_entity_1 = require("../entities/cliente.entity");
+const contrato_entity_1 = require("../entities/contrato.entity");
 let OrcamentoRepository = class OrcamentoRepository {
     constructor(orcamentoModel) {
         this.orcamentoModel = orcamentoModel;
     }
     async findAll() {
         return this.orcamentoModel.findAll({
-            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
+            include: [
+                {
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
+            ]
         });
     }
     async findOne(id) {
         return this.orcamentoModel.findByPk(id, {
-            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
+            include: [
+                {
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
+            ]
+        });
+    }
+    async findByPacote(id_pacote) {
+        return this.orcamentoModel.findOne({
+            where: { id_pacote },
+            include: [
+                {
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
+            ]
+        });
+    }
+    async findByCliente(id_cliente) {
+        return this.orcamentoModel.findAll({
+            where: { id_cliente },
+            include: [
+                {
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
+            ]
         });
     }
     async create(data) {
         return this.orcamentoModel.create(data);
     }
     async update(id, data) {
-        const [affectedCount, affectedRows] = await this.orcamentoModel.update(data, {
+        return this.orcamentoModel.update(data, {
             where: { cod_orcamento: id },
-            returning: true,
+            returning: true
         });
-        return [affectedCount, affectedRows];
     }
     async delete(id) {
         return this.orcamentoModel.destroy({
-            where: { cod_orcamento: id },
-        });
-    }
-    async findByCliente(id_cliente) {
-        return this.orcamentoModel.findAll({
-            where: { id_cliente },
-            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
-        });
-    }
-    async findByPacote(id_pacote) {
-        return this.orcamentoModel.findAll({
-            where: { id_pacote },
-            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
+            where: { cod_orcamento: id }
         });
     }
 };

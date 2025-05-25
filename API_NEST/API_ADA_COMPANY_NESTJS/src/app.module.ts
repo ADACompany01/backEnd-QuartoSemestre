@@ -7,7 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClienteModule } from './modules/cliente/cliente.module';
 import { FuncionarioModule } from './modules/funcionario/funcionario.module';
 import { OrcamentoModule } from './modules/orcamento/orcamento.module';
-import { ServicoModule } from './modules/servico/servico.module';
+import { ContratoModule } from './modules/contrato/contrato.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
@@ -29,7 +29,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     ClienteModule,
     FuncionarioModule,
     OrcamentoModule,
-    ServicoModule,
+    ContratoModule,
   ],
   providers: [
     {

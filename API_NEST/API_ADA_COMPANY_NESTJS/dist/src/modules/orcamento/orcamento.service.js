@@ -11,37 +11,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var OrcamentoService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrcamentoService = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const orcamento_model_1 = require("../../database/models/orcamento.model");
+const orcamento_entity_1 = require("../../database/entities/orcamento.entity");
+const pacote_entity_1 = require("../../database/entities/pacote.entity");
+const cliente_entity_1 = require("../../database/entities/cliente.entity");
+const contrato_entity_1 = require("../../database/entities/contrato.entity");
 const sequelize_2 = require("sequelize");
-let OrcamentoService = class OrcamentoService {
+let OrcamentoService = OrcamentoService_1 = class OrcamentoService {
     constructor(orcamentoModel) {
         this.orcamentoModel = orcamentoModel;
+        this.logger = new common_1.Logger(OrcamentoService_1.name);
     }
     async findAll() {
         return this.orcamentoModel.findAll({
-            where: { ativo: true },
             include: [
-                'cliente',
                 {
-                    association: 'servico',
-                    include: ['funcionario']
-                }
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
             ]
         });
     }
     async findOne(id) {
-        const orcamento = await this.orcamentoModel.findOne({
-            where: { id, ativo: true },
+        const orcamento = await this.orcamentoModel.findByPk(id, {
             include: [
-                'cliente',
                 {
-                    association: 'servico',
-                    include: ['funcionario']
-                }
+                    model: pacote_entity_1.Pacote,
+                    include: [cliente_entity_1.Cliente]
+                },
+                cliente_entity_1.Cliente,
+                contrato_entity_1.Contrato
             ]
         });
         if (!orcamento) {
@@ -50,56 +55,85 @@ let OrcamentoService = class OrcamentoService {
         return orcamento;
     }
     async create(orcamentoData) {
-        const existingOrcamento = await this.orcamentoModel.findOne({
-            where: {
-                clienteId: orcamentoData.clienteId,
-                servicoId: orcamentoData.servicoId,
-                dataServico: orcamentoData.dataServico,
-                ativo: true,
-                status: { [sequelize_2.Op.ne]: 'cancelado' }
-            }
-        });
-        if (existingOrcamento) {
-            throw new common_1.ConflictException(`Já existe um orçamento ativo para este cliente e serviço na data especificada`);
-        }
-        return this.orcamentoModel.create(orcamentoData);
-    }
-    async update(id, orcamentoData) {
-        const orcamento = await this.findOne(id);
-        if ((orcamentoData.clienteId && orcamentoData.clienteId !== orcamento.clienteId) ||
-            (orcamentoData.servicoId && orcamentoData.servicoId !== orcamento.servicoId) ||
-            (orcamentoData.dataServico && orcamentoData.dataServico !== orcamento.dataServico)) {
+        try {
             const existingOrcamento = await this.orcamentoModel.findOne({
                 where: {
-                    clienteId: orcamentoData.clienteId || orcamento.clienteId,
-                    servicoId: orcamentoData.servicoId || orcamento.servicoId,
-                    dataServico: orcamentoData.dataServico || orcamento.dataServico,
-                    ativo: true,
-                    id: { [sequelize_2.Op.ne]: id },
-                    status: { [sequelize_2.Op.ne]: 'cancelado' }
+                    id_pacote: orcamentoData.id_pacote
                 }
             });
             if (existingOrcamento) {
-                throw new common_1.ConflictException(`Já existe um orçamento ativo para este cliente e serviço na data especificada`);
+                throw new common_1.ConflictException(`Já existe um orçamento para este pacote`);
             }
+            const pacote = await pacote_entity_1.Pacote.findByPk(orcamentoData.id_pacote);
+            if (!pacote) {
+                throw new common_1.NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
+            }
+            const cliente = await cliente_entity_1.Cliente.findByPk(orcamentoData.id_cliente);
+            if (!cliente) {
+                throw new common_1.NotFoundException(`Cliente com ID ${orcamentoData.id_cliente} não encontrado`);
+            }
+            const dataAtual = new Date();
+            const dataValidade = new Date();
+            dataValidade.setDate(dataValidade.getDate() + 30);
+            const orcamento = await this.orcamentoModel.create({
+                ...orcamentoData,
+                data_orcamento: dataAtual,
+                data_validade: dataValidade
+            });
+            return this.findOne(orcamento.cod_orcamento);
         }
-        await orcamento.update(orcamentoData);
-        return orcamento.reload();
+        catch (error) {
+            this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
+            throw error;
+        }
     }
-    async changeStatus(id, status) {
-        const orcamento = await this.findOne(id);
-        await orcamento.update({ status });
-        return orcamento.reload();
+    async update(id, orcamentoData) {
+        try {
+            const orcamento = await this.findOne(id);
+            if (orcamentoData.id_pacote && orcamentoData.id_pacote !== orcamento.id_pacote) {
+                const existingOrcamento = await this.orcamentoModel.findOne({
+                    where: {
+                        id_pacote: orcamentoData.id_pacote,
+                        cod_orcamento: { [sequelize_2.Op.ne]: id }
+                    }
+                });
+                if (existingOrcamento) {
+                    throw new common_1.ConflictException(`Já existe um orçamento para este pacote`);
+                }
+                const pacote = await pacote_entity_1.Pacote.findByPk(orcamentoData.id_pacote);
+                if (!pacote) {
+                    throw new common_1.NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
+                }
+            }
+            if (orcamentoData.id_cliente && orcamentoData.id_cliente !== orcamento.id_cliente) {
+                const cliente = await cliente_entity_1.Cliente.findByPk(orcamentoData.id_cliente);
+                if (!cliente) {
+                    throw new common_1.NotFoundException(`Cliente com ID ${orcamentoData.id_cliente} não encontrado`);
+                }
+            }
+            await orcamento.update(orcamentoData);
+            return this.findOne(id);
+        }
+        catch (error) {
+            this.logger.error(`Erro ao atualizar orçamento: ${error.message}`, error.stack);
+            throw error;
+        }
     }
     async remove(id) {
-        const orcamento = await this.findOne(id);
-        await orcamento.update({ ativo: false });
+        try {
+            const orcamento = await this.findOne(id);
+            await orcamento.destroy();
+        }
+        catch (error) {
+            this.logger.error(`Erro ao remover orçamento: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 };
 exports.OrcamentoService = OrcamentoService;
-exports.OrcamentoService = OrcamentoService = __decorate([
+exports.OrcamentoService = OrcamentoService = OrcamentoService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, sequelize_1.InjectModel)(orcamento_model_1.Orcamento)),
+    __param(0, (0, sequelize_1.InjectModel)(orcamento_entity_1.Orcamento)),
     __metadata("design:paramtypes", [Object])
 ], OrcamentoService);
 //# sourceMappingURL=orcamento.service.js.map

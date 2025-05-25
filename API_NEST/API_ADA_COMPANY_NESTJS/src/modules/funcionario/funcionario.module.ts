@@ -1,21 +1,16 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Funcionario } from '../../database/models/funcionario.model';
-import { FuncionarioRepository } from '../../database/repositories/funcionario.repository';
-import { FuncionarioController } from './funcionario.controller';
 import { FuncionarioService } from './funcionario.service';
-import { DatabaseModule } from '../../database/database.module';
+import { FuncionarioController } from './funcionario.controller';
+import { Funcionario } from '../../database/entities/funcionario.entity';
+import { Usuario } from '../../database/entities/usuario.entity';
 
 @Module({
   imports: [
-    DatabaseModule,
-    SequelizeModule.forFeature([Funcionario])
+    SequelizeModule.forFeature([Funcionario, Usuario]),
   ],
   controllers: [FuncionarioController],
-  providers: [
-    FuncionarioService,
-    FuncionarioRepository
-  ],
-  exports: [FuncionarioRepository, FuncionarioService]
+  providers: [FuncionarioService],
+  exports: [FuncionarioService],
 })
 export class FuncionarioModule {}

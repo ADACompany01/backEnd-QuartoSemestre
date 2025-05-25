@@ -16,7 +16,7 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const cliente_module_1 = require("./modules/cliente/cliente.module");
 const funcionario_module_1 = require("./modules/funcionario/funcionario.module");
 const orcamento_module_1 = require("./modules/orcamento/orcamento.module");
-const servico_module_1 = require("./modules/servico/servico.module");
+const contrato_module_1 = require("./modules/contrato/contrato.module");
 const jwt_auth_guard_1 = require("./modules/auth/guards/jwt-auth.guard");
 let AppModule = class AppModule {
 };
@@ -41,7 +41,7 @@ exports.AppModule = AppModule = __decorate([
             cliente_module_1.ClienteModule,
             funcionario_module_1.FuncionarioModule,
             orcamento_module_1.OrcamentoModule,
-            servico_module_1.ServicoModule,
+            contrato_module_1.ContratoModule,
         ],
         providers: [
             {

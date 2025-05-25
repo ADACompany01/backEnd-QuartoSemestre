@@ -9,26 +9,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FuncionarioModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const funcionario_model_1 = require("../../database/models/funcionario.model");
-const funcionario_repository_1 = require("../../database/repositories/funcionario.repository");
-const funcionario_controller_1 = require("./funcionario.controller");
 const funcionario_service_1 = require("./funcionario.service");
-const database_module_1 = require("../../database/database.module");
+const funcionario_controller_1 = require("./funcionario.controller");
+const funcionario_entity_1 = require("../../database/entities/funcionario.entity");
+const usuario_entity_1 = require("../../database/entities/usuario.entity");
 let FuncionarioModule = class FuncionarioModule {
 };
 exports.FuncionarioModule = FuncionarioModule;
 exports.FuncionarioModule = FuncionarioModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            database_module_1.DatabaseModule,
-            sequelize_1.SequelizeModule.forFeature([funcionario_model_1.Funcionario])
+            sequelize_1.SequelizeModule.forFeature([funcionario_entity_1.Funcionario, usuario_entity_1.Usuario]),
         ],
         controllers: [funcionario_controller_1.FuncionarioController],
-        providers: [
-            funcionario_service_1.FuncionarioService,
-            funcionario_repository_1.FuncionarioRepository
-        ],
-        exports: [funcionario_repository_1.FuncionarioRepository, funcionario_service_1.FuncionarioService]
+        providers: [funcionario_service_1.FuncionarioService],
+        exports: [funcionario_service_1.FuncionarioService],
     })
 ], FuncionarioModule);
 //# sourceMappingURL=funcionario.module.js.map

@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Cliente } from '../../database/models/cliente.model';
+import { Cliente } from '../../database/entities/cliente.entity';
+import { Usuario } from '../../database/entities/usuario.entity';
+import { CreateClienteDto } from './dto/create-cliente.dto';
+import { UpdateClienteDto } from './dto/update-cliente.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ClienteService {
@@ -9,14 +13,20 @@ export class ClienteService {
   constructor(
     @InjectModel(Cliente)
     private clienteModel: typeof Cliente,
+    @InjectModel(Usuario)
+    private usuarioModel: typeof Usuario,
   ) {}
 
   async findAll(): Promise<Cliente[]> {
-    return this.clienteModel.findAll({ where: { ativo: true } });
+    return this.clienteModel.findAll({
+      include: [Usuario]
+    });
   }
 
-  async findOne(id: string): Promise<Cliente> {
-    const cliente = await this.clienteModel.findOne({ where: { id, ativo: true } });
+  async findOne(id: number): Promise<Cliente> {
+    const cliente = await this.clienteModel.findByPk(id, {
+      include: [Usuario]
+    });
     if (!cliente) {
       throw new NotFoundException(`Cliente com ID ${id} não encontrado`);
     }
@@ -24,7 +34,10 @@ export class ClienteService {
   }
 
   async findByEmail(email: string): Promise<Cliente> {
-    const cliente = await this.clienteModel.findOne({ where: { email, ativo: true } });
+    const cliente = await this.clienteModel.findOne({ 
+      where: { email },
+      include: [Usuario]
+    });
     if (!cliente) {
       throw new NotFoundException(`Cliente com email ${email} não encontrado`);
     }
@@ -32,7 +45,10 @@ export class ClienteService {
   }
 
   async findByEmailWithoutException(email: string): Promise<Cliente | null> {
-    return this.clienteModel.findOne({ where: { email, ativo: true } });
+    return this.clienteModel.findOne({ 
+      where: { email },
+      include: [Usuario]
+    });
   }
 
   async create(clienteData: Partial<Cliente>): Promise<Cliente> {
@@ -46,39 +62,27 @@ export class ClienteService {
         throw new ConflictException(`Cliente com email ${clienteData.email} já existe`);
       }
 
-      // Verificar CPF se fornecido
-      if (clienteData.cpf) {
-        const existingByCpf = await this.clienteModel.findOne({
-          where: { cpf: clienteData.cpf }
+      // Verificar CNPJ se fornecido
+      if (clienteData.cnpj) {
+        const existingByCnpj = await this.clienteModel.findOne({
+          where: { cnpj: clienteData.cnpj }
         });
         
-        if (existingByCpf) {
-          throw new ConflictException(`Cliente com CPF ${clienteData.cpf} já existe`);
+        if (existingByCnpj) {
+          throw new ConflictException(`Cliente com CNPJ ${clienteData.cnpj} já existe`);
         }
-      }
-
-      // Definir valores padrão se não fornecidos
-      const dataToCreate = {
-        ...clienteData,
-        ativo: clienteData.ativo ?? true,
-        dataCriacao: clienteData.dataCriacao ?? new Date(),
-      };
-      
-      // Se CPF estiver vazio, definir como null para evitar problemas de unicidade
-      if (!dataToCreate.cpf || dataToCreate.cpf.trim() === '') {
-        dataToCreate.cpf = null;
       }
       
       // Criar cliente
-      const cliente = await this.clienteModel.create(dataToCreate);
-      return cliente;
+      const cliente = await this.clienteModel.create(clienteData);
+      return this.findOne(cliente.id_cliente);
     } catch (error) {
       this.logger.error(`Erro ao criar cliente: ${error.message}`, error.stack);
       throw error;
     }
   }
 
-  async update(id: string, clienteData: Partial<Cliente>): Promise<Cliente> {
+  async update(id: number, clienteData: Partial<Cliente>): Promise<Cliente> {
     try {
       const cliente = await this.findOne(id);
       
@@ -93,36 +97,62 @@ export class ClienteService {
         }
       }
       
-      // Verificar CPF se estiver sendo atualizado
-      if (clienteData.cpf && clienteData.cpf !== cliente.cpf) {
-        const existingByCpf = await this.clienteModel.findOne({
-          where: { cpf: clienteData.cpf }
+      // Verificar CNPJ se estiver sendo atualizado
+      if (clienteData.cnpj && clienteData.cnpj !== cliente.cnpj) {
+        const existingByCnpj = await this.clienteModel.findOne({
+          where: { cnpj: clienteData.cnpj }
         });
         
-        if (existingByCpf) {
-          throw new ConflictException(`Cliente com CPF ${clienteData.cpf} já existe`);
+        if (existingByCnpj) {
+          throw new ConflictException(`Cliente com CNPJ ${clienteData.cnpj} já existe`);
         }
       }
       
-      // Se CPF estiver vazio, definir como null para evitar problemas de unicidade
-      if (clienteData.cpf !== undefined && (!clienteData.cpf || clienteData.cpf.trim() === '')) {
-        clienteData.cpf = null;
-      }
-      
       await cliente.update(clienteData);
-      return cliente.reload();
+      return this.findOne(id);
     } catch (error) {
       this.logger.error(`Erro ao atualizar cliente: ${error.message}`, error.stack);
       throw error;
     }
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     try {
       const cliente = await this.findOne(id);
-      await cliente.update({ ativo: false });
+      await cliente.destroy();
     } catch (error) {
       this.logger.error(`Erro ao remover cliente: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async cadastro(createClienteDto: CreateClienteDto) {
+    try {
+      // Verificar se já existe um cliente com este email
+      const existingCliente = await this.findByEmailWithoutException(createClienteDto.email);
+      if (existingCliente) {
+        throw new ConflictException('Email já cadastrado no sistema');
+      }
+
+      // Criar usuário
+      const hashedPassword = await bcrypt.hash(createClienteDto.senha, 10);
+      const usuario = await this.usuarioModel.create({
+        email: createClienteDto.email,
+        senha: hashedPassword,
+        nome_completo: createClienteDto.nome_completo,
+        telefone: createClienteDto.telefone
+      });
+
+      // Criar cliente
+      const cliente = await this.clienteModel.create({
+        ...createClienteDto,
+        id_usuario: usuario.id_usuario
+      });
+
+      // Retornar cliente com usuário
+      return this.findOne(cliente.id_cliente);
+    } catch (error) {
+      this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
       throw error;
     }
   }

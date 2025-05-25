@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Orcamento } from '../entities/orcamento.entity';
-import { Cliente } from '../entities/cliente.entity';
 import { Pacote } from '../entities/pacote.entity';
+import { Cliente } from '../entities/cliente.entity';
+import { Contrato } from '../entities/contrato.entity';
 
 @Injectable()
 export class OrcamentoRepository {
@@ -13,13 +14,55 @@ export class OrcamentoRepository {
 
   async findAll(): Promise<Orcamento[]> {
     return this.orcamentoModel.findAll({
-      include: [Cliente, Pacote],
+      include: [
+        {
+          model: Pacote,
+          include: [Cliente]
+        },
+        Cliente,
+        Contrato
+      ]
     });
   }
 
-  async findOne(id: number): Promise<Orcamento | null> {
+  async findOne(id: number): Promise<Orcamento> {
     return this.orcamentoModel.findByPk(id, {
-      include: [Cliente, Pacote],
+      include: [
+        {
+          model: Pacote,
+          include: [Cliente]
+        },
+        Cliente,
+        Contrato
+      ]
+    });
+  }
+
+  async findByPacote(id_pacote: number): Promise<Orcamento> {
+    return this.orcamentoModel.findOne({
+      where: { id_pacote },
+      include: [
+        {
+          model: Pacote,
+          include: [Cliente]
+        },
+        Cliente,
+        Contrato
+      ]
+    });
+  }
+
+  async findByCliente(id_cliente: number): Promise<Orcamento[]> {
+    return this.orcamentoModel.findAll({
+      where: { id_cliente },
+      include: [
+        {
+          model: Pacote,
+          include: [Cliente]
+        },
+        Cliente,
+        Contrato
+      ]
     });
   }
 
@@ -28,30 +71,15 @@ export class OrcamentoRepository {
   }
 
   async update(id: number, data: Partial<Orcamento>): Promise<[number, Orcamento[]]> {
-    const [affectedCount, affectedRows] = await this.orcamentoModel.update(data, {
+    return this.orcamentoModel.update(data, {
       where: { cod_orcamento: id },
-      returning: true,
+      returning: true
     });
-    return [affectedCount, affectedRows];
   }
 
   async delete(id: number): Promise<number> {
     return this.orcamentoModel.destroy({
-      where: { cod_orcamento: id },
-    });
-  }
-
-  async findByCliente(id_cliente: number): Promise<Orcamento[]> {
-    return this.orcamentoModel.findAll({
-      where: { id_cliente },
-      include: [Cliente, Pacote],
-    });
-  }
-
-  async findByPacote(id_pacote: number): Promise<Orcamento[]> {
-    return this.orcamentoModel.findAll({
-      where: { id_pacote },
-      include: [Cliente, Pacote],
+      where: { cod_orcamento: id }
     });
   }
 } 

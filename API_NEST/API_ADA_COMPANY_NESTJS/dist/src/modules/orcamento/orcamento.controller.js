@@ -11,70 +11,146 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var OrcamentoController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrcamentoController = void 0;
 const common_1 = require("@nestjs/common");
 const orcamento_service_1 = require("./orcamento.service");
-let OrcamentoController = class OrcamentoController {
+const create_orcamento_dto_1 = require("./dto/create-orcamento.dto");
+const update_orcamento_dto_1 = require("./dto/update-orcamento.dto");
+const orcamento_response_dto_1 = require("./dto/orcamento-response.dto");
+const swagger_1 = require("@nestjs/swagger");
+let OrcamentoController = OrcamentoController_1 = class OrcamentoController {
     constructor(orcamentoService) {
         this.orcamentoService = orcamentoService;
+        this.logger = new common_1.Logger(OrcamentoController_1.name);
     }
     async findAll() {
-        const orcamentos = await this.orcamentoService.findAll();
-        return {
-            statusCode: common_1.HttpStatus.OK,
-            message: 'Orçamentos encontrados com sucesso',
-            data: orcamentos.map(orcamento => orcamento.toJSON()),
-        };
+        try {
+            const orcamentos = await this.orcamentoService.findAll();
+            return {
+                statusCode: common_1.HttpStatus.OK,
+                message: 'Orçamentos encontrados com sucesso',
+                data: orcamentos,
+            };
+        }
+        catch (error) {
+            this.logger.error(`Erro ao listar orçamentos: ${error.message}`, error.stack);
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
+                message: `Erro ao listar orçamentos: ${error.message}`,
+                error: error.name,
+            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     async findOne(id) {
-        const orcamento = await this.orcamentoService.findOne(id);
-        return {
-            statusCode: common_1.HttpStatus.OK,
-            message: 'Orçamento encontrado com sucesso',
-            data: orcamento.toJSON(),
-        };
+        try {
+            const orcamento = await this.orcamentoService.findOne(Number(id));
+            return {
+                statusCode: common_1.HttpStatus.OK,
+                message: 'Orçamento encontrado com sucesso',
+                data: orcamento,
+            };
+        }
+        catch (error) {
+            this.logger.error(`Erro ao buscar orçamento: ${error.message}`, error.stack);
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
+                message: `Erro ao buscar orçamento: ${error.message}`,
+                error: error.name,
+            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async create(orcamentoData) {
-        const orcamento = await this.orcamentoService.create(orcamentoData);
-        return {
-            statusCode: common_1.HttpStatus.CREATED,
-            message: 'Orçamento criado com sucesso',
-            data: orcamento.toJSON(),
-        };
+    async create(createOrcamentoDto) {
+        try {
+            this.logger.log(`Tentando criar orçamento: ${JSON.stringify(createOrcamentoDto)}`);
+            const orcamento = await this.orcamentoService.create(createOrcamentoDto);
+            return {
+                statusCode: common_1.HttpStatus.CREATED,
+                message: 'Orçamento criado com sucesso',
+                data: orcamento,
+            };
+        }
+        catch (error) {
+            this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
+            if (error instanceof common_1.HttpException) {
+                throw error;
+            }
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
+                message: `Erro ao criar orçamento: ${error.message}`,
+                error: error.name,
+            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async update(id, orcamentoData) {
-        const orcamento = await this.orcamentoService.update(id, orcamentoData);
-        return {
-            statusCode: common_1.HttpStatus.OK,
-            message: 'Orçamento atualizado com sucesso',
-            data: orcamento.toJSON(),
-        };
-    }
-    async changeStatus(id, status) {
-        const orcamento = await this.orcamentoService.changeStatus(id, status);
-        return {
-            statusCode: common_1.HttpStatus.OK,
-            message: `Status do orçamento alterado para ${status} com sucesso`,
-            data: orcamento.toJSON(),
-        };
+    async update(id, updateOrcamentoDto) {
+        try {
+            const orcamento = await this.orcamentoService.update(Number(id), updateOrcamentoDto);
+            return {
+                statusCode: common_1.HttpStatus.OK,
+                message: 'Orçamento atualizado com sucesso',
+                data: orcamento,
+            };
+        }
+        catch (error) {
+            this.logger.error(`Erro ao atualizar orçamento: ${error.message}`, error.stack);
+            if (error instanceof common_1.HttpException) {
+                throw error;
+            }
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
+                message: `Erro ao atualizar orçamento: ${error.message}`,
+                error: error.name,
+            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     async remove(id) {
-        await this.orcamentoService.remove(id);
-        return {
-            statusCode: common_1.HttpStatus.OK,
-            message: 'Orçamento removido com sucesso',
-        };
+        try {
+            await this.orcamentoService.remove(Number(id));
+            return {
+                statusCode: common_1.HttpStatus.OK,
+                message: 'Orçamento removido com sucesso',
+            };
+        }
+        catch (error) {
+            this.logger.error(`Erro ao remover orçamento: ${error.message}`, error.stack);
+            if (error instanceof common_1.HttpException) {
+                throw error;
+            }
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
+                message: `Erro ao remover orçamento: ${error.message}`,
+                error: error.name,
+            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 };
 exports.OrcamentoController = OrcamentoController;
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todos os orçamentos' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Lista de orçamentos retornada com sucesso',
+        type: orcamento_response_dto_1.OrcamentoResponseDto,
+        isArray: true
+    }),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], OrcamentoController.prototype, "findAll", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Buscar orçamento por ID' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'ID do orçamento' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Orçamento encontrado com sucesso',
+        type: orcamento_response_dto_1.OrcamentoResponseDto
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Orçamento não encontrado'
+    }),
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -82,36 +158,65 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrcamentoController.prototype, "findOne", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Criar um novo orçamento' }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'Orçamento criado com sucesso',
+        type: orcamento_response_dto_1.OrcamentoResponseDto
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Dados inválidos'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 500,
+        description: 'Erro interno do servidor'
+    }),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [create_orcamento_dto_1.CreateOrcamentoDto]),
     __metadata("design:returntype", Promise)
 ], OrcamentoController.prototype, "create", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Atualizar um orçamento' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'ID do orçamento' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Orçamento atualizado com sucesso',
+        type: orcamento_response_dto_1.OrcamentoResponseDto
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Orçamento não encontrado'
+    }),
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, update_orcamento_dto_1.UpdateOrcamentoDto]),
     __metadata("design:returntype", Promise)
 ], OrcamentoController.prototype, "update", null);
 __decorate([
-    (0, common_1.Patch)(':id/status'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('status')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", Promise)
-], OrcamentoController.prototype, "changeStatus", null);
-__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Remover um orçamento' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'ID do orçamento' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Orçamento removido com sucesso'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Orçamento não encontrado'
+    }),
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], OrcamentoController.prototype, "remove", null);
-exports.OrcamentoController = OrcamentoController = __decorate([
+exports.OrcamentoController = OrcamentoController = OrcamentoController_1 = __decorate([
+    (0, swagger_1.ApiTags)('orcamentos'),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('orcamentos'),
     __metadata("design:paramtypes", [orcamento_service_1.OrcamentoService])
 ], OrcamentoController);

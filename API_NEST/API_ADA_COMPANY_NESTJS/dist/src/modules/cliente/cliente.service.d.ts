@@ -1,13 +1,17 @@
-import { Cliente } from '../../database/models/cliente.model';
+import { Cliente } from '../../database/entities/cliente.entity';
+import { Usuario } from '../../database/entities/usuario.entity';
+import { CreateClienteDto } from './dto/create-cliente.dto';
 export declare class ClienteService {
     private clienteModel;
+    private usuarioModel;
     private readonly logger;
-    constructor(clienteModel: typeof Cliente);
+    constructor(clienteModel: typeof Cliente, usuarioModel: typeof Usuario);
     findAll(): Promise<Cliente[]>;
-    findOne(id: string): Promise<Cliente>;
+    findOne(id: number): Promise<Cliente>;
     findByEmail(email: string): Promise<Cliente>;
     findByEmailWithoutException(email: string): Promise<Cliente | null>;
     create(clienteData: Partial<Cliente>): Promise<Cliente>;
-    update(id: string, clienteData: Partial<Cliente>): Promise<Cliente>;
-    remove(id: string): Promise<void>;
+    update(id: number, clienteData: Partial<Cliente>): Promise<Cliente>;
+    remove(id: number): Promise<void>;
+    cadastro(createClienteDto: CreateClienteDto): Promise<Cliente>;
 }

@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
 import { Public } from '../auth/decorators/public.decorator';
-import * as bcrypt from 'bcrypt';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ClienteResponseDto } from './dto/cliente-response.dto';
@@ -28,7 +27,7 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Clientes encontrados com sucesso',
-      data: clientes.map(cliente => cliente.toJSON()),
+      data: clientes,
     };
   }
 
@@ -45,11 +44,11 @@ export class ClienteController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const cliente = await this.clienteService.findOne(id);
+    const cliente = await this.clienteService.findOne(Number(id));
     return {
       statusCode: HttpStatus.OK,
       message: 'Cliente encontrado com sucesso',
-      data: cliente.toJSON(),
+      data: cliente,
     };
   }
 
@@ -73,12 +72,6 @@ export class ClienteController {
     try {
       this.logger.log(`Tentando criar cliente: ${JSON.stringify(createClienteDto)}`);
       
-      // Criptografar senha se fornecida
-      if (createClienteDto.senha) {
-        const salt = await bcrypt.genSalt();
-        createClienteDto.senha = await bcrypt.hash(createClienteDto.senha, salt);
-      }
-      
       // Verificar se já existe um cliente com o mesmo email
       const clienteExistente = await this.clienteService.findByEmailWithoutException(createClienteDto.email);
       if (clienteExistente) {
@@ -91,14 +84,10 @@ export class ClienteController {
       
       const cliente = await this.clienteService.create(createClienteDto);
       
-      // Remover a senha da resposta
-      const clienteJSON = cliente.toJSON();
-      delete clienteJSON.senha;
-      
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Cliente criado com sucesso',
-        data: clienteJSON,
+        data: cliente,
       };
     } catch (error) {
       this.logger.error(`Erro ao criar cliente: ${error.message}`, error.stack);
@@ -129,22 +118,12 @@ export class ClienteController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateClienteDto: UpdateClienteDto) {
     try {
-      // Criptografar senha se fornecida
-      if (updateClienteDto.senha) {
-        const salt = await bcrypt.genSalt();
-        updateClienteDto.senha = await bcrypt.hash(updateClienteDto.senha, salt);
-      }
-      
-      const clienteAtualizado = await this.clienteService.update(id, updateClienteDto);
-      
-      // Remover a senha da resposta
-      const clienteJSON = clienteAtualizado.toJSON();
-      delete clienteJSON.senha;
+      const clienteAtualizado = await this.clienteService.update(Number(id), updateClienteDto);
       
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente atualizado com sucesso',
-        data: clienteJSON,
+        data: clienteAtualizado,
       };
     } catch (error) {
       this.logger.error(`Erro ao atualizar cliente: ${error.message}`, error.stack);
@@ -174,7 +153,7 @@ export class ClienteController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      await this.clienteService.remove(id);
+      await this.clienteService.remove(Number(id));
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente removido com sucesso',
@@ -192,5 +171,25 @@ export class ClienteController {
         error: error.name,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Public()
+  @Post('cadastro')
+  @ApiOperation({ summary: 'Cadastro público de cliente' })
+  @ApiResponse({ 
+    status: HttpStatus.CREATED, 
+    description: 'Cliente cadastrado com sucesso',
+    type: ClienteResponseDto 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Dados inválidos fornecidos' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.CONFLICT, 
+    description: 'Email já cadastrado' 
+  })
+  async cadastro(@Body() createClienteDto: CreateClienteDto) {
+    return this.clienteService.cadastro(createClienteDto);
   }
 }

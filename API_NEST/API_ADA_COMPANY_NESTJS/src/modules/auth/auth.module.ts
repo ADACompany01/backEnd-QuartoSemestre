@@ -1,28 +1,26 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthController } from './auth.controller';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { Usuario } from '../../database/entities/usuario.entity';
+import { JwtModule } from '@nestjs/jwt';
 import { FuncionarioModule } from '../funcionario/funcionario.module';
 import { ClienteModule } from '../cliente/cliente.module';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule,
+    SequelizeModule.forFeature([Usuario]),
+    JwtModule.register({
+      secret: 'sua_chave_secreta_aqui', // Em produção, use variável de ambiente
+      signOptions: { expiresIn: '1d' },
+    }),
     FuncionarioModule,
     ClienteModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
-        signOptions: { expiresIn: '1h' },
-      }),
-    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard],
-  exports: [AuthService, JwtAuthGuard],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

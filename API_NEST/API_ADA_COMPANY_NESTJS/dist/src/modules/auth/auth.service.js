@@ -41,6 +41,9 @@ var __importStar = (this && this.__importStar) || (function () {
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
@@ -50,8 +53,11 @@ const config_1 = require("@nestjs/config");
 const bcrypt = __importStar(require("bcrypt"));
 const funcionario_service_1 = require("../funcionario/funcionario.service");
 const cliente_service_1 = require("../cliente/cliente.service");
+const sequelize_1 = require("@nestjs/sequelize");
+const usuario_entity_1 = require("../../database/entities/usuario.entity");
 let AuthService = AuthService_1 = class AuthService {
-    constructor(jwtService, configService, funcionarioService, clienteService) {
+    constructor(usuarioModel, jwtService, configService, funcionarioService, clienteService) {
+        this.usuarioModel = usuarioModel;
         this.jwtService = jwtService;
         this.configService = configService;
         this.funcionarioService = funcionarioService;
@@ -59,7 +65,7 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger = new common_1.Logger(AuthService_1.name);
     }
     gerarTokenValido() {
-        const payload = { id: '123', role: 'admin' };
+        const payload = { id_usuario: 123, tipo_usuario: 'admin' };
         const secret = this.configService.get('JWT_SECRET') || 'ada_company_secret_key_2025';
         return this.jwtService.sign(payload, {
             secret: secret,
@@ -72,19 +78,11 @@ let AuthService = AuthService_1 = class AuthService {
             if (!funcionario) {
                 throw new common_1.UnauthorizedException('Email ou senha inválidos');
             }
-            if (!funcionario.senha) {
-                throw new common_1.UnauthorizedException('Senha não definida para este funcionário');
-            }
-            const isPasswordValid = await bcrypt.compare(loginDto.senha, funcionario.senha);
-            if (!isPasswordValid) {
-                throw new common_1.UnauthorizedException('Email ou senha inválidos');
-            }
             const payload = {
-                id: funcionario.id,
+                id_usuario: funcionario.id_usuario,
                 email: funcionario.email,
-                nome: funcionario.nome,
-                role: 'funcionario',
-                cargo: funcionario.cargo
+                nome_completo: funcionario.nome_completo,
+                tipo_usuario: 'funcionario'
             };
             const secret = this.configService.get('JWT_SECRET') || 'ada_company_secret_key_2025';
             return {
@@ -94,10 +92,9 @@ let AuthService = AuthService_1 = class AuthService {
                 }),
                 tipo: 'funcionario',
                 usuario: {
-                    id: funcionario.id,
-                    nome: funcionario.nome,
-                    email: funcionario.email,
-                    cargo: funcionario.cargo
+                    id_usuario: funcionario.id_usuario,
+                    nome_completo: funcionario.nome_completo,
+                    email: funcionario.email
                 }
             };
         }
@@ -115,18 +112,11 @@ let AuthService = AuthService_1 = class AuthService {
             if (!cliente) {
                 throw new common_1.UnauthorizedException('Email ou senha inválidos');
             }
-            if (!cliente.senha) {
-                throw new common_1.UnauthorizedException('Senha não definida para este cliente');
-            }
-            const isPasswordValid = await bcrypt.compare(loginDto.senha, cliente.senha);
-            if (!isPasswordValid) {
-                throw new common_1.UnauthorizedException('Email ou senha inválidos');
-            }
             const payload = {
-                id: cliente.id,
+                id_usuario: cliente.id_usuario,
                 email: cliente.email,
-                nome: cliente.nome,
-                role: 'cliente'
+                nome_completo: cliente.nome_completo,
+                tipo_usuario: 'cliente'
             };
             const secret = this.configService.get('JWT_SECRET') || 'ada_company_secret_key_2025';
             return {
@@ -136,8 +126,8 @@ let AuthService = AuthService_1 = class AuthService {
                 }),
                 tipo: 'cliente',
                 usuario: {
-                    id: cliente.id,
-                    nome: cliente.nome,
+                    id_usuario: cliente.id_usuario,
+                    nome_completo: cliente.nome_completo,
                     email: cliente.email
                 }
             };
@@ -150,11 +140,37 @@ let AuthService = AuthService_1 = class AuthService {
             throw new common_1.UnauthorizedException('Falha na autenticação');
         }
     }
+    async login(email, senha) {
+        const usuario = await this.usuarioModel.findOne({
+            where: { email },
+        });
+        if (!usuario) {
+            throw new common_1.UnauthorizedException('Credenciais inválidas');
+        }
+        const senhaValida = await bcrypt.compare(senha, usuario.senha);
+        if (!senhaValida) {
+            throw new common_1.UnauthorizedException('Credenciais inválidas');
+        }
+        const payload = {
+            sub: usuario.id_usuario,
+            email: usuario.email,
+            nome: usuario.nome_completo,
+        };
+        return {
+            access_token: this.jwtService.sign(payload),
+            usuario: {
+                id: usuario.id_usuario,
+                nome: usuario.nome_completo,
+                email: usuario.email,
+            },
+        };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [jwt_1.JwtService,
+    __param(0, (0, sequelize_1.InjectModel)(usuario_entity_1.Usuario)),
+    __metadata("design:paramtypes", [Object, jwt_1.JwtService,
         config_1.ConfigService,
         funcionario_service_1.FuncionarioService,
         cliente_service_1.ClienteService])

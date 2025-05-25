@@ -1,43 +1,10 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -50,7 +17,6 @@ exports.ClienteController = void 0;
 const common_1 = require("@nestjs/common");
 const cliente_service_1 = require("./cliente.service");
 const public_decorator_1 = require("../auth/decorators/public.decorator");
-const bcrypt = __importStar(require("bcrypt"));
 const create_cliente_dto_1 = require("./dto/create-cliente.dto");
 const update_cliente_dto_1 = require("./dto/update-cliente.dto");
 const cliente_response_dto_1 = require("./dto/cliente-response.dto");
@@ -65,24 +31,20 @@ let ClienteController = ClienteController_1 = class ClienteController {
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Clientes encontrados com sucesso',
-            data: clientes.map(cliente => cliente.toJSON()),
+            data: clientes,
         };
     }
     async findOne(id) {
-        const cliente = await this.clienteService.findOne(id);
+        const cliente = await this.clienteService.findOne(Number(id));
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Cliente encontrado com sucesso',
-            data: cliente.toJSON(),
+            data: cliente,
         };
     }
     async create(createClienteDto) {
         try {
             this.logger.log(`Tentando criar cliente: ${JSON.stringify(createClienteDto)}`);
-            if (createClienteDto.senha) {
-                const salt = await bcrypt.genSalt();
-                createClienteDto.senha = await bcrypt.hash(createClienteDto.senha, salt);
-            }
             const clienteExistente = await this.clienteService.findByEmailWithoutException(createClienteDto.email);
             if (clienteExistente) {
                 throw new common_1.HttpException({
@@ -92,12 +54,10 @@ let ClienteController = ClienteController_1 = class ClienteController {
                 }, common_1.HttpStatus.BAD_REQUEST);
             }
             const cliente = await this.clienteService.create(createClienteDto);
-            const clienteJSON = cliente.toJSON();
-            delete clienteJSON.senha;
             return {
                 statusCode: common_1.HttpStatus.CREATED,
                 message: 'Cliente criado com sucesso',
-                data: clienteJSON,
+                data: cliente,
             };
         }
         catch (error) {
@@ -114,17 +74,11 @@ let ClienteController = ClienteController_1 = class ClienteController {
     }
     async update(id, updateClienteDto) {
         try {
-            if (updateClienteDto.senha) {
-                const salt = await bcrypt.genSalt();
-                updateClienteDto.senha = await bcrypt.hash(updateClienteDto.senha, salt);
-            }
-            const clienteAtualizado = await this.clienteService.update(id, updateClienteDto);
-            const clienteJSON = clienteAtualizado.toJSON();
-            delete clienteJSON.senha;
+            const clienteAtualizado = await this.clienteService.update(Number(id), updateClienteDto);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Cliente atualizado com sucesso',
-                data: clienteJSON,
+                data: clienteAtualizado,
             };
         }
         catch (error) {
@@ -141,7 +95,7 @@ let ClienteController = ClienteController_1 = class ClienteController {
     }
     async remove(id) {
         try {
-            await this.clienteService.remove(id);
+            await this.clienteService.remove(Number(id));
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Cliente removido com sucesso',
@@ -158,6 +112,9 @@ let ClienteController = ClienteController_1 = class ClienteController {
                 error: error.name,
             }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    async cadastro(createClienteDto) {
+        return this.clienteService.cadastro(createClienteDto);
     }
 };
 exports.ClienteController = ClienteController;
@@ -250,6 +207,28 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ClienteController.prototype, "remove", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Post)('cadastro'),
+    (0, swagger_1.ApiOperation)({ summary: 'Cadastro público de cliente' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.CREATED,
+        description: 'Cliente cadastrado com sucesso',
+        type: cliente_response_dto_1.ClienteResponseDto
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Dados inválidos fornecidos'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.CONFLICT,
+        description: 'Email já cadastrado'
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_cliente_dto_1.CreateClienteDto]),
+    __metadata("design:returntype", Promise)
+], ClienteController.prototype, "cadastro", null);
 exports.ClienteController = ClienteController = ClienteController_1 = __decorate([
     (0, swagger_1.ApiTags)('clientes'),
     (0, swagger_1.ApiBearerAuth)(),

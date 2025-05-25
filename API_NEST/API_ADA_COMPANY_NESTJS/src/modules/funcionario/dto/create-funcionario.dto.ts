@@ -1,74 +1,37 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFuncionarioDto {
   @ApiProperty({
-    description: 'Nome do funcionário',
-    example: 'Maria Silva'
+    description: 'Nome completo do funcionário',
+    example: 'Pedro Silva'
   })
-  @IsString()
-  @IsNotEmpty()
-  nome: string;
+  @IsString({ message: 'O nome completo é obrigatório.' })
+  @IsNotEmpty({ message: 'O nome completo é obrigatório.' })
+  nome_completo: string;
 
   @ApiProperty({
     description: 'Email do funcionário',
-    example: 'maria.silva@adacompany.com'
+    example: 'pedro.silva@adacompany.com'
   })
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'O email informado é inválido.' })
+  @IsNotEmpty({ message: 'O email é obrigatório.' })
   email: string;
 
   @ApiProperty({
     description: 'Telefone do funcionário',
-    example: '(11) 98765-4321',
-    required: false
+    example: '(11) 97777-7777'
   })
-  @IsString()
-  @IsOptional()
-  telefone?: string;
+  @IsString({ message: 'O telefone é obrigatório.' })
+  @IsNotEmpty({ message: 'O telefone é obrigatório.' })
+  telefone: string;
 
   @ApiProperty({
-    description: 'CPF do funcionário',
-    example: '123.456.789-00',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  cpf?: string;
-
-  @ApiProperty({
-    description: 'Cargo do funcionário',
-    example: 'Desenvolvedor',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  cargo?: string;
-
-  @ApiProperty({
-    description: 'Especialidade do funcionário',
-    example: 'Backend',
-    required: false
-  })
-  @IsString()
-  @IsOptional()
-  especialidade?: string;
-
-  @ApiProperty({
-    description: 'Senha do funcionário',
+    description: 'Senha do usuário',
     example: 'senha123'
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'A senha é obrigatória.' })
+  @MinLength(6, { message: 'A senha deve ter pelo menos 6 caracteres.' })
+  @IsNotEmpty({ message: 'A senha é obrigatória.' })
   senha: string;
-
-  @ApiProperty({
-    description: 'Status do funcionário (ativo/inativo)',
-    example: true,
-    default: true,
-    required: false
-  })
-  @IsBoolean()
-  @IsOptional()
-  ativo?: boolean;
 } 

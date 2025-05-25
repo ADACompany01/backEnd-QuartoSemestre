@@ -6,12 +6,16 @@ import { FuncionarioService } from '../funcionario/funcionario.service';
 import { FuncionarioLoginDto } from './dto/funcionario-login.dto';
 import { ClienteLoginDto } from './dto/cliente-login.dto';
 import { ClienteService } from '../cliente/cliente.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { Usuario } from '../../database/entities/usuario.entity';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   
   constructor(
+    @InjectModel(Usuario)
+    private usuarioModel: typeof Usuario,
     private jwtService: JwtService,
     private configService: ConfigService,
     private funcionarioService: FuncionarioService,
@@ -19,7 +23,7 @@ export class AuthService {
   ) {}
 
   gerarTokenValido(): string {
-    const payload = { id: '123', role: 'admin' };
+    const payload = { id_usuario: 123, tipo_usuario: 'admin' };
     const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
     
     return this.jwtService.sign(payload, {
@@ -36,22 +40,11 @@ export class AuthService {
         throw new UnauthorizedException('Email ou senha inválidos');
       }
 
-      if (!funcionario.senha) {
-        throw new UnauthorizedException('Senha não definida para este funcionário');
-      }
-
-      const isPasswordValid = await bcrypt.compare(loginDto.senha, funcionario.senha);
-      
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Email ou senha inválidos');
-      }
-
       const payload = { 
-        id: funcionario.id,
+        id_usuario: funcionario.id_usuario,
         email: funcionario.email,
-        nome: funcionario.nome,
-        role: 'funcionario',
-        cargo: funcionario.cargo
+        nome_completo: funcionario.nome_completo,
+        tipo_usuario: 'funcionario'
       };
 
       const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
@@ -63,10 +56,9 @@ export class AuthService {
         }),
         tipo: 'funcionario',
         usuario: {
-          id: funcionario.id,
-          nome: funcionario.nome,
-          email: funcionario.email,
-          cargo: funcionario.cargo
+          id_usuario: funcionario.id_usuario,
+          nome_completo: funcionario.nome_completo,
+          email: funcionario.email
         }
       };
     } catch (error) {
@@ -88,21 +80,11 @@ export class AuthService {
         throw new UnauthorizedException('Email ou senha inválidos');
       }
 
-      if (!cliente.senha) {
-        throw new UnauthorizedException('Senha não definida para este cliente');
-      }
-
-      const isPasswordValid = await bcrypt.compare(loginDto.senha, cliente.senha);
-      
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Email ou senha inválidos');
-      }
-
       const payload = { 
-        id: cliente.id,
+        id_usuario: cliente.id_usuario,
         email: cliente.email,
-        nome: cliente.nome,
-        role: 'cliente'
+        nome_completo: cliente.nome_completo,
+        tipo_usuario: 'cliente'
       };
 
       const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
@@ -114,8 +96,8 @@ export class AuthService {
         }),
         tipo: 'cliente',
         usuario: {
-          id: cliente.id,
-          nome: cliente.nome,
+          id_usuario: cliente.id_usuario,
+          nome_completo: cliente.nome_completo,
           email: cliente.email
         }
       };
@@ -128,5 +110,35 @@ export class AuthService {
       
       throw new UnauthorizedException('Falha na autenticação');
     }
+  }
+
+  async login(email: string, senha: string) {
+    const usuario = await this.usuarioModel.findOne({
+      where: { email },
+    });
+
+    if (!usuario) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    const payload = {
+      sub: usuario.id_usuario,
+      email: usuario.email,
+      nome: usuario.nome_completo,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      usuario: {
+        id: usuario.id_usuario,
+        nome: usuario.nome_completo,
+        email: usuario.email,
+      },
+    };
   }
 }

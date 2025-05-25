@@ -1,6 +1,6 @@
 export interface User {
-  id: string;
-  role: string;
+  id_usuario: number;
+  tipo_usuario: string;
 }
 
 export interface RequestWithUser extends Request {

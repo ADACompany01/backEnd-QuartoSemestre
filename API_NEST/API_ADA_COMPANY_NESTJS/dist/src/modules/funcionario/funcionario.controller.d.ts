@@ -9,22 +9,22 @@ export declare class FuncionarioController {
     findAll(): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any[];
+        data: import("../../database/entities/funcionario.entity").Funcionario[];
     }>;
     findOne(id: string): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/funcionario.entity").Funcionario;
     }>;
     create(createFuncionarioDto: CreateFuncionarioDto): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/funcionario.entity").Funcionario;
     }>;
     update(id: string, updateFuncionarioDto: UpdateFuncionarioDto): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/funcionario.entity").Funcionario;
     }>;
     remove(id: string): Promise<{
         statusCode: HttpStatus;

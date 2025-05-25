@@ -3,15 +3,21 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ClienteResponseDto {
   @ApiProperty({
     description: 'ID do cliente',
-    example: '550e8400-e29b-41d4-a716-446655440000'
+    example: 1
   })
-  id: string;
+  id_cliente: number;
 
   @ApiProperty({
     description: 'Nome do cliente',
     example: 'João Silva'
   })
-  nome: string;
+  nome_completo: string;
+
+  @ApiProperty({
+    description: 'CNPJ do cliente',
+    example: '12.345.678/0001-90'
+  })
+  cnpj: string;
 
   @ApiProperty({
     description: 'Email do cliente',
@@ -26,26 +32,8 @@ export class ClienteResponseDto {
   telefone: string;
 
   @ApiProperty({
-    description: 'CPF do cliente',
-    example: '123.456.789-00'
+    description: 'ID do usuário associado',
+    example: 1
   })
-  cpf: string;
-
-  @ApiProperty({
-    description: 'Endereço do cliente',
-    example: 'Rua das Flores, 123'
-  })
-  endereco: string;
-
-  @ApiProperty({
-    description: 'Status do cliente (ativo/inativo)',
-    example: true
-  })
-  ativo: boolean;
-
-  @ApiProperty({
-    description: 'Data de criação do cliente',
-    example: '2025-05-21T17:32:28Z'
-  })
-  dataCriacao: Date;
+  id_usuario: number;
 } 

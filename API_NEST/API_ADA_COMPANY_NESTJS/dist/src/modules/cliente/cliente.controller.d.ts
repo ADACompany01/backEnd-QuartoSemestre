@@ -9,25 +9,26 @@ export declare class ClienteController {
     findAll(): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any[];
+        data: import("../../database/entities/cliente.entity").Cliente[];
     }>;
     findOne(id: string): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/cliente.entity").Cliente;
     }>;
     create(createClienteDto: CreateClienteDto): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/cliente.entity").Cliente;
     }>;
     update(id: string, updateClienteDto: UpdateClienteDto): Promise<{
         statusCode: HttpStatus;
         message: string;
-        data: any;
+        data: import("../../database/entities/cliente.entity").Cliente;
     }>;
     remove(id: string): Promise<{
         statusCode: HttpStatus;
         message: string;
     }>;
+    cadastro(createClienteDto: CreateClienteDto): Promise<import("../../database/entities/cliente.entity").Cliente>;
 }

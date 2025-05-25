@@ -1,43 +1,10 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -50,7 +17,6 @@ exports.FuncionarioController = void 0;
 const common_1 = require("@nestjs/common");
 const funcionario_service_1 = require("./funcionario.service");
 const public_decorator_1 = require("../auth/decorators/public.decorator");
-const bcrypt = __importStar(require("bcrypt"));
 const create_funcionario_dto_1 = require("./dto/create-funcionario.dto");
 const update_funcionario_dto_1 = require("./dto/update-funcionario.dto");
 const funcionario_response_dto_1 = require("./dto/funcionario-response.dto");
@@ -62,34 +28,23 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
     }
     async findAll() {
         const funcionarios = await this.funcionarioService.findAll();
-        const funcionariosSemSenha = funcionarios.map(f => {
-            const funcionarioJSON = f.toJSON();
-            delete funcionarioJSON.senha;
-            return funcionarioJSON;
-        });
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Funcionários encontrados com sucesso',
-            data: funcionariosSemSenha,
+            data: funcionarios.map(f => f.toJSON()),
         };
     }
     async findOne(id) {
-        const funcionario = await this.funcionarioService.findOne(id);
-        const funcionarioJSON = funcionario.toJSON();
-        delete funcionarioJSON.senha;
+        const funcionario = await this.funcionarioService.findOne(+id);
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Funcionário encontrado com sucesso',
-            data: funcionarioJSON,
+            data: funcionario.toJSON(),
         };
     }
     async create(createFuncionarioDto) {
         try {
             this.logger.log(`Tentando criar funcionário: ${JSON.stringify(createFuncionarioDto)}`);
-            if (createFuncionarioDto.senha) {
-                const salt = await bcrypt.genSalt();
-                createFuncionarioDto.senha = await bcrypt.hash(createFuncionarioDto.senha, salt);
-            }
             const funcionarioExistente = await this.funcionarioService.findByEmailWithoutException(createFuncionarioDto.email);
             if (funcionarioExistente) {
                 throw new common_1.HttpException({
@@ -98,16 +53,11 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
                     error: 'Bad Request',
                 }, common_1.HttpStatus.BAD_REQUEST);
             }
-            const funcionario = await this.funcionarioService.create({
-                ...createFuncionarioDto,
-                dataCriacao: new Date()
-            });
-            const funcionarioJSON = funcionario.toJSON();
-            delete funcionarioJSON.senha;
+            const funcionario = await this.funcionarioService.create(createFuncionarioDto);
             return {
                 statusCode: common_1.HttpStatus.CREATED,
                 message: 'Funcionário criado com sucesso',
-                data: funcionarioJSON,
+                data: funcionario.toJSON(),
             };
         }
         catch (error) {
@@ -124,17 +74,11 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
     }
     async update(id, updateFuncionarioDto) {
         try {
-            if (updateFuncionarioDto.senha) {
-                const salt = await bcrypt.genSalt();
-                updateFuncionarioDto.senha = await bcrypt.hash(updateFuncionarioDto.senha, salt);
-            }
-            const funcionario = await this.funcionarioService.update(id, updateFuncionarioDto);
-            const funcionarioJSON = funcionario.toJSON();
-            delete funcionarioJSON.senha;
+            const funcionario = await this.funcionarioService.update(+id, updateFuncionarioDto);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Funcionário atualizado com sucesso',
-                data: funcionarioJSON,
+                data: funcionario.toJSON(),
             };
         }
         catch (error) {
@@ -151,7 +95,7 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
     }
     async remove(id) {
         try {
-            await this.funcionarioService.remove(id);
+            await this.funcionarioService.remove(+id);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Funcionário removido com sucesso',
@@ -236,7 +180,7 @@ __decorate([
         status: 404,
         description: 'Funcionário não encontrado'
     }),
-    (0, common_1.Put)(':id'),
+    (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
