@@ -9,10 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const cliente_model_1 = require("./models/cliente.model");
-const funcionario_model_1 = require("./models/funcionario.model");
-const servico_model_1 = require("./models/servico.model");
-const orcamento_model_1 = require("./models/orcamento.model");
+const cliente_entity_1 = require("./entities/cliente.entity");
+const funcionario_entity_1 = require("./entities/funcionario.entity");
+const pacote_entity_1 = require("./entities/pacote.entity");
+const orcamento_entity_1 = require("./entities/orcamento.entity");
+const contrato_entity_1 = require("./entities/contrato.entity");
+const usuario_entity_1 = require("./entities/usuario.entity");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -23,14 +25,16 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                 dialect: 'sqlite',
                 storage: './database.sqlite',
                 autoLoadModels: true,
-                synchronize: true,
-                models: [cliente_model_1.Cliente, funcionario_model_1.Funcionario, servico_model_1.Servico, orcamento_model_1.Orcamento],
+                synchronize: false,
+                models: [cliente_entity_1.Cliente, funcionario_entity_1.Funcionario, pacote_entity_1.Pacote, orcamento_entity_1.Orcamento, contrato_entity_1.Contrato, usuario_entity_1.Usuario],
             }),
             sequelize_1.SequelizeModule.forFeature([
-                cliente_model_1.Cliente,
-                funcionario_model_1.Funcionario,
-                servico_model_1.Servico,
-                orcamento_model_1.Orcamento,
+                cliente_entity_1.Cliente,
+                funcionario_entity_1.Funcionario,
+                pacote_entity_1.Pacote,
+                orcamento_entity_1.Orcamento,
+                contrato_entity_1.Contrato,
+                usuario_entity_1.Usuario,
             ]),
         ],
         exports: [sequelize_1.SequelizeModule],

@@ -15,21 +15,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrcamentoRepository = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const orcamento_model_1 = require("../models/orcamento.model");
-const cliente_model_1 = require("../models/cliente.model");
-const servico_model_1 = require("../models/servico.model");
+const orcamento_entity_1 = require("../entities/orcamento.entity");
+const cliente_entity_1 = require("../entities/cliente.entity");
+const pacote_entity_1 = require("../entities/pacote.entity");
 let OrcamentoRepository = class OrcamentoRepository {
     constructor(orcamentoModel) {
         this.orcamentoModel = orcamentoModel;
     }
     async findAll() {
         return this.orcamentoModel.findAll({
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
+            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
         });
     }
     async findOne(id) {
         return this.orcamentoModel.findByPk(id, {
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
+            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
         });
     }
     async create(data) {
@@ -37,45 +37,33 @@ let OrcamentoRepository = class OrcamentoRepository {
     }
     async update(id, data) {
         const [affectedCount, affectedRows] = await this.orcamentoModel.update(data, {
-            where: { id },
+            where: { cod_orcamento: id },
             returning: true,
         });
         return [affectedCount, affectedRows];
     }
     async delete(id) {
         return this.orcamentoModel.destroy({
-            where: { id },
+            where: { cod_orcamento: id },
         });
     }
-    async findByCliente(clienteId) {
+    async findByCliente(id_cliente) {
         return this.orcamentoModel.findAll({
-            where: { clienteId },
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
+            where: { id_cliente },
+            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
         });
     }
-    async findByServico(servicoId) {
+    async findByPacote(id_pacote) {
         return this.orcamentoModel.findAll({
-            where: { servicoId },
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
-        });
-    }
-    async findByStatus(status) {
-        return this.orcamentoModel.findAll({
-            where: { status },
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
-        });
-    }
-    async findAtivos() {
-        return this.orcamentoModel.findAll({
-            where: { ativo: true },
-            include: [cliente_model_1.Cliente, servico_model_1.Servico],
+            where: { id_pacote },
+            include: [cliente_entity_1.Cliente, pacote_entity_1.Pacote],
         });
     }
 };
 exports.OrcamentoRepository = OrcamentoRepository;
 exports.OrcamentoRepository = OrcamentoRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, sequelize_1.InjectModel)(orcamento_model_1.Orcamento)),
+    __param(0, (0, sequelize_1.InjectModel)(orcamento_entity_1.Orcamento)),
     __metadata("design:paramtypes", [Object])
 ], OrcamentoRepository);
 //# sourceMappingURL=orcamento.repository.js.map

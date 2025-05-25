@@ -1,14 +1,12 @@
-import { Orcamento } from '../models/orcamento.model';
+import { Orcamento } from '../entities/orcamento.entity';
 export declare class OrcamentoRepository {
     private orcamentoModel;
     constructor(orcamentoModel: typeof Orcamento);
     findAll(): Promise<Orcamento[]>;
-    findOne(id: string): Promise<Orcamento>;
+    findOne(id: number): Promise<Orcamento | null>;
     create(data: Partial<Orcamento>): Promise<Orcamento>;
-    update(id: string, data: Partial<Orcamento>): Promise<[number, Orcamento[]]>;
-    delete(id: string): Promise<number>;
-    findByCliente(clienteId: string): Promise<Orcamento[]>;
-    findByServico(servicoId: string): Promise<Orcamento[]>;
-    findByStatus(status: string): Promise<Orcamento[]>;
-    findAtivos(): Promise<Orcamento[]>;
+    update(id: number, data: Partial<Orcamento>): Promise<[number, Orcamento[]]>;
+    delete(id: number): Promise<number>;
+    findByCliente(id_cliente: number): Promise<Orcamento[]>;
+    findByPacote(id_pacote: number): Promise<Orcamento[]>;
 }

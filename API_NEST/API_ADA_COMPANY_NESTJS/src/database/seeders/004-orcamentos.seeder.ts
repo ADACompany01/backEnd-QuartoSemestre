@@ -1,51 +1,29 @@
 'use strict';
 
-const { v4: uuidv4Orc } = require('uuid');
+import { QueryInterface } from 'sequelize';
 
-module.exports = {
-  async up(queryInterface) {
-    // Primeiro, vamos buscar os IDs dos clientes e serviços
-    const clientes = await queryInterface.sequelize.query(
-      'SELECT id FROM clientes LIMIT 2;',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    );
-
-    const servicos = await queryInterface.sequelize.query(
-      'SELECT id FROM servicos LIMIT 2;',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    );
-
-    if (clientes.length < 2 || servicos.length < 2) {
-      throw new Error('Clientes ou Serviços não encontrados. Execute as seeds anteriores primeiro.');
-    }
-
+export default {
+  async up(queryInterface: QueryInterface) {
+    // Ajuste os IDs conforme os pacotes e clientes já inseridos
     return queryInterface.bulkInsert('orcamentos', [
       {
-        id: uuidv4Orc(),
-        clienteId: clientes[0].id,
-        servicoId: servicos[0].id,
-        dataServico: new Date(2024, 3, 15),
-        status: 'pendente',
-        observacoes: 'Cliente solicitou foco especial em compatibilidade com NVDA e VoiceOver',
-        valorTotal: 5000.00,
-        ativo: true,
-        dataCriacao: new Date(),
+        valor_orcamento: 5000.00,
+        data_orcamento: new Date(2024, 3, 15),
+        data_validade: new Date(2024, 4, 15),
+        id_pacote: 1, // Ajuste conforme o pacote relacionado
+        id_cliente: 1, // Ajuste conforme o cliente relacionado
       },
       {
-        id: uuidv4Orc(),
-        clienteId: clientes[1].id,
-        servicoId: servicos[1].id,
-        dataServico: new Date(2024, 3, 16),
-        status: 'aprovado',
-        observacoes: 'Projeto inclui testes com usuários de tecnologias assistivas',
-        valorTotal: 4500.00,
-        ativo: true,
-        dataCriacao: new Date(),
+        valor_orcamento: 4500.00,
+        data_orcamento: new Date(2024, 3, 16),
+        data_validade: new Date(2024, 4, 16),
+        id_pacote: 2, // Ajuste conforme o pacote relacionado
+        id_cliente: 2, // Ajuste conforme o cliente relacionado
       }
     ]);
   },
 
-  async down(queryInterface) {
+  async down(queryInterface: QueryInterface) {
     return queryInterface.bulkDelete('orcamentos', {});
   },
 }; 

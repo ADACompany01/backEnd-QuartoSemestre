@@ -11,19 +11,19 @@ export declare class AuthController {
         accessToken: string;
         tipo: string;
         usuario: {
-            id: string;
-            nome: string;
-            email: string;
-            cargo: string;
+            id: any;
+            nome: any;
+            email: any;
+            cargo: any;
         };
     }>;
     loginCliente(loginDto: ClienteLoginDto): Promise<{
         accessToken: string;
         tipo: string;
         usuario: {
-            id: string;
-            nome: string;
-            email: string;
+            id: any;
+            nome: any;
+            email: any;
         };
     }>;
 }

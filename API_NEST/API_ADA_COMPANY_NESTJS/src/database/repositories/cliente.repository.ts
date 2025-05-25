@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Cliente } from '../models/cliente.model';
+import { Cliente } from '../entities/cliente.entity';
 
 @Injectable()
 export class ClienteRepository {
@@ -13,7 +13,7 @@ export class ClienteRepository {
     return this.clienteModel.findAll();
   }
 
-  async findOne(id: string): Promise<Cliente> {
+  async findOne(id: number): Promise<Cliente | null> {
     return this.clienteModel.findByPk(id);
   }
 
@@ -21,29 +21,24 @@ export class ClienteRepository {
     return this.clienteModel.create(data);
   }
 
-  async update(id: string, data: Partial<Cliente>): Promise<[number, Cliente[]]> {
+  async update(id: number, data: Partial<Cliente>): Promise<[number, Cliente[]]> {
     const [affectedCount, affectedRows] = await this.clienteModel.update(data, {
-      where: { id },
+      where: { id_cliente: id },
       returning: true,
     });
     return [affectedCount, affectedRows];
   }
 
-  async delete(id: string): Promise<number> {
+  async delete(id: number): Promise<number> {
     return this.clienteModel.destroy({
-      where: { id },
+      where: { id_cliente: id },
     });
   }
 
-  async findByEmail(email: string): Promise<Cliente> {
+  async findByEmail(email: string): Promise<Cliente | null> {
     return this.clienteModel.findOne({
       where: { email },
     });
   }
 
-  async findByCpf(cpf: string): Promise<Cliente> {
-    return this.clienteModel.findOne({
-      where: { cpf },
-    });
-  }
 } 

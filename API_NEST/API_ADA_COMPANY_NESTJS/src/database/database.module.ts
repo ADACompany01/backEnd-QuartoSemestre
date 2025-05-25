@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Cliente } from './models/cliente.model';
-import { Funcionario } from './models/funcionario.model';
-import { Servico } from './models/servico.model';
-import { Orcamento } from './models/orcamento.model';
+import { Cliente } from './entities/cliente.entity';
+import { Funcionario } from './entities/funcionario.entity';
+import { Pacote } from './entities/pacote.entity';
+import { Orcamento } from './entities/orcamento.entity';
+import { Contrato } from './entities/contrato.entity';
+import { Usuario } from './entities/usuario.entity';
 
 @Module({
   imports: [
@@ -11,14 +13,16 @@ import { Orcamento } from './models/orcamento.model';
       dialect: 'sqlite',
       storage: './database.sqlite',
       autoLoadModels: true,
-      synchronize: true,
-      models: [Cliente, Funcionario, Servico, Orcamento],
+      synchronize: false, // Use false em produção, true só para testes rápidos
+      models: [Cliente, Funcionario, Pacote, Orcamento, Contrato, Usuario],
     }),
     SequelizeModule.forFeature([
       Cliente,
       Funcionario,
-      Servico,
+      Pacote,
       Orcamento,
+      Contrato,
+      Usuario,
     ]),
   ],
   exports: [SequelizeModule],

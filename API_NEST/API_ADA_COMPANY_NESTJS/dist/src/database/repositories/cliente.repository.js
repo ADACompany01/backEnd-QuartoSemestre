@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClienteRepository = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const cliente_model_1 = require("../models/cliente.model");
+const cliente_entity_1 = require("../entities/cliente.entity");
 let ClienteRepository = class ClienteRepository {
     constructor(clienteModel) {
         this.clienteModel = clienteModel;
@@ -31,14 +31,14 @@ let ClienteRepository = class ClienteRepository {
     }
     async update(id, data) {
         const [affectedCount, affectedRows] = await this.clienteModel.update(data, {
-            where: { id },
+            where: { id_cliente: id },
             returning: true,
         });
         return [affectedCount, affectedRows];
     }
     async delete(id) {
         return this.clienteModel.destroy({
-            where: { id },
+            where: { id_cliente: id },
         });
     }
     async findByEmail(email) {
@@ -46,16 +46,11 @@ let ClienteRepository = class ClienteRepository {
             where: { email },
         });
     }
-    async findByCpf(cpf) {
-        return this.clienteModel.findOne({
-            where: { cpf },
-        });
-    }
 };
 exports.ClienteRepository = ClienteRepository;
 exports.ClienteRepository = ClienteRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, sequelize_1.InjectModel)(cliente_model_1.Cliente)),
+    __param(0, (0, sequelize_1.InjectModel)(cliente_entity_1.Cliente)),
     __metadata("design:paramtypes", [Object])
 ], ClienteRepository);
 //# sourceMappingURL=cliente.repository.js.map

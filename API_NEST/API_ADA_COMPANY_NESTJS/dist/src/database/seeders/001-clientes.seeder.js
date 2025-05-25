@@ -1,27 +1,21 @@
 'use strict';
-const { v4: uuidv4 } = require('uuid');
-module.exports = {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
     async up(queryInterface) {
         return queryInterface.bulkInsert('clientes', [
             {
-                id: uuidv4(),
-                nome: 'João Silva',
-                email: 'joao.silva@email.com',
+                nome_completo: 'João Silva',
+                cnpj: '12.345.678/0001-90',
                 telefone: '(11) 99999-9999',
-                cpf: '123.456.789-00',
-                endereco: 'Rua das Flores, 123',
-                ativo: true,
-                dataCriacao: new Date(),
+                email: 'joao.silva@email.com',
+                id_usuario: 1,
             },
             {
-                id: uuidv4(),
-                nome: 'Maria Santos',
-                email: 'maria.santos@email.com',
+                nome_completo: 'Maria Santos',
+                cnpj: '98.765.432/0001-10',
                 telefone: '(11) 98888-8888',
-                cpf: '987.654.321-00',
-                endereco: 'Avenida Principal, 456',
-                ativo: true,
-                dataCriacao: new Date(),
+                email: 'maria.santos@email.com',
+                id_usuario: 2,
             },
         ]);
     },

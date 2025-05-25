@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Funcionario } from '../models/funcionario.model';
+import { Funcionario } from '../entities/funcionario.entity';
 
 @Injectable()
 export class FuncionarioRepository {
@@ -13,7 +13,7 @@ export class FuncionarioRepository {
     return this.funcionarioModel.findAll();
   }
 
-  async findOne(id: string): Promise<Funcionario> {
+  async findOne(id: number): Promise<Funcionario | null> {
     return this.funcionarioModel.findByPk(id);
   }
 
@@ -21,35 +21,24 @@ export class FuncionarioRepository {
     return this.funcionarioModel.create(data);
   }
 
-  async update(id: string, data: Partial<Funcionario>): Promise<[number, Funcionario[]]> {
+  async update(id: number, data: Partial<Funcionario>): Promise<[number, Funcionario[]]> {
     const [affectedCount, affectedRows] = await this.funcionarioModel.update(data, {
-      where: { id },
+      where: { id_funcionario: id },
       returning: true,
     });
     return [affectedCount, affectedRows];
   }
 
-  async delete(id: string): Promise<number> {
+  async delete(id: number): Promise<number> {
     return this.funcionarioModel.destroy({
-      where: { id },
+      where: { id_funcionario: id },
     });
   }
 
-  async findByEmail(email: string): Promise<Funcionario> {
+  async findByEmail(email: string): Promise<Funcionario | null> {
     return this.funcionarioModel.findOne({
       where: { email },
     });
   }
 
-  async findByCpf(cpf: string): Promise<Funcionario> {
-    return this.funcionarioModel.findOne({
-      where: { cpf },
-    });
-  }
-
-  async findByEspecialidade(especialidade: string): Promise<Funcionario[]> {
-    return this.funcionarioModel.findAll({
-      where: { especialidade },
-    });
-  }
 } 

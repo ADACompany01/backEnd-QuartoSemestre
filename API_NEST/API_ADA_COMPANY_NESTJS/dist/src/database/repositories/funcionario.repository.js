@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FuncionarioRepository = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const funcionario_model_1 = require("../models/funcionario.model");
+const funcionario_entity_1 = require("../entities/funcionario.entity");
 let FuncionarioRepository = class FuncionarioRepository {
     constructor(funcionarioModel) {
         this.funcionarioModel = funcionarioModel;
@@ -31,14 +31,14 @@ let FuncionarioRepository = class FuncionarioRepository {
     }
     async update(id, data) {
         const [affectedCount, affectedRows] = await this.funcionarioModel.update(data, {
-            where: { id },
+            where: { id_funcionario: id },
             returning: true,
         });
         return [affectedCount, affectedRows];
     }
     async delete(id) {
         return this.funcionarioModel.destroy({
-            where: { id },
+            where: { id_funcionario: id },
         });
     }
     async findByEmail(email) {
@@ -46,21 +46,11 @@ let FuncionarioRepository = class FuncionarioRepository {
             where: { email },
         });
     }
-    async findByCpf(cpf) {
-        return this.funcionarioModel.findOne({
-            where: { cpf },
-        });
-    }
-    async findByEspecialidade(especialidade) {
-        return this.funcionarioModel.findAll({
-            where: { especialidade },
-        });
-    }
 };
 exports.FuncionarioRepository = FuncionarioRepository;
 exports.FuncionarioRepository = FuncionarioRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, sequelize_1.InjectModel)(funcionario_model_1.Funcionario)),
+    __param(0, (0, sequelize_1.InjectModel)(funcionario_entity_1.Funcionario)),
     __metadata("design:paramtypes", [Object])
 ], FuncionarioRepository);
 //# sourceMappingURL=funcionario.repository.js.map
