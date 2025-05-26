@@ -23,7 +23,7 @@ export class ClienteService {
     });
   }
 
-  async findOne(id: number): Promise<Cliente> {
+  async findOne(id: string): Promise<Cliente> {
     const cliente = await this.clienteModel.findByPk(id, {
       include: [Usuario]
     });
@@ -82,7 +82,7 @@ export class ClienteService {
     }
   }
 
-  async update(id: number, clienteData: Partial<Cliente>): Promise<Cliente> {
+  async update(id: string, clienteData: Partial<Cliente>): Promise<Cliente> {
     try {
       const cliente = await this.findOne(id);
       
@@ -116,7 +116,7 @@ export class ClienteService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const cliente = await this.findOne(id);
       await cliente.destroy();

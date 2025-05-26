@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber } from 'class-validator';
+import { IsOptional, IsNumber, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateOrcamentoDto {
@@ -13,19 +13,19 @@ export class UpdateOrcamentoDto {
 
   @ApiProperty({
     description: 'ID do pacote',
-    example: 1,
+    example: '123e4567-e89b-12d3-a456-426614174000',
     required: false
   })
-  @IsNumber()
+  @IsUUID('4', { message: 'O ID do pacote deve ser um UUID válido.' })
   @IsOptional()
-  id_pacote?: number;
+  id_pacote?: string;
 
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1,
+    example: '123e4567-e89b-12d3-a456-426614174000',
     required: false
   })
-  @IsNumber()
+  @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
   @IsOptional()
-  id_cliente?: number;
+  id_cliente?: string;
 } 

@@ -5,12 +5,12 @@ import { Funcionario } from './funcionario.entity';
 @Table({ tableName: 'usuarios' })
 export class Usuario extends Model<Usuario> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
     primaryKey: true,
     field: 'id_usuario',
   })
-  id_usuario: number;
+  id_usuario: string;
 
   @Column({
     type: DataType.STRING,

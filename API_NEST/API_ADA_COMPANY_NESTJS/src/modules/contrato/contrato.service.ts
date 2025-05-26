@@ -29,7 +29,7 @@ export class ContratoService {
     });
   }
 
-  async findOne(id: number): Promise<Contrato> {
+  async findOne(id: string): Promise<Contrato> {
     const contrato = await this.contratoModel.findByPk(id, {
       include: [
         Cliente,
@@ -81,7 +81,7 @@ export class ContratoService {
     }
   }
 
-  async update(id: number, updateContratoDto: UpdateContratoDto): Promise<Contrato> {
+  async update(id: string, updateContratoDto: UpdateContratoDto): Promise<Contrato> {
     try {
       const contrato = await this.findOne(id);
 
@@ -104,7 +104,7 @@ export class ContratoService {
         const existingContrato = await this.contratoModel.findOne({
           where: { 
             cod_orcamento: updateContratoDto.cod_orcamento,
-            id_contrato: { [Op.ne]: id }
+            id: { [Op.ne]: id }
           }
         });
 
@@ -132,7 +132,7 @@ export class ContratoService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const contrato = await this.findOne(id);
       await contrato.destroy();

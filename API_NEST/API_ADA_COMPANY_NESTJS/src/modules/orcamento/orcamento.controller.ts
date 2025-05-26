@@ -52,21 +52,8 @@ export class OrcamentoController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    try {
-      const orcamento = await this.orcamentoService.findOne(Number(id));
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Orçamento encontrado com sucesso',
-        data: orcamento,
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao buscar orçamento: ${error.message}`, error.stack);
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao buscar orçamento: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const orcamento = await this.orcamentoService.findOne(id);
+    return orcamento;
   }
 
   @ApiOperation({ summary: 'Criar um novo orçamento' })
@@ -85,28 +72,8 @@ export class OrcamentoController {
   })
   @Post()
   async create(@Body() createOrcamentoDto: CreateOrcamentoDto) {
-    try {
-      this.logger.log(`Tentando criar orçamento: ${JSON.stringify(createOrcamentoDto)}`);
-      const orcamento = await this.orcamentoService.create(createOrcamentoDto);
-      
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Orçamento criado com sucesso',
-        data: orcamento,
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
-      
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao criar orçamento: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const orcamento = await this.orcamentoService.create(createOrcamentoDto);
+    return orcamento;
   }
 
   @ApiOperation({ summary: 'Atualizar um orçamento' })
@@ -121,28 +88,12 @@ export class OrcamentoController {
     description: 'Orçamento não encontrado'
   })
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateOrcamentoDto: UpdateOrcamentoDto) {
-    try {
-      const orcamento = await this.orcamentoService.update(Number(id), updateOrcamentoDto);
-      
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Orçamento atualizado com sucesso',
-        data: orcamento,
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao atualizar orçamento: ${error.message}`, error.stack);
-      
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao atualizar orçamento: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async update(
+    @Param('id') id: string,
+    @Body() updateOrcamentoDto: UpdateOrcamentoDto,
+  ) {
+    const orcamento = await this.orcamentoService.update(id, updateOrcamentoDto);
+    return orcamento;
   }
 
   @ApiOperation({ summary: 'Remover um orçamento' })
@@ -157,24 +108,7 @@ export class OrcamentoController {
   })
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    try {
-      await this.orcamentoService.remove(Number(id));
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Orçamento removido com sucesso',
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao remover orçamento: ${error.message}`, error.stack);
-      
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao remover orçamento: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.orcamentoService.remove(id);
+    return { message: 'Orçamento removido com sucesso' };
   }
 }

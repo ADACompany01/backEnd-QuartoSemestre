@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum TipoPacote {
@@ -10,11 +10,11 @@ export enum TipoPacote {
 export class CreatePacoteDto {
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  @IsNumber({}, { message: 'O ID do cliente deve ser um número.' })
+  @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do cliente é obrigatório.' })
-  id_cliente: number;
+  id_cliente: string;
 
   @ApiProperty({
     description: 'Tipo do pacote (A, AA ou AAA)',

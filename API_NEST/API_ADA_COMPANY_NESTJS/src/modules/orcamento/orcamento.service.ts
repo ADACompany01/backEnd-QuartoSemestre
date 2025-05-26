@@ -28,7 +28,7 @@ export class OrcamentoService {
     });
   }
 
-  async findOne(id: number): Promise<Orcamento> {
+  async findOne(id: string): Promise<Orcamento> {
     const orcamento = await this.orcamentoModel.findByPk(id, {
       include: [
         {
@@ -90,7 +90,7 @@ export class OrcamentoService {
     }
   }
 
-  async update(id: number, orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
+  async update(id: string, orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
     try {
       const orcamento = await this.findOne(id);
       
@@ -130,7 +130,7 @@ export class OrcamentoService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const orcamento = await this.findOne(id);
       await orcamento.destroy();

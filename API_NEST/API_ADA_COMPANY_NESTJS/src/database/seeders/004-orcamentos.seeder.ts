@@ -1,29 +1,45 @@
 'use strict';
 
-import { QueryInterface } from 'sequelize';
+const { QueryTypes: OrcamentosQueryTypes } = require('sequelize');
+const { v4: orcamentosUUID } = require('uuid');
 
-export default {
-  async up(queryInterface: QueryInterface) {
-    // Ajuste os IDs conforme os pacotes e clientes já inseridos
+module.exports = {
+  async up(queryInterface) {
+    // Buscar os IDs dos pacotes e clientes
+    const pacotes = await queryInterface.sequelize.query(
+      'SELECT id_pacote, id_cliente FROM pacotes ORDER BY created_at ASC LIMIT 2;',
+      { type: OrcamentosQueryTypes.SELECT }
+    );
+
+    if (!pacotes || pacotes.length < 2) {
+      throw new Error('Pacotes não encontrados para criar orçamentos');
+    }
+
     return queryInterface.bulkInsert('orcamentos', [
       {
+        cod_orcamento: orcamentosUUID(),
         valor_orcamento: 5000.00,
         data_orcamento: new Date(2024, 3, 15),
         data_validade: new Date(2024, 4, 15),
-        id_pacote: 1, // Ajuste conforme o pacote relacionado
-        id_cliente: 1, // Ajuste conforme o cliente relacionado
+        id_pacote: pacotes[0].id_pacote,
+        id_cliente: pacotes[0].id_cliente,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       {
+        cod_orcamento: orcamentosUUID(),
         valor_orcamento: 4500.00,
         data_orcamento: new Date(2024, 3, 16),
         data_validade: new Date(2024, 4, 16),
-        id_pacote: 2, // Ajuste conforme o pacote relacionado
-        id_cliente: 2, // Ajuste conforme o cliente relacionado
+        id_pacote: pacotes[1].id_pacote,
+        id_cliente: pacotes[1].id_cliente,
+        created_at: new Date(),
+        updated_at: new Date(),
       }
     ]);
   },
 
-  async down(queryInterface: QueryInterface) {
+  async down(queryInterface) {
     return queryInterface.bulkDelete('orcamentos', {});
   },
 }; 

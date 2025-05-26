@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsDateString, IsString, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsDateString, IsString, IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum StatusContrato {
@@ -10,11 +10,11 @@ export enum StatusContrato {
 export class CreateContratoDto {
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  @IsNumber({}, { message: 'O ID do cliente deve ser um número.' })
+  @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do cliente é obrigatório.' })
-  id_cliente: number;
+  id_cliente: string;
 
   @ApiProperty({
     description: 'Valor do contrato',
@@ -26,11 +26,11 @@ export class CreateContratoDto {
 
   @ApiProperty({
     description: 'Código do orçamento',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  @IsNumber({}, { message: 'O código do orçamento deve ser um número.' })
+  @IsUUID('4', { message: 'O código do orçamento deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O código do orçamento é obrigatório.' })
-  cod_orcamento: number;
+  cod_orcamento: string;
 
   @ApiProperty({
     description: 'Status do contrato',

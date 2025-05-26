@@ -1,29 +1,47 @@
-import { QueryInterface } from 'sequelize';
+'use strict';
 
-export default {
-  async up(queryInterface: QueryInterface) {
-    // Ajuste os IDs conforme os clientes e orçamentos já inseridos
+const { QueryTypes: ContratosQueryTypes } = require('sequelize');
+const { v4: contratosUUID } = require('uuid');
+
+module.exports = {
+  async up(queryInterface) {
+    // Buscar os IDs dos orçamentos
+    const orcamentos = await queryInterface.sequelize.query(
+      'SELECT cod_orcamento, id_cliente FROM orcamentos ORDER BY created_at ASC LIMIT 2;',
+      { type: ContratosQueryTypes.SELECT }
+    );
+
+    if (!orcamentos || orcamentos.length < 2) {
+      throw new Error('Orçamentos não encontrados para criar contratos');
+    }
+
     return queryInterface.bulkInsert('contratos', [
       {
-        id_cliente: 1, // Ajuste conforme o cliente relacionado
-        valor_contrato: 5000.00,
-        cod_orcamento: 1, // Ajuste conforme o orçamento relacionado
-        status_contrato: 'ativo',
+        cod_contrato: contratosUUID(),
         data_inicio: new Date(2024, 4, 1),
-        data_entrega: new Date(2024, 4, 30),
+        data_fim: new Date(2024, 5, 1),
+        valor_contrato: 5000.00,
+        status_contrato: 'ATIVO',
+        id_orcamento: orcamentos[0].cod_orcamento,
+        id_cliente: orcamentos[0].id_cliente,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       {
-        id_cliente: 2, // Ajuste conforme o cliente relacionado
-        valor_contrato: 4500.00,
-        cod_orcamento: 2, // Ajuste conforme o orçamento relacionado
-        status_contrato: 'ativo',
+        cod_contrato: contratosUUID(),
         data_inicio: new Date(2024, 4, 2),
-        data_entrega: new Date(2024, 4, 31),
+        data_fim: new Date(2024, 5, 2),
+        valor_contrato: 4500.00,
+        status_contrato: 'ATIVO',
+        id_orcamento: orcamentos[1].cod_orcamento,
+        id_cliente: orcamentos[1].id_cliente,
+        created_at: new Date(),
+        updated_at: new Date(),
       }
     ]);
   },
 
-  async down(queryInterface: QueryInterface) {
+  async down(queryInterface) {
     return queryInterface.bulkDelete('contratos', {});
   },
 }; 

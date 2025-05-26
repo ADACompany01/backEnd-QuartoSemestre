@@ -44,7 +44,7 @@ export class ClienteController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const cliente = await this.clienteService.findOne(Number(id));
+    const cliente = await this.clienteService.findOne(id);
     return {
       statusCode: HttpStatus.OK,
       message: 'Cliente encontrado com sucesso',
@@ -118,7 +118,7 @@ export class ClienteController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateClienteDto: UpdateClienteDto) {
     try {
-      const clienteAtualizado = await this.clienteService.update(Number(id), updateClienteDto);
+      const clienteAtualizado = await this.clienteService.update(id, updateClienteDto);
       
       return {
         statusCode: HttpStatus.OK,
@@ -153,7 +153,7 @@ export class ClienteController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      await this.clienteService.remove(Number(id));
+      await this.clienteService.remove(id);
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente removido com sucesso',

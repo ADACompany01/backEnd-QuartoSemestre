@@ -6,20 +6,20 @@ import { Orcamento } from './orcamento.entity';
 @Table({ tableName: 'pacotes' })
 export class Pacote extends Model<Pacote> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
     primaryKey: true,
     field: 'id_pacote',
   })
-  id_pacote: number;
+  id_pacote: string;
 
   @ForeignKey(() => Cliente)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.UUID,
     allowNull: false,
     field: 'id_cliente',
   })
-  id_cliente: number;
+  id_cliente: string;
 
   @BelongsTo(() => Cliente)
   cliente: Cliente;

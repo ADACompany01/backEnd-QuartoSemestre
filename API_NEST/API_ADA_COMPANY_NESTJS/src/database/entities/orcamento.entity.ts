@@ -6,12 +6,12 @@ import { Contrato } from './contrato.entity';
 @Table({ tableName: 'orcamentos' })
 export class Orcamento extends Model<Orcamento> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
     primaryKey: true,
     field: 'cod_orcamento',
   })
-  cod_orcamento: number;
+  cod_orcamento: string;
 
   @Column({
     type: DataType.DECIMAL(10,2),
@@ -36,22 +36,22 @@ export class Orcamento extends Model<Orcamento> {
 
   @ForeignKey(() => Pacote)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.UUID,
     allowNull: false,
     field: 'id_pacote',
   })
-  id_pacote: number;
+  id_pacote: string;
 
   @BelongsTo(() => Pacote)
   pacote: Pacote;
 
   @ForeignKey(() => Cliente)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.UUID,
     allowNull: false,
     field: 'id_cliente',
   })
-  id_cliente: number;
+  id_cliente: string;
 
   @BelongsTo(() => Cliente)
   cliente: Cliente;

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateOrcamentoDto {
@@ -28,17 +28,17 @@ export class CreateOrcamentoDto {
 
   @ApiProperty({
     description: 'ID do pacote',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  @IsNumber({}, { message: 'O ID do pacote deve ser um número.' })
+  @IsUUID('4', { message: 'O ID do pacote deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do pacote é obrigatório.' })
-  id_pacote: number;
+  id_pacote: string;
 
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  @IsNumber({}, { message: 'O ID do cliente deve ser um número.' })
+  @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do cliente é obrigatório.' })
-  id_cliente: number;
+  id_cliente: string;
 } 

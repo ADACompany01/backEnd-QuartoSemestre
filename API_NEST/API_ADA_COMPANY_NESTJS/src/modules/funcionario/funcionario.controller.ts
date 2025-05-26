@@ -44,7 +44,7 @@ export class FuncionarioController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const funcionario = await this.funcionarioService.findOne(+id);
+    const funcionario = await this.funcionarioService.findOne(id);
     return {
       statusCode: HttpStatus.OK,
       message: 'Funcionário encontrado com sucesso',
@@ -119,7 +119,7 @@ export class FuncionarioController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateFuncionarioDto: UpdateFuncionarioDto) {
     try {
-      const funcionario = await this.funcionarioService.update(+id, updateFuncionarioDto);
+      const funcionario = await this.funcionarioService.update(id, updateFuncionarioDto);
       return {
         statusCode: HttpStatus.OK,
         message: 'Funcionário atualizado com sucesso',
@@ -153,7 +153,7 @@ export class FuncionarioController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      await this.funcionarioService.remove(+id);
+      await this.funcionarioService.remove(id);
       return {
         statusCode: HttpStatus.OK,
         message: 'Funcionário removido com sucesso',

@@ -44,85 +44,20 @@ let OrcamentoController = OrcamentoController_1 = class OrcamentoController {
         }
     }
     async findOne(id) {
-        try {
-            const orcamento = await this.orcamentoService.findOne(Number(id));
-            return {
-                statusCode: common_1.HttpStatus.OK,
-                message: 'Orçamento encontrado com sucesso',
-                data: orcamento,
-            };
-        }
-        catch (error) {
-            this.logger.error(`Erro ao buscar orçamento: ${error.message}`, error.stack);
-            throw new common_1.HttpException({
-                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
-                message: `Erro ao buscar orçamento: ${error.message}`,
-                error: error.name,
-            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        const orcamento = await this.orcamentoService.findOne(id);
+        return orcamento;
     }
     async create(createOrcamentoDto) {
-        try {
-            this.logger.log(`Tentando criar orçamento: ${JSON.stringify(createOrcamentoDto)}`);
-            const orcamento = await this.orcamentoService.create(createOrcamentoDto);
-            return {
-                statusCode: common_1.HttpStatus.CREATED,
-                message: 'Orçamento criado com sucesso',
-                data: orcamento,
-            };
-        }
-        catch (error) {
-            this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
-            if (error instanceof common_1.HttpException) {
-                throw error;
-            }
-            throw new common_1.HttpException({
-                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
-                message: `Erro ao criar orçamento: ${error.message}`,
-                error: error.name,
-            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        const orcamento = await this.orcamentoService.create(createOrcamentoDto);
+        return orcamento;
     }
     async update(id, updateOrcamentoDto) {
-        try {
-            const orcamento = await this.orcamentoService.update(Number(id), updateOrcamentoDto);
-            return {
-                statusCode: common_1.HttpStatus.OK,
-                message: 'Orçamento atualizado com sucesso',
-                data: orcamento,
-            };
-        }
-        catch (error) {
-            this.logger.error(`Erro ao atualizar orçamento: ${error.message}`, error.stack);
-            if (error instanceof common_1.HttpException) {
-                throw error;
-            }
-            throw new common_1.HttpException({
-                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
-                message: `Erro ao atualizar orçamento: ${error.message}`,
-                error: error.name,
-            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        const orcamento = await this.orcamentoService.update(id, updateOrcamentoDto);
+        return orcamento;
     }
     async remove(id) {
-        try {
-            await this.orcamentoService.remove(Number(id));
-            return {
-                statusCode: common_1.HttpStatus.OK,
-                message: 'Orçamento removido com sucesso',
-            };
-        }
-        catch (error) {
-            this.logger.error(`Erro ao remover orçamento: ${error.message}`, error.stack);
-            if (error instanceof common_1.HttpException) {
-                throw error;
-            }
-            throw new common_1.HttpException({
-                statusCode: common_1.HttpStatus.INTERNAL_SERVER_ERROR,
-                message: `Erro ao remover orçamento: ${error.message}`,
-                error: error.name,
-            }, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        await this.orcamentoService.remove(id);
+        return { message: 'Orçamento removido com sucesso' };
     }
 };
 exports.OrcamentoController = OrcamentoController;

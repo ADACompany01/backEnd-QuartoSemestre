@@ -35,7 +35,7 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
         };
     }
     async findOne(id) {
-        const funcionario = await this.funcionarioService.findOne(+id);
+        const funcionario = await this.funcionarioService.findOne(id);
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Funcionário encontrado com sucesso',
@@ -74,7 +74,7 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
     }
     async update(id, updateFuncionarioDto) {
         try {
-            const funcionario = await this.funcionarioService.update(+id, updateFuncionarioDto);
+            const funcionario = await this.funcionarioService.update(id, updateFuncionarioDto);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Funcionário atualizado com sucesso',
@@ -95,7 +95,7 @@ let FuncionarioController = FuncionarioController_1 = class FuncionarioControlle
     }
     async remove(id) {
         try {
-            await this.funcionarioService.remove(+id);
+            await this.funcionarioService.remove(id);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Funcionário removido com sucesso',

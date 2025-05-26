@@ -52,21 +52,8 @@ export class PacoteController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    try {
-      const pacote = await this.pacoteService.findOne(Number(id));
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Pacote encontrado com sucesso',
-        data: pacote,
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao buscar pacote: ${error.message}`, error.stack);
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao buscar pacote: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const pacote = await this.pacoteService.findOne(id);
+    return pacote;
   }
 
   @ApiOperation({ summary: 'Criar um novo pacote' })
@@ -110,22 +97,12 @@ export class PacoteController {
     description: 'Pacote não encontrado'
   })
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updatePacoteDto: UpdatePacoteDto) {
-    try {
-      const pacote = await this.pacoteService.update(Number(id), updatePacoteDto);
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Pacote atualizado com sucesso',
-        data: pacote,
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao atualizar pacote: ${error.message}`, error.stack);
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao atualizar pacote: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async update(
+    @Param('id') id: string,
+    @Body() updatePacoteDto: UpdatePacoteDto,
+  ) {
+    const pacote = await this.pacoteService.update(id, updatePacoteDto);
+    return pacote;
   }
 
   @ApiOperation({ summary: 'Remover um pacote' })
@@ -140,19 +117,7 @@ export class PacoteController {
   })
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    try {
-      await this.pacoteService.remove(Number(id));
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Pacote removido com sucesso',
-      };
-    } catch (error) {
-      this.logger.error(`Erro ao remover pacote: ${error.message}`, error.stack);
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao remover pacote: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.pacoteService.remove(id);
+    return { message: 'Pacote removido com sucesso' };
   }
 } 

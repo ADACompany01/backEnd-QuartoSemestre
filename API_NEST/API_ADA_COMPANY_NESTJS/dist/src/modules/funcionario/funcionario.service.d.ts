@@ -9,9 +9,9 @@ export declare class FuncionarioService {
     constructor(funcionarioModel: typeof Funcionario, usuarioModel: typeof Usuario);
     create(createFuncionarioDto: CreateFuncionarioDto): Promise<Funcionario>;
     findAll(): Promise<Funcionario[]>;
-    findOne(id: number): Promise<Funcionario>;
+    findOne(id: string): Promise<Funcionario>;
     findByEmail(email: string): Promise<Funcionario>;
     findByEmailWithoutException(email: string): Promise<Funcionario | null>;
-    update(id: number, updateFuncionarioDto: UpdateFuncionarioDto): Promise<Funcionario>;
-    remove(id: number): Promise<void>;
+    update(id: string, updateFuncionarioDto: UpdateFuncionarioDto): Promise<Funcionario>;
+    remove(id: string): Promise<void>;
 }

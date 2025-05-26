@@ -15,7 +15,7 @@ export declare class AuthController {
         accessToken: string;
         tipo: string;
         usuario: {
-            id_usuario: number;
+            id_usuario: string;
             nome_completo: string;
             email: string;
         };
@@ -24,7 +24,7 @@ export declare class AuthController {
         accessToken: string;
         tipo: string;
         usuario: {
-            id_usuario: number;
+            id_usuario: string;
             nome_completo: string;
             email: string;
         };
@@ -32,7 +32,7 @@ export declare class AuthController {
     login(loginDto: LoginDto): Promise<{
         access_token: string;
         usuario: {
-            id: number;
+            id: string;
             nome: string;
             email: string;
         };

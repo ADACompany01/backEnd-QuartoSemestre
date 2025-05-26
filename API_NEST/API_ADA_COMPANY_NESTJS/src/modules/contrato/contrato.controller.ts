@@ -52,7 +52,7 @@ export class ContratoController {
     status: HttpStatus.NOT_FOUND, 
     description: 'Contrato não encontrado' 
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id') id: string) {
     return this.contratoService.findOne(id);
   }
 
@@ -76,8 +76,8 @@ export class ContratoController {
     status: HttpStatus.CONFLICT, 
     description: 'Já existe um contrato para este orçamento' 
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
+  async update(
+    @Param('id') id: string,
     @Body() updateContratoDto: UpdateContratoDto,
   ) {
     return this.contratoService.update(id, updateContratoDto);
@@ -94,7 +94,7 @@ export class ContratoController {
     status: HttpStatus.NOT_FOUND, 
     description: 'Contrato não encontrado' 
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: string) {
     return this.contratoService.remove(id);
   }
 } 

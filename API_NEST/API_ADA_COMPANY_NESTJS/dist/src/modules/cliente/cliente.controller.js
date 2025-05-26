@@ -35,7 +35,7 @@ let ClienteController = ClienteController_1 = class ClienteController {
         };
     }
     async findOne(id) {
-        const cliente = await this.clienteService.findOne(Number(id));
+        const cliente = await this.clienteService.findOne(id);
         return {
             statusCode: common_1.HttpStatus.OK,
             message: 'Cliente encontrado com sucesso',
@@ -74,7 +74,7 @@ let ClienteController = ClienteController_1 = class ClienteController {
     }
     async update(id, updateClienteDto) {
         try {
-            const clienteAtualizado = await this.clienteService.update(Number(id), updateClienteDto);
+            const clienteAtualizado = await this.clienteService.update(id, updateClienteDto);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Cliente atualizado com sucesso',
@@ -95,7 +95,7 @@ let ClienteController = ClienteController_1 = class ClienteController {
     }
     async remove(id) {
         try {
-            await this.clienteService.remove(Number(id));
+            await this.clienteService.remove(id);
             return {
                 statusCode: common_1.HttpStatus.OK,
                 message: 'Cliente removido com sucesso',

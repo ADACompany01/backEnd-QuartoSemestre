@@ -8,12 +8,12 @@ import { Contrato } from './contrato.entity';
 @Table({ tableName: 'clientes' })
 export class Cliente extends Model<Cliente> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
     primaryKey: true,
     field: 'id_cliente',
   })
-  id_cliente: number;
+  id_cliente: string;
 
   @Column({
     type: DataType.STRING,
@@ -47,11 +47,11 @@ export class Cliente extends Model<Cliente> {
 
   @ForeignKey(() => Usuario)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.UUID,
     allowNull: false,
     field: 'id_usuario',
   })
-  id_usuario: number;
+  id_usuario: string;
 
   @BelongsTo(() => Usuario)
   usuario: Usuario;

@@ -24,7 +24,7 @@ export class PacoteService {
     });
   }
 
-  async findOne(id: number): Promise<Pacote> {
+  async findOne(id: string): Promise<Pacote> {
     const pacote = await this.pacoteModel.findByPk(id, {
       include: [
         Cliente,
@@ -54,7 +54,7 @@ export class PacoteService {
     }
   }
 
-  async update(id: number, updatePacoteDto: UpdatePacoteDto): Promise<Pacote> {
+  async update(id: string, updatePacoteDto: UpdatePacoteDto): Promise<Pacote> {
     try {
       const pacote = await this.findOne(id);
 
@@ -74,7 +74,7 @@ export class PacoteService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const pacote = await this.findOne(id);
       await pacote.destroy();

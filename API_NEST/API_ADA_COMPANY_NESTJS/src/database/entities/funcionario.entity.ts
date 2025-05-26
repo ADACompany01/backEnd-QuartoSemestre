@@ -4,12 +4,12 @@ import { Usuario } from './usuario.entity';
 @Table({ tableName: 'funcionarios' })
 export class Funcionario extends Model<Funcionario> {
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
     primaryKey: true,
     field: 'id_funcionario',
   })
-  id_funcionario: number;
+  id_funcionario: string;
 
   @Column({
     type: DataType.STRING,
@@ -35,11 +35,11 @@ export class Funcionario extends Model<Funcionario> {
 
   @ForeignKey(() => Usuario)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.UUID,
     allowNull: false,
     field: 'id_usuario',
   })
-  id_usuario: number;
+  id_usuario: string;
 
   @BelongsTo(() => Usuario)
   usuario: Usuario;

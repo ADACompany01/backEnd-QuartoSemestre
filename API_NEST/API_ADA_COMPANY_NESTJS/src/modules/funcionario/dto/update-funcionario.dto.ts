@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateFuncionarioDto {
@@ -31,10 +31,10 @@ export class UpdateFuncionarioDto {
 
   @ApiProperty({
     description: 'ID do usuário associado',
-    example: 3,
+    example: '123e4567-e89b-12d3-a456-426614174000',
     required: false
   })
-  @IsNumber()
+  @IsUUID('4', { message: 'O ID do usuário deve ser um UUID válido.' })
   @IsOptional()
-  id_usuario?: number;
+  id_usuario?: string;
 } 

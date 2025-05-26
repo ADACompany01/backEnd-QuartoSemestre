@@ -18,7 +18,7 @@ export declare class AuthService {
         accessToken: string;
         tipo: string;
         usuario: {
-            id_usuario: number;
+            id_usuario: string;
             nome_completo: string;
             email: string;
         };
@@ -27,7 +27,7 @@ export declare class AuthService {
         accessToken: string;
         tipo: string;
         usuario: {
-            id_usuario: number;
+            id_usuario: string;
             nome_completo: string;
             email: string;
         };
@@ -35,7 +35,7 @@ export declare class AuthService {
     login(email: string, senha: string): Promise<{
         access_token: string;
         usuario: {
-            id: number;
+            id: string;
             nome: string;
             email: string;
         };

@@ -11,23 +11,10 @@ export declare class OrcamentoController {
         message: string;
         data: import("../../database/entities/orcamento.entity").Orcamento[];
     }>;
-    findOne(id: string): Promise<{
-        statusCode: HttpStatus;
-        message: string;
-        data: import("../../database/entities/orcamento.entity").Orcamento;
-    }>;
-    create(createOrcamentoDto: CreateOrcamentoDto): Promise<{
-        statusCode: HttpStatus;
-        message: string;
-        data: import("../../database/entities/orcamento.entity").Orcamento;
-    }>;
-    update(id: string, updateOrcamentoDto: UpdateOrcamentoDto): Promise<{
-        statusCode: HttpStatus;
-        message: string;
-        data: import("../../database/entities/orcamento.entity").Orcamento;
-    }>;
+    findOne(id: string): Promise<import("../../database/entities/orcamento.entity").Orcamento>;
+    create(createOrcamentoDto: CreateOrcamentoDto): Promise<import("../../database/entities/orcamento.entity").Orcamento>;
+    update(id: string, updateOrcamentoDto: UpdateOrcamentoDto): Promise<import("../../database/entities/orcamento.entity").Orcamento>;
     remove(id: string): Promise<{
-        statusCode: HttpStatus;
         message: string;
     }>;
 }

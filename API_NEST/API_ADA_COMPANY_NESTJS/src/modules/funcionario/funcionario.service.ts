@@ -48,7 +48,7 @@ export class FuncionarioService {
     });
   }
 
-  async findOne(id: number): Promise<Funcionario> {
+  async findOne(id: string): Promise<Funcionario> {
     const funcionario = await this.funcionarioModel.findByPk(id, {
       include: [Usuario],
     });
@@ -76,7 +76,7 @@ export class FuncionarioService {
     });
   }
 
-  async update(id: number, updateFuncionarioDto: UpdateFuncionarioDto): Promise<Funcionario> {
+  async update(id: string, updateFuncionarioDto: UpdateFuncionarioDto): Promise<Funcionario> {
     const funcionario = await this.findOne(id);
     
     if (updateFuncionarioDto.id_usuario) {
@@ -90,7 +90,7 @@ export class FuncionarioService {
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const funcionario = await this.findOne(id);
     await funcionario.destroy();
   }
