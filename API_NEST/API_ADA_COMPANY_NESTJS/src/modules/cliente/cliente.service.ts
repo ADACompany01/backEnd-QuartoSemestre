@@ -51,33 +51,44 @@ export class ClienteService {
     });
   }
 
-  async create(clienteData: Partial<Cliente>): Promise<Cliente> {
+  async cadastro(createClienteDto: CreateClienteDto) {
     try {
-      // Verificar se já existe cliente com o mesmo email
-      const existingByEmail = await this.clienteModel.findOne({ 
-        where: { email: clienteData.email } 
-      });
-      
-      if (existingByEmail) {
-        throw new ConflictException(`Cliente com email ${clienteData.email} já existe`);
+      // Verificar se já existe um cliente com este email
+      const existingCliente = await this.findByEmailWithoutException(createClienteDto.email);
+      if (existingCliente) {
+        throw new ConflictException('Email já cadastrado no sistema');
       }
 
-      // Verificar CNPJ se fornecido
-      if (clienteData.cnpj) {
-        const existingByCnpj = await this.clienteModel.findOne({
-          where: { cnpj: clienteData.cnpj }
-        });
-        
-        if (existingByCnpj) {
-          throw new ConflictException(`Cliente com CNPJ ${clienteData.cnpj} já existe`);
-        }
+      // Verificar se já existe um cliente com este CNPJ
+      const existingCnpj = await this.clienteModel.findOne({
+        where: { cnpj: createClienteDto.cnpj }
+      });
+      if (existingCnpj) {
+        throw new ConflictException('CNPJ já cadastrado no sistema');
       }
-      
+
+      // Criar usuário
+      const hashedPassword = await bcrypt.hash(createClienteDto.senha, 10);
+      const usuario = await this.usuarioModel.create({
+        email: createClienteDto.email,
+        senha: hashedPassword,
+        nome_completo: createClienteDto.nome_completo,
+        telefone: createClienteDto.telefone
+      });
+
       // Criar cliente
-      const cliente = await this.clienteModel.create(clienteData);
+      const cliente = await this.clienteModel.create({
+        nome_completo: createClienteDto.nome_completo,
+        cnpj: createClienteDto.cnpj,
+        email: createClienteDto.email,
+        telefone: createClienteDto.telefone,
+        id_usuario: usuario.id_usuario
+      });
+
+      // Retornar cliente com usuário
       return this.findOne(cliente.id_cliente);
     } catch (error) {
-      this.logger.error(`Erro ao criar cliente: ${error.message}`, error.stack);
+      this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -122,37 +133,6 @@ export class ClienteService {
       await cliente.destroy();
     } catch (error) {
       this.logger.error(`Erro ao remover cliente: ${error.message}`, error.stack);
-      throw error;
-    }
-  }
-
-  async cadastro(createClienteDto: CreateClienteDto) {
-    try {
-      // Verificar se já existe um cliente com este email
-      const existingCliente = await this.findByEmailWithoutException(createClienteDto.email);
-      if (existingCliente) {
-        throw new ConflictException('Email já cadastrado no sistema');
-      }
-
-      // Criar usuário
-      const hashedPassword = await bcrypt.hash(createClienteDto.senha, 10);
-      const usuario = await this.usuarioModel.create({
-        email: createClienteDto.email,
-        senha: hashedPassword,
-        nome_completo: createClienteDto.nome_completo,
-        telefone: createClienteDto.telefone
-      });
-
-      // Criar cliente
-      const cliente = await this.clienteModel.create({
-        ...createClienteDto,
-        id_usuario: usuario.id_usuario
-      });
-
-      // Retornar cliente com usuário
-      return this.findOne(cliente.id_cliente);
-    } catch (error) {
-      this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
       throw error;
     }
   }

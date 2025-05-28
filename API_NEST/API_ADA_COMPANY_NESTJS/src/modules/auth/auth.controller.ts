@@ -6,11 +6,6 @@ import { Public } from './decorators/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthResponseDto } from './dto/auth-response.dto';
 
-class LoginDto {
-  email: string;
-  senha: string;
-}
-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -66,14 +61,5 @@ export class AuthController {
   @HttpCode(200)
   async loginCliente(@Body() loginDto: ClienteLoginDto) {
     return this.authService.loginCliente(loginDto);
-  }
-
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Realizar login' })
-  @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
-  @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto.email, loginDto.senha);
   }
 }

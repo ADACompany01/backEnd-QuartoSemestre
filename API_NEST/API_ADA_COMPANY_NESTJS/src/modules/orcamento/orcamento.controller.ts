@@ -20,6 +20,10 @@ export class OrcamentoController {
     type: OrcamentoResponseDto,
     isArray: true
   })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
+  })
   @Get()
   async findAll() {
     try {
@@ -50,6 +54,10 @@ export class OrcamentoController {
     status: 404, 
     description: 'Orçamento não encontrado'
   })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
+  })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const orcamento = await this.orcamentoService.findOne(id);
@@ -70,6 +78,10 @@ export class OrcamentoController {
     status: 500, 
     description: 'Erro interno do servidor'
   })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
+  })
   @Post()
   async create(@Body() createOrcamentoDto: CreateOrcamentoDto) {
     const orcamento = await this.orcamentoService.create(createOrcamentoDto);
@@ -86,6 +98,10 @@ export class OrcamentoController {
   @ApiResponse({ 
     status: 404, 
     description: 'Orçamento não encontrado'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
   })
   @Put(':id')
   async update(
@@ -105,6 +121,10 @@ export class OrcamentoController {
   @ApiResponse({ 
     status: 404, 
     description: 'Orçamento não encontrado'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
   })
   @Delete(':id')
   async remove(@Param('id') id: string) {

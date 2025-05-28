@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Contrato } from '../../database/entities/contrato.entity';
 import { Cliente } from '../../database/entities/cliente.entity';
 import { Orcamento } from '../../database/entities/orcamento.entity';
+import { Pacote } from '../../database/entities/pacote.entity';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { Op } from 'sequelize';
@@ -24,7 +25,13 @@ export class ContratoService {
     return this.contratoModel.findAll({
       include: [
         Cliente,
-        Orcamento
+        {
+          model: Orcamento,
+          include: [{
+            model: Pacote,
+            include: [Cliente]
+          }]
+        }
       ]
     });
   }
@@ -33,7 +40,13 @@ export class ContratoService {
     const contrato = await this.contratoModel.findByPk(id, {
       include: [
         Cliente,
-        Orcamento
+        {
+          model: Orcamento,
+          include: [{
+            model: Pacote,
+            include: [Cliente]
+          }]
+        }
       ]
     });
     
@@ -46,16 +59,15 @@ export class ContratoService {
 
   async create(createContratoDto: CreateContratoDto): Promise<Contrato> {
     try {
-      // Verificar se o cliente existe
-      const cliente = await this.clienteModel.findByPk(createContratoDto.id_cliente);
-      if (!cliente) {
-        throw new NotFoundException(`Cliente com ID ${createContratoDto.id_cliente} não encontrado`);
-      }
-
-      // Verificar se o orçamento existe
-      const orcamento = await this.orcamentoModel.findByPk(createContratoDto.cod_orcamento);
-      if (!orcamento) {
-        throw new NotFoundException(`Orçamento com código ${createContratoDto.cod_orcamento} não encontrado`);
+      // Verificar se o orçamento existe e incluir o Pacote e Cliente
+      const orcamento = await this.orcamentoModel.findByPk(createContratoDto.cod_orcamento, {
+        include: [{
+          model: Pacote,
+          include: [Cliente]
+        }]
+      });
+      if (!orcamento || !orcamento.pacote || !orcamento.pacote.cliente) {
+        throw new NotFoundException(`Orçamento com código ${createContratoDto.cod_orcamento} não encontrado ou associado incorretamente ao pacote/cliente.`);
       }
 
       // Verificar se já existe um contrato para este orçamento
@@ -71,7 +83,8 @@ export class ContratoService {
       const contratoData = {
         ...createContratoDto,
         data_inicio: new Date(createContratoDto.data_inicio),
-        data_entrega: new Date(createContratoDto.data_entrega)
+        data_entrega: new Date(createContratoDto.data_entrega),
+        id_cliente: orcamento.pacote.cliente.id_cliente // Usar o id_cliente do cliente associado ao pacote do orçamento
       };
 
       return this.contratoModel.create(contratoData);
@@ -85,41 +98,25 @@ export class ContratoService {
     try {
       const contrato = await this.findOne(id);
 
-      // Verificar se o cliente existe se estiver sendo atualizado
-      if (updateContratoDto.id_cliente) {
-        const cliente = await this.clienteModel.findByPk(updateContratoDto.id_cliente);
-        if (!cliente) {
-          throw new NotFoundException(`Cliente com ID ${updateContratoDto.id_cliente} não encontrado`);
-        }
-      }
-
-      // Verificar se o orçamento existe se estiver sendo atualizado
-      if (updateContratoDto.cod_orcamento) {
-        const orcamento = await this.orcamentoModel.findByPk(updateContratoDto.cod_orcamento);
-        if (!orcamento) {
-          throw new NotFoundException(`Orçamento com código ${updateContratoDto.cod_orcamento} não encontrado`);
-        }
-
-        // Verificar se já existe outro contrato para este orçamento
-        const existingContrato = await this.contratoModel.findOne({
-          where: { 
-            cod_orcamento: updateContratoDto.cod_orcamento,
-            id: { [Op.ne]: id }
-          }
-        });
-
-        if (existingContrato) {
-          throw new ConflictException(`Já existe um contrato para este orçamento`);
-        }
-      }
-
       // Preparar dados para atualização
       const updateData: Partial<Contrato> = {};
 
       // Adicionar campos apenas se estiverem presentes no DTO
-      if (updateContratoDto.id_cliente) updateData.id_cliente = updateContratoDto.id_cliente;
+      if (updateContratoDto.cod_orcamento) {
+        updateData.cod_orcamento = updateContratoDto.cod_orcamento;
+        // Fetch the new orcamento and its client via package
+        const newOrcamento = await this.orcamentoModel.findByPk(updateContratoDto.cod_orcamento, {
+          include: [{
+            model: Pacote,
+            include: [Cliente]
+          }]
+        });
+        if (!newOrcamento || !newOrcamento.pacote || !newOrcamento.pacote.cliente) {
+             throw new NotFoundException(`Novo Orçamento com código ${updateContratoDto.cod_orcamento} não encontrado ou associado incorretamente.`);
+        }
+        updateData.id_cliente = newOrcamento.pacote.cliente.id_cliente; // Update id_cliente based on new orcamento
+      }
       if (updateContratoDto.valor_contrato) updateData.valor_contrato = updateContratoDto.valor_contrato;
-      if (updateContratoDto.cod_orcamento) updateData.cod_orcamento = updateContratoDto.cod_orcamento;
       if (updateContratoDto.status_contrato) updateData.status_contrato = updateContratoDto.status_contrato;
       if (updateContratoDto.data_inicio) updateData.data_inicio = new Date(updateContratoDto.data_inicio);
       if (updateContratoDto.data_entrega) updateData.data_entrega = new Date(updateContratoDto.data_entrega);

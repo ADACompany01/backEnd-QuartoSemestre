@@ -19,26 +19,24 @@ export class OrcamentoRepository {
           model: Pacote,
           include: [Cliente]
         },
-        Cliente,
         Contrato
       ]
     });
   }
 
-  async findOne(id: number): Promise<Orcamento> {
+  async findOne(id: string): Promise<Orcamento> {
     return this.orcamentoModel.findByPk(id, {
       include: [
         {
           model: Pacote,
           include: [Cliente]
         },
-        Cliente,
         Contrato
       ]
     });
   }
 
-  async findByPacote(id_pacote: number): Promise<Orcamento> {
+  async findByPacote(id_pacote: string): Promise<Orcamento> {
     return this.orcamentoModel.findOne({
       where: { id_pacote },
       include: [
@@ -46,21 +44,25 @@ export class OrcamentoRepository {
           model: Pacote,
           include: [Cliente]
         },
-        Cliente,
         Contrato
       ]
     });
   }
 
-  async findByCliente(id_cliente: number): Promise<Orcamento[]> {
+  async findByCliente(id_cliente: string): Promise<Orcamento[]> {
     return this.orcamentoModel.findAll({
-      where: { id_cliente },
       include: [
         {
           model: Pacote,
-          include: [Cliente]
+          required: true,
+          include: [
+            {
+              model: Cliente,
+              required: true,
+              where: { id_cliente }
+            }
+          ]
         },
-        Cliente,
         Contrato
       ]
     });
@@ -70,14 +72,14 @@ export class OrcamentoRepository {
     return this.orcamentoModel.create(data);
   }
 
-  async update(id: number, data: Partial<Orcamento>): Promise<[number, Orcamento[]]> {
+  async update(id: string, data: Partial<Orcamento>): Promise<[number, Orcamento[]]> {
     return this.orcamentoModel.update(data, {
       where: { cod_orcamento: id },
       returning: true
     });
   }
 
-  async delete(id: number): Promise<number> {
+  async delete(id: string): Promise<number> {
     return this.orcamentoModel.destroy({
       where: { cod_orcamento: id }
     });

@@ -13,12 +13,12 @@ export class UpdatePacoteDto {
   id_cliente?: string;
 
   @ApiProperty({
-    description: 'Tipo do pacote de acessibilidade',
+    description: 'Tipo do pacote (A, AA ou AAA)',
     enum: TipoPacote,
     example: TipoPacote.AA,
     required: false
   })
-  @IsEnum(TipoPacote)
+  @IsEnum(TipoPacote, { message: 'O tipo do pacote deve ser A, AA ou AAA.' })
   @IsOptional()
   tipo_pacote?: TipoPacote;
 
@@ -27,7 +27,7 @@ export class UpdatePacoteDto {
     example: 1500.00,
     required: false
   })
-  @IsNumber()
+  @IsNumber({}, { message: 'O valor base deve ser um número.' })
   @IsOptional()
   valor_base?: number;
 } 

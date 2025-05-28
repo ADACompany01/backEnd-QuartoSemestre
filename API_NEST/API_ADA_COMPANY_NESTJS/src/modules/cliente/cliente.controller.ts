@@ -52,53 +52,44 @@ export class ClienteController {
     };
   }
 
-  @ApiOperation({ summary: 'Criar um novo cliente' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Cliente criado com sucesso',
-    type: ClienteResponseDto
-  })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Dados inválidos'
-  })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Erro interno do servidor'
-  })
   @Public()
-  @Post()
-  async create(@Body() createClienteDto: CreateClienteDto) {
+  @Post('cadastro')
+  @ApiOperation({ summary: 'Cadastro de novo cliente' })
+  @ApiResponse({ 
+    status: HttpStatus.CREATED, 
+    description: 'Cliente cadastrado com sucesso',
+    type: ClienteResponseDto 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Dados inválidos fornecidos' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.CONFLICT, 
+    description: 'Email ou CNPJ já cadastrado' 
+  })
+  async cadastro(@Body() createClienteDto: CreateClienteDto) {
     try {
-      this.logger.log(`Tentando criar cliente: ${JSON.stringify(createClienteDto)}`);
-      
-      // Verificar se já existe um cliente com o mesmo email
-      const clienteExistente = await this.clienteService.findByEmailWithoutException(createClienteDto.email);
-      if (clienteExistente) {
-        throw new HttpException({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Já existe um cliente com este email',
-          error: 'Bad Request',
-        }, HttpStatus.BAD_REQUEST);
-      }
-      
-      const cliente = await this.clienteService.create(createClienteDto);
-      
+      const cliente = await this.clienteService.cadastro(createClienteDto);
       return {
         statusCode: HttpStatus.CREATED,
-        message: 'Cliente criado com sucesso',
+        message: 'Cliente cadastrado com sucesso',
         data: cliente,
       };
     } catch (error) {
-      this.logger.error(`Erro ao criar cliente: ${error.message}`, error.stack);
+      this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
       
-      if (error instanceof HttpException) {
-        throw error;
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        throw new HttpException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'Email ou CNPJ já cadastrado no sistema',
+          error: 'Conflict',
+        }, HttpStatus.CONFLICT);
       }
       
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao criar cliente: ${error.message}`,
+        message: `Erro ao cadastrar cliente: ${error.message}`,
         error: error.name,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -171,25 +162,5 @@ export class ClienteController {
         error: error.name,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  @Public()
-  @Post('cadastro')
-  @ApiOperation({ summary: 'Cadastro público de cliente' })
-  @ApiResponse({ 
-    status: HttpStatus.CREATED, 
-    description: 'Cliente cadastrado com sucesso',
-    type: ClienteResponseDto 
-  })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
-    description: 'Dados inválidos fornecidos' 
-  })
-  @ApiResponse({ 
-    status: HttpStatus.CONFLICT, 
-    description: 'Email já cadastrado' 
-  })
-  async cadastro(@Body() createClienteDto: CreateClienteDto) {
-    return this.clienteService.cadastro(createClienteDto);
   }
 }

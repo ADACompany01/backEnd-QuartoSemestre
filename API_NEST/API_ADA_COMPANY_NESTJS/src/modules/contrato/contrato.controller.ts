@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { ContratoService } from './contrato.service';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { ContratoResponseDto } from './dto/contrato-response.dto';
 
 @ApiTags('contratos')
+@ApiBearerAuth()
 @Controller('contratos')
 export class ContratoController {
   constructor(private readonly contratoService: ContratoService) {}
@@ -25,6 +26,10 @@ export class ContratoController {
     status: HttpStatus.CONFLICT, 
     description: 'Já existe um contrato para este orçamento' 
   })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
+  })
   create(@Body() createContratoDto: CreateContratoDto) {
     return this.contratoService.create(createContratoDto);
   }
@@ -35,6 +40,10 @@ export class ContratoController {
     status: HttpStatus.OK, 
     description: 'Lista de contratos retornada com sucesso',
     type: [ContratoResponseDto]
+  })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
   })
   findAll() {
     return this.contratoService.findAll();
@@ -51,6 +60,10 @@ export class ContratoController {
   @ApiResponse({ 
     status: HttpStatus.NOT_FOUND, 
     description: 'Contrato não encontrado' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
   })
   async findOne(@Param('id') id: string) {
     return this.contratoService.findOne(id);
@@ -76,6 +89,10 @@ export class ContratoController {
     status: HttpStatus.CONFLICT, 
     description: 'Já existe um contrato para este orçamento' 
   })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
+  })
   async update(
     @Param('id') id: string,
     @Body() updateContratoDto: UpdateContratoDto,
@@ -93,6 +110,10 @@ export class ContratoController {
   @ApiResponse({ 
     status: HttpStatus.NOT_FOUND, 
     description: 'Contrato não encontrado' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.UNAUTHORIZED, 
+    description: 'Token não fornecido ou inválido' 
   })
   async remove(@Param('id') id: string) {
     return this.contratoService.remove(id);

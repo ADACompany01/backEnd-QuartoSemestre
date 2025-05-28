@@ -20,6 +20,10 @@ export class PacoteController {
     type: PacoteResponseDto,
     isArray: true
   })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Não autorizado'
+  })
   @Get()
   async findAll() {
     try {
@@ -50,6 +54,10 @@ export class PacoteController {
     status: 404, 
     description: 'Pacote não encontrado'
   })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Não autorizado'
+  })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const pacote = await this.pacoteService.findOne(id);
@@ -65,6 +73,10 @@ export class PacoteController {
   @ApiResponse({ 
     status: 400, 
     description: 'Dados inválidos'
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Não autorizado'
   })
   @Post()
   async create(@Body() createPacoteDto: CreatePacoteDto) {
@@ -96,6 +108,10 @@ export class PacoteController {
     status: 404, 
     description: 'Pacote não encontrado'
   })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Não autorizado'
+  })
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -114,6 +130,10 @@ export class PacoteController {
   @ApiResponse({ 
     status: 404, 
     description: 'Pacote não encontrado'
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Não autorizado'
   })
   @Delete(':id')
   async remove(@Param('id') id: string) {

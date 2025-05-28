@@ -1,7 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { Usuario } from './usuario.entity';
 import { Pacote } from './pacote.entity';
-import { Orcamento } from './orcamento.entity';
 import { Contrato } from './contrato.entity';
 // import { Pacote } from './pacote.entity'; // Será criado depois
 
@@ -58,9 +57,6 @@ export class Cliente extends Model<Cliente> {
 
   @HasMany(() => Pacote)
   pacotes: Pacote[];
-
-  @HasMany(() => Orcamento)
-  orcamentos: Orcamento[];
 
   @HasMany(() => Contrato)
   contratos: Contrato[];

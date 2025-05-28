@@ -29,14 +29,6 @@ module.exports = {
           key: 'id_pacote'
         }
       },
-      id_cliente: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'clientes',
-          key: 'id_cliente'
-        }
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

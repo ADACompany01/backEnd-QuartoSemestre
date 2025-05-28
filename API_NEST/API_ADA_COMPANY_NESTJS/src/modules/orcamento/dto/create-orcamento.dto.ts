@@ -33,12 +33,4 @@ export class CreateOrcamentoDto {
   @IsUUID('4', { message: 'O ID do pacote deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do pacote é obrigatório.' })
   id_pacote: string;
-
-  @ApiProperty({
-    description: 'ID do cliente',
-    example: '123e4567-e89b-12d3-a456-426614174000'
-  })
-  @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
-  @IsNotEmpty({ message: 'O ID do cliente é obrigatório.' })
-  id_cliente: string;
 } 

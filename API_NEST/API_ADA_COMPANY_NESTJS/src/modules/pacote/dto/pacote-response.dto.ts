@@ -1,18 +1,70 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TipoPacote } from './create-pacote.dto';
 
+export class ClienteResponseDto {
+  @ApiProperty({
+    description: 'ID do cliente',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  id_cliente: string;
+
+  @ApiProperty({
+    description: 'Nome do cliente',
+    example: 'João Silva'
+  })
+  nome_completo: string;
+
+  @ApiProperty({
+    description: 'CNPJ do cliente',
+    example: '12.345.678/0001-90'
+  })
+  cnpj: string;
+
+  @ApiProperty({
+    description: 'Email do cliente',
+    example: 'joao.silva@email.com'
+  })
+  email: string;
+}
+
+export class OrcamentoResponseDto {
+  @ApiProperty({
+    description: 'Código do orçamento',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  cod_orcamento: string;
+
+  @ApiProperty({
+    description: 'Valor do orçamento',
+    example: 1500.00
+  })
+  valor_orcamento: number;
+
+  @ApiProperty({
+    description: 'Data do orçamento',
+    example: '2024-03-21T10:00:00Z'
+  })
+  data_orcamento: Date;
+
+  @ApiProperty({
+    description: 'Data de validade do orçamento',
+    example: '2024-04-21T10:00:00Z'
+  })
+  data_validade: Date;
+}
+
 export class PacoteResponseDto {
   @ApiProperty({
     description: 'ID do pacote',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_pacote: number;
+  id_pacote: string;
 
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_cliente: number;
+  id_cliente: string;
 
   @ApiProperty({
     description: 'Tipo do pacote',
@@ -23,7 +75,7 @@ export class PacoteResponseDto {
 
   @ApiProperty({
     description: 'Valor base do pacote',
-    example: 1000.00
+    example: 1500.00
   })
   valor_base: number;
 
@@ -41,16 +93,14 @@ export class PacoteResponseDto {
 
   @ApiProperty({
     description: 'Cliente associado',
-    type: Object,
-    additionalProperties: true
+    type: ClienteResponseDto
   })
-  cliente: any;
+  cliente: ClienteResponseDto;
 
   @ApiProperty({
     description: 'Orçamento associado',
-    type: Object,
-    additionalProperties: true,
+    type: OrcamentoResponseDto,
     required: false
   })
-  orcamento?: any;
+  orcamento?: OrcamentoResponseDto;
 } 

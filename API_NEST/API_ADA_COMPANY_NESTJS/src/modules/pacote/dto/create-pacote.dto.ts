@@ -27,7 +27,7 @@ export class CreatePacoteDto {
 
   @ApiProperty({
     description: 'Valor base do pacote',
-    example: 1000.00
+    example: 1500.00
   })
   @IsNumber({}, { message: 'O valor base deve ser um número.' })
   @IsNotEmpty({ message: 'O valor base é obrigatório.' })

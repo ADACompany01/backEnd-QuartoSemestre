@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { InjectModel } from '@nestjs/sequelize';
 import { Orcamento } from '../../database/entities/orcamento.entity';
 import { Pacote } from '../../database/entities/pacote.entity';
-import { Cliente } from '../../database/entities/cliente.entity';
 import { Contrato } from '../../database/entities/contrato.entity';
 import { Op } from 'sequelize';
 
@@ -20,9 +19,9 @@ export class OrcamentoService {
       include: [
         {
           model: Pacote,
-          include: [Cliente]
+          //include: [Cliente] // Cliente relationship removed from Orcamento entity
         },
-        Cliente,
+        //Cliente, // Cliente relationship removed from Orcamento entity
         Contrato
       ]
     });
@@ -33,9 +32,9 @@ export class OrcamentoService {
       include: [
         {
           model: Pacote,
-          include: [Cliente]
+          //include: [Cliente] // Cliente relationship removed from Orcamento entity
         },
-        Cliente,
+        //Cliente, // Cliente relationship removed from Orcamento entity
         Contrato
       ]
     });
@@ -64,12 +63,6 @@ export class OrcamentoService {
       const pacote = await Pacote.findByPk(orcamentoData.id_pacote);
       if (!pacote) {
         throw new NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
-      }
-
-      // Verificar se o cliente existe
-      const cliente = await Cliente.findByPk(orcamentoData.id_cliente);
-      if (!cliente) {
-        throw new NotFoundException(`Cliente com ID ${orcamentoData.id_cliente} não encontrado`);
       }
 
       // Definir data do orçamento como agora
@@ -113,15 +106,9 @@ export class OrcamentoService {
           throw new NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
         }
       }
-
-      // Verificar se o cliente está sendo alterado
-      if (orcamentoData.id_cliente && orcamentoData.id_cliente !== orcamento.id_cliente) {
-        const cliente = await Cliente.findByPk(orcamentoData.id_cliente);
-        if (!cliente) {
-          throw new NotFoundException(`Cliente com ID ${orcamentoData.id_cliente} não encontrado`);
-        }
-      }
       
+      // A validação do cliente foi removida pois o id_cliente não está mais na entidade Orçamento
+
       await orcamento.update(orcamentoData);
       return this.findOne(id);
     } catch (error) {

@@ -111,34 +111,4 @@ export class AuthService {
       throw new UnauthorizedException('Falha na autenticação');
     }
   }
-
-  async login(email: string, senha: string) {
-    const usuario = await this.usuarioModel.findOne({
-      where: { email },
-    });
-
-    if (!usuario) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const payload = {
-      sub: usuario.id_usuario,
-      email: usuario.email,
-      nome: usuario.nome_completo,
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-      usuario: {
-        id: usuario.id_usuario,
-        nome: usuario.nome_completo,
-        email: usuario.email,
-      },
-    };
-  }
 }
