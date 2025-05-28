@@ -59,35 +59,32 @@ export class ContratoService {
 
   async create(createContratoDto: CreateContratoDto): Promise<Contrato> {
     try {
-      // Verificar se o orçamento existe e incluir o Pacote e Cliente
-      const orcamento = await this.orcamentoModel.findByPk(createContratoDto.cod_orcamento, {
-        include: [{
-          model: Pacote,
-          include: [Cliente]
-        }]
-      });
-      if (!orcamento || !orcamento.pacote || !orcamento.pacote.cliente) {
-        throw new NotFoundException(`Orçamento com código ${createContratoDto.cod_orcamento} não encontrado ou associado incorretamente ao pacote/cliente.`);
-      }
-
-      // Verificar se já existe um contrato para este orçamento
+      // Verificar se já existe um contrato para o mesmo orçamento
       const existingContrato = await this.contratoModel.findOne({
-        where: { cod_orcamento: createContratoDto.cod_orcamento }
+        where: {
+          cod_orcamento: createContratoDto.cod_orcamento
+        }
       });
 
       if (existingContrato) {
-        throw new ConflictException(`Já existe um contrato para este orçamento`);
+        throw new ConflictException('Já existe um contrato para este orçamento');
+      }
+
+      // Verificar se o orçamento existe
+      const orcamento = await Orcamento.findByPk(createContratoDto.cod_orcamento);
+      if (!orcamento) {
+        throw new NotFoundException(`Orçamento com ID ${createContratoDto.cod_orcamento} não encontrado`);
       }
 
       // Converter strings de data para objetos Date
       const contratoData = {
         ...createContratoDto,
         data_inicio: new Date(createContratoDto.data_inicio),
-        data_entrega: new Date(createContratoDto.data_entrega),
-        id_cliente: orcamento.pacote.cliente.id_cliente // Usar o id_cliente do cliente associado ao pacote do orçamento
+        data_entrega: new Date(createContratoDto.data_entrega)
       };
 
-      return this.contratoModel.create(contratoData);
+      const contrato = await this.contratoModel.create(contratoData);
+      return this.findOne(contrato.id_contrato);
     } catch (error) {
       this.logger.error(`Erro ao criar contrato: ${error.message}`, error.stack);
       throw error;

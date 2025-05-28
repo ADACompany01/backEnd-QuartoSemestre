@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, HttpException, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException, UseGuards } from '@nestjs/common';
 import { FuncionarioService } from './funcionario.service';
 import { Public } from '../auth/decorators/public.decorator';
 import { CreateFuncionarioDto } from './dto/create-funcionario.dto';
 import { UpdateFuncionarioDto } from './dto/update-funcionario.dto';
 import { FuncionarioResponseDto } from './dto/funcionario-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
+import { SelfAccessGuard } from '../auth/guards/self-access.guard';
 
 @ApiTags('funcionarios')
 @ApiBearerAuth()
@@ -14,44 +16,8 @@ export class FuncionarioController {
   
   constructor(private readonly funcionarioService: FuncionarioService) {}
 
-  @ApiOperation({ summary: 'Listar todos os funcionários' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Lista de funcionários retornada com sucesso',
-    type: FuncionarioResponseDto,
-    isArray: true
-  })
-  @Get()
-  async findAll() {
-    const funcionarios = await this.funcionarioService.findAll();
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Funcionários encontrados com sucesso',
-      data: funcionarios.map(f => f.toJSON()),
-    };
-  }
-
-  @ApiOperation({ summary: 'Buscar funcionário por ID' })
-  @ApiParam({ name: 'id', description: 'ID do funcionário' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Funcionário encontrado com sucesso',
-    type: FuncionarioResponseDto
-  })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Funcionário não encontrado'
-  })
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const funcionario = await this.funcionarioService.findOne(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Funcionário encontrado com sucesso',
-      data: funcionario.toJSON(),
-    };
-  }
-
+  @Public()
+  @Post()
   @ApiOperation({ summary: 'Criar um novo funcionário' })
   @ApiResponse({ 
     status: 201, 
@@ -66,8 +32,6 @@ export class FuncionarioController {
     status: 500, 
     description: 'Erro interno do servidor'
   })
-  @Public()
-  @Post()
   async create(@Body() createFuncionarioDto: CreateFuncionarioDto) {
     try {
       this.logger.log(`Tentando criar funcionário: ${JSON.stringify(createFuncionarioDto)}`);
@@ -105,6 +69,48 @@ export class FuncionarioController {
     }
   }
 
+  @UseGuards(FuncionarioGuard)
+  @Get()
+  @ApiOperation({ summary: 'Listar todos os funcionários' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de funcionários retornada com sucesso',
+    type: FuncionarioResponseDto,
+    isArray: true
+  })
+  async findAll() {
+    const funcionarios = await this.funcionarioService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Funcionários encontrados com sucesso',
+      data: funcionarios.map(f => f.toJSON()),
+    };
+  }
+
+  @UseGuards(FuncionarioGuard)
+  @Get(':id')
+  @ApiOperation({ summary: 'Buscar funcionário por ID' })
+  @ApiParam({ name: 'id', description: 'ID do funcionário' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Funcionário encontrado com sucesso',
+    type: FuncionarioResponseDto
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Funcionário não encontrado'
+  })
+  async findOne(@Param('id') id: string) {
+    const funcionario = await this.funcionarioService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Funcionário encontrado com sucesso',
+      data: funcionario.toJSON(),
+    };
+  }
+
+  @UseGuards(FuncionarioGuard, SelfAccessGuard)
+  @Put(':id')
   @ApiOperation({ summary: 'Atualizar um funcionário' })
   @ApiParam({ name: 'id', description: 'ID do funcionário' })
   @ApiResponse({ 
@@ -116,7 +122,6 @@ export class FuncionarioController {
     status: 404, 
     description: 'Funcionário não encontrado'
   })
-  @Patch(':id')
   async update(@Param('id') id: string, @Body() updateFuncionarioDto: UpdateFuncionarioDto) {
     try {
       const funcionario = await this.funcionarioService.update(id, updateFuncionarioDto);
@@ -140,6 +145,8 @@ export class FuncionarioController {
     }
   }
 
+  @UseGuards(FuncionarioGuard, SelfAccessGuard)
+  @Delete(':id')
   @ApiOperation({ summary: 'Remover um funcionário' })
   @ApiParam({ name: 'id', description: 'ID do funcionário' })
   @ApiResponse({ 
@@ -150,7 +157,6 @@ export class FuncionarioController {
     status: 404, 
     description: 'Funcionário não encontrado'
   })
-  @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
       await this.funcionarioService.remove(id);

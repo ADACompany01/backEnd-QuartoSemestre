@@ -4,7 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('contratos', {
-      cod_contrato: {
+      id_contrato: {
         type: Sequelize.UUID,
         primaryKey: true,
         allowNull: false,
@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      data_fim: {
+      data_entrega: {
         type: Sequelize.DATE,
         allowNull: false,
       },
@@ -25,7 +25,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      id_orcamento: {
+      cod_orcamento: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {

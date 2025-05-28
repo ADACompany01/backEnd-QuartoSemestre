@@ -6,11 +6,13 @@ import { ClienteController } from './cliente.controller';
 import { ClienteService } from './cliente.service';
 import { DatabaseModule } from '../../database/database.module';
 import { Usuario } from '../../database/entities/usuario.entity';
+import { FuncionarioModule } from '../funcionario/funcionario.module';
 
 @Module({
   imports: [
     DatabaseModule,
-    SequelizeModule.forFeature([Cliente, Usuario])
+    SequelizeModule.forFeature([Cliente, Usuario]),
+    FuncionarioModule
   ],
   controllers: [ClienteController],
   providers: [

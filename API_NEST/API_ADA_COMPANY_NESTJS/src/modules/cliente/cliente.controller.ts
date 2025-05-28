@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException, UseGuards } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
 import { Public } from '../auth/decorators/public.decorator';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ClienteResponseDto } from './dto/cliente-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { SelfAccessGuard } from '../auth/guards/self-access.guard';
+import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
 
 @ApiTags('clientes')
 @ApiBearerAuth()
@@ -13,44 +15,6 @@ export class ClienteController {
   private readonly logger = new Logger(ClienteController.name);
   
   constructor(private readonly clienteService: ClienteService) {}
-
-  @ApiOperation({ summary: 'Listar todos os clientes' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Lista de clientes retornada com sucesso',
-    type: ClienteResponseDto,
-    isArray: true
-  })
-  @Get()
-  async findAll() {
-    const clientes = await this.clienteService.findAll();
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Clientes encontrados com sucesso',
-      data: clientes,
-    };
-  }
-
-  @ApiOperation({ summary: 'Buscar cliente por ID' })
-  @ApiParam({ name: 'id', description: 'ID do cliente' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Cliente encontrado com sucesso',
-    type: ClienteResponseDto
-  })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Cliente não encontrado'
-  })
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const cliente = await this.clienteService.findOne(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Cliente encontrado com sucesso',
-      data: cliente,
-    };
-  }
 
   @Public()
   @Post('cadastro')
@@ -95,6 +59,48 @@ export class ClienteController {
     }
   }
 
+  @UseGuards(FuncionarioGuard)
+  @Get()
+  @ApiOperation({ summary: 'Listar todos os clientes' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de clientes retornada com sucesso',
+    type: ClienteResponseDto,
+    isArray: true
+  })
+  async findAll() {
+    const clientes = await this.clienteService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Clientes encontrados com sucesso',
+      data: clientes,
+    };
+  }
+
+  @UseGuards(FuncionarioGuard)
+  @Get(':id')
+  @ApiOperation({ summary: 'Buscar cliente por ID' })
+  @ApiParam({ name: 'id', description: 'ID do cliente' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Cliente encontrado com sucesso',
+    type: ClienteResponseDto
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Cliente não encontrado'
+  })
+  async findOne(@Param('id') id: string) {
+    const cliente = await this.clienteService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Cliente encontrado com sucesso',
+      data: cliente,
+    };
+  }
+
+  @UseGuards(SelfAccessGuard)
+  @Put(':id')
   @ApiOperation({ summary: 'Atualizar um cliente' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
@@ -106,15 +112,16 @@ export class ClienteController {
     status: 404, 
     description: 'Cliente não encontrado'
   })
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateClienteDto: UpdateClienteDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateClienteDto: UpdateClienteDto,
+  ) {
     try {
-      const clienteAtualizado = await this.clienteService.update(id, updateClienteDto);
-      
+      const cliente = await this.clienteService.update(id, updateClienteDto);
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente atualizado com sucesso',
-        data: clienteAtualizado,
+        data: cliente,
       };
     } catch (error) {
       this.logger.error(`Erro ao atualizar cliente: ${error.message}`, error.stack);
@@ -131,6 +138,8 @@ export class ClienteController {
     }
   }
 
+  @UseGuards(FuncionarioGuard)
+  @Delete(':id')
   @ApiOperation({ summary: 'Remover um cliente' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
@@ -141,7 +150,6 @@ export class ClienteController {
     status: 404, 
     description: 'Cliente não encontrado'
   })
-  @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
       await this.clienteService.remove(id);

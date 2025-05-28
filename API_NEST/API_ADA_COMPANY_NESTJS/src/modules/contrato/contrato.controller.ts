@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { ContratoService } from './contrato.service';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
-import { ContratoResponseDto } from './dto/contrato-response.dto';
+import { ContratoResponseDto } from '../../shared/dto/common-response.dto';
+import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
 
 @ApiTags('contratos')
 @ApiBearerAuth()
 @Controller('contratos')
+@UseGuards(FuncionarioGuard)
 export class ContratoController {
   constructor(private readonly contratoService: ContratoService) {}
 

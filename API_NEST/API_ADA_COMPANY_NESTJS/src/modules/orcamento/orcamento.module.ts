@@ -7,6 +7,7 @@ import { OrcamentoService } from './orcamento.service';
 import { ClienteModule } from '../cliente/cliente.module';
 import { PacoteModule } from '../pacote/pacote.module';
 import { DatabaseModule } from '../../database/database.module';
+import { FuncionarioModule } from '../funcionario/funcionario.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DatabaseModule } from '../../database/database.module';
     SequelizeModule.forFeature([Orcamento]),
     ClienteModule,
     PacoteModule,
+    FuncionarioModule,
   ],
   controllers: [OrcamentoController],
   providers: [

@@ -12,6 +12,7 @@ import { Usuario } from '../../database/entities/usuario.entity';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly jwtSecret = 'ada_company_secret_key_2025';
   
   constructor(
     @InjectModel(Usuario)
@@ -33,82 +34,91 @@ export class AuthService {
   }
 
   async loginFuncionario(loginDto: FuncionarioLoginDto) {
-    try {
-      const funcionario = await this.funcionarioService.findByEmailWithoutException(loginDto.email);
-      
-      if (!funcionario) {
-        throw new UnauthorizedException('Email ou senha inválidos');
-      }
-
-      const payload = { 
-        id_usuario: funcionario.id_usuario,
-        email: funcionario.email,
-        nome_completo: funcionario.nome_completo,
-        tipo_usuario: 'funcionario'
-      };
-
-      const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
-      
-      return {
-        accessToken: this.jwtService.sign(payload, {
-          secret: secret,
-          expiresIn: '1h',
-        }),
-        tipo: 'funcionario',
-        usuario: {
-          id_usuario: funcionario.id_usuario,
-          nome_completo: funcionario.nome_completo,
-          email: funcionario.email
-        }
-      };
-    } catch (error) {
-      this.logger.error(`Erro no login de funcionário: ${error.message}`, error.stack);
-      
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      
-      throw new UnauthorizedException('Falha na autenticação');
+    const funcionario = await this.funcionarioService.findByEmail(loginDto.email);
+    
+    if (!funcionario) {
+      throw new UnauthorizedException('Credenciais inválidas');
     }
+
+    const senhaValida = await bcrypt.compare(loginDto.senha, funcionario.usuario.senha);
+    
+    if (!senhaValida) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    const payload = { 
+      id_usuario: funcionario.id_usuario,
+      email: funcionario.email,
+      tipo_usuario: 'funcionario'
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload, {
+        secret: this.jwtSecret,
+        expiresIn: '1h'
+      }),
+      user: {
+        id: funcionario.id_usuario,
+        nome: funcionario.nome_completo,
+        email: funcionario.email,
+        tipo: 'funcionario'
+      }
+    };
   }
 
   async loginCliente(loginDto: ClienteLoginDto) {
-    try {
-      const cliente = await this.clienteService.findByEmailWithoutException(loginDto.email);
-      
-      if (!cliente) {
-        throw new UnauthorizedException('Email ou senha inválidos');
-      }
-
-      const payload = { 
-        id_usuario: cliente.id_usuario,
-        email: cliente.email,
-        nome_completo: cliente.nome_completo,
-        tipo_usuario: 'cliente'
-      };
-
-      const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
-      
-      return {
-        accessToken: this.jwtService.sign(payload, {
-          secret: secret,
-          expiresIn: '1h',
-        }),
-        tipo: 'cliente',
-        usuario: {
-          id_usuario: cliente.id_usuario,
-          nome_completo: cliente.nome_completo,
-          email: cliente.email
-        }
-      };
-    } catch (error) {
-      this.logger.error(`Erro no login de cliente: ${error.message}`, error.stack);
-      
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      
-      throw new UnauthorizedException('Falha na autenticação');
+    const cliente = await this.clienteService.findByEmail(loginDto.email);
+    
+    if (!cliente) {
+      throw new UnauthorizedException('Credenciais inválidas');
     }
+
+    const senhaValida = await bcrypt.compare(loginDto.senha, cliente.usuario.senha);
+    
+    if (!senhaValida) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    const payload = { 
+      id_usuario: cliente.id_usuario,
+      email: cliente.email,
+      tipo_usuario: 'cliente'
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload, {
+        secret: this.jwtSecret,
+        expiresIn: '1h'
+      }),
+      user: {
+        id: cliente.id_usuario,
+        nome: cliente.nome_completo,
+        email: cliente.email,
+        tipo: 'cliente'
+      }
+    };
+  }
+
+  async validateUser(payload: any) {
+    if (payload.tipo_usuario === 'funcionario') {
+      const funcionario = await this.funcionarioService.findByEmail(payload.email);
+      if (funcionario) {
+        return {
+          id_usuario: funcionario.id_usuario,
+          email: funcionario.email,
+          tipo_usuario: 'funcionario'
+        };
+      }
+    } else if (payload.tipo_usuario === 'cliente') {
+      const cliente = await this.clienteService.findByEmail(payload.email);
+      if (cliente) {
+        return {
+          id_usuario: cliente.id_usuario,
+          email: cliente.email,
+          tipo_usuario: 'cliente'
+        };
+      }
+    }
+    return null;
   }
 }

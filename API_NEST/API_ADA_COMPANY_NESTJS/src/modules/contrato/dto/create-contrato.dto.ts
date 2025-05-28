@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsDate, IsEnum, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsDateString, IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum StatusContrato {
@@ -38,15 +38,15 @@ export class CreateContratoDto {
     description: 'Data de início do contrato',
     example: '2024-05-01'
   })
-  @IsDate({ message: 'A data de início deve ser uma data válida.' })
+  @IsDateString({}, { message: 'A data de início deve ser uma data válida no formato ISO (YYYY-MM-DD).' })
   @IsNotEmpty({ message: 'A data de início é obrigatória.' })
-  data_inicio: Date;
+  data_inicio: string;
 
   @ApiProperty({
     description: 'Data de entrega do contrato',
     example: '2024-05-30'
   })
-  @IsDate({ message: 'A data de entrega deve ser uma data válida.' })
+  @IsDateString({}, { message: 'A data de entrega deve ser uma data válida no formato ISO (YYYY-MM-DD).' })
   @IsNotEmpty({ message: 'A data de entrega é obrigatória.' })
-  data_entrega: Date;
+  data_entrega: string;
 } 
