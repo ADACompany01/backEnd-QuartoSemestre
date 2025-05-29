@@ -80,7 +80,7 @@ export class AuthService {
     }
 
     const payload = { 
-      id_usuario: cliente.id_usuario,
+      id_usuario: String(cliente.id_usuario),
       email: cliente.email,
       tipo_usuario: 'cliente'
     };
@@ -91,7 +91,7 @@ export class AuthService {
         expiresIn: '1h'
       }),
       user: {
-        id: cliente.id_usuario,
+        id: String(cliente.id_usuario),
         nome: cliente.nome_completo,
         email: cliente.email,
         tipo: 'cliente'
@@ -104,7 +104,7 @@ export class AuthService {
       const funcionario = await this.funcionarioService.findByEmail(payload.email);
       if (funcionario) {
         return {
-          id_usuario: funcionario.id_usuario,
+          id_usuario: String(funcionario.id_usuario),
           email: funcionario.email,
           tipo_usuario: 'funcionario'
         };
@@ -113,7 +113,7 @@ export class AuthService {
       const cliente = await this.clienteService.findByEmail(payload.email);
       if (cliente) {
         return {
-          id_usuario: cliente.id_usuario,
+          id_usuario: String(cliente.id_usuario),
           email: cliente.email,
           tipo_usuario: 'cliente'
         };

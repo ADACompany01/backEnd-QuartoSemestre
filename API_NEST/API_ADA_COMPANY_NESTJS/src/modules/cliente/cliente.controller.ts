@@ -61,7 +61,7 @@ export class ClienteController {
 
   @UseGuards(FuncionarioGuard)
   @Get()
-  @ApiOperation({ summary: 'Listar todos os clientes' })
+  @ApiOperation({ summary: 'Listar todos os clientes (apenas funcionários)' })
   @ApiResponse({ 
     status: 200, 
     description: 'Lista de clientes retornada com sucesso',
@@ -79,7 +79,7 @@ export class ClienteController {
 
   @UseGuards(FuncionarioGuard)
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar cliente por ID' })
+  @ApiOperation({ summary: 'Buscar cliente por ID (apenas funcionários)' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
     status: 200, 
@@ -101,7 +101,7 @@ export class ClienteController {
 
   @UseGuards(SelfAccessGuard)
   @Put(':id')
-  @ApiOperation({ summary: 'Atualizar um cliente' })
+  @ApiOperation({ summary: 'Atualizar dados do cliente (cliente próprio ou funcionário)' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
     status: 200, 
@@ -140,7 +140,7 @@ export class ClienteController {
 
   @UseGuards(FuncionarioGuard)
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover um cliente' })
+  @ApiOperation({ summary: 'Remover um cliente (apenas funcionários)' })
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
     status: 200, 
