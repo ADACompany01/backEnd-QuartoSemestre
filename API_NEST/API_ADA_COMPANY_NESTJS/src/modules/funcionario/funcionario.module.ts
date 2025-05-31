@@ -1,18 +1,58 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { FuncionarioService } from './funcionario.service';
-import { FuncionarioController } from './funcionario.controller';
-import { Funcionario } from '../../database/entities/funcionario.entity';
-import { Usuario } from '../../database/entities/usuario.entity';
-import { ClienteModule } from '../cliente/cliente.module';
+import { Funcionario } from '../../infrastructure/database/entities/funcionario.entity';
+import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
+import { FuncionarioController } from '../../interfaces/http/controllers/funcionario.controller';
+import { FuncionarioRepositoryProvider, FUNCIONARIO_REPOSITORY } from '../../infrastructure/providers/funcionario.provider';
+import { CreateFuncionarioUseCase } from '../../application/use-cases/funcionario/create-funcionario.use-case';
+import { ListFuncionariosUseCase } from '../../application/use-cases/funcionario/list-funcionarios.use-case';
+import { GetFuncionarioUseCase } from '../../application/use-cases/funcionario/get-funcionario.use-case';
+import { UpdateFuncionarioUseCase } from '../../application/use-cases/funcionario/update-funcionario.use-case';
+import { DeleteFuncionarioUseCase } from '../../application/use-cases/funcionario/delete-funcionario.use-case';
+import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Funcionario, Usuario]),
-    ClienteModule
   ],
   controllers: [FuncionarioController],
-  providers: [FuncionarioService],
-  exports: [FuncionarioService],
+  providers: [
+    FuncionarioRepositoryProvider,
+    UsuarioRepository,
+    {
+      provide: CreateFuncionarioUseCase,
+      useFactory: (repo) => new CreateFuncionarioUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+    {
+      provide: ListFuncionariosUseCase,
+      useFactory: (repo) => new ListFuncionariosUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+    {
+      provide: GetFuncionarioUseCase,
+      useFactory: (repo) => new GetFuncionarioUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+    {
+      provide: UpdateFuncionarioUseCase,
+      useFactory: (repo) => new UpdateFuncionarioUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+    {
+      provide: DeleteFuncionarioUseCase,
+      useFactory: (repo) => new DeleteFuncionarioUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+  ],
+  exports: [
+    CreateFuncionarioUseCase,
+    ListFuncionariosUseCase,
+    GetFuncionarioUseCase,
+    UpdateFuncionarioUseCase,
+    DeleteFuncionarioUseCase,
+    FUNCIONARIO_REPOSITORY,
+    UsuarioRepository
+  ]
 })
 export class FuncionarioModule {}

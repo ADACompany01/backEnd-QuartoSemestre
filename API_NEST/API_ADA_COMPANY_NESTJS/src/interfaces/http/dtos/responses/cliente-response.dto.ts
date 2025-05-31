@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ClienteResponseDto {
   @ApiProperty({
     description: 'ID do cliente',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_cliente: number;
+  id_cliente: string;
 
   @ApiProperty({
     description: 'Nome do cliente',
@@ -33,7 +33,7 @@ export class ClienteResponseDto {
 
   @ApiProperty({
     description: 'ID do usuário associado',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_usuario: number;
+  id_usuario: string;
 } 

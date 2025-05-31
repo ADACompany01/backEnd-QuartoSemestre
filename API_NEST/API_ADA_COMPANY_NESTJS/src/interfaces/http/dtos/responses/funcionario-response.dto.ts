@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 class UsuarioDto {
   @ApiProperty({
     description: 'ID do usuário',
-    example: 3
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_usuario: number;
+  id_usuario: string;
 
   @ApiProperty({
     description: 'Nome completo do usuário',
@@ -29,9 +29,9 @@ class UsuarioDto {
 export class FuncionarioResponseDto {
   @ApiProperty({
     description: 'ID do funcionário',
-    example: 1
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_funcionario: number;
+  id_funcionario: string;
 
   @ApiProperty({
     description: 'Nome completo do funcionário',
@@ -53,9 +53,9 @@ export class FuncionarioResponseDto {
 
   @ApiProperty({
     description: 'ID do usuário associado',
-    example: 3
+    example: '123e4567-e89b-12d3-a456-426614174000'
   })
-  id_usuario: number;
+  id_usuario: string;
 
   @ApiProperty({
     description: 'Usuário associado',
