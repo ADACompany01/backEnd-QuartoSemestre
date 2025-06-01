@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Cliente } from '../entities/cliente.entity';
 import { Usuario } from '../entities/usuario.entity';
 import { ClienteRepository } from '../../../domain/repositories/cliente.repository.interface';
-import { Cliente as ClienteModel } from '../../../domain/models/cliente.model';
 
 @Injectable()
 export class ClienteRepositoryImpl implements ClienteRepository {
@@ -12,11 +11,10 @@ export class ClienteRepositoryImpl implements ClienteRepository {
     private clienteModel: typeof Cliente,
   ) {}
 
-  async findAll(): Promise<ClienteModel[]> {
-    const clientes = await this.clienteModel.findAll({
+  async findAll(): Promise<Cliente[]> {
+    return this.clienteModel.findAll({
       include: [Usuario]
     });
-    return clientes.map(c => c.toJSON() as ClienteModel);
   }
 
   async findOne(id: string): Promise<Cliente | null> {
@@ -25,17 +23,15 @@ export class ClienteRepositoryImpl implements ClienteRepository {
     });
   }
 
-  async create(cliente: ClienteModel): Promise<ClienteModel> {
-    const created = await this.clienteModel.create(cliente as any);
-    return created.toJSON() as ClienteModel;
+  async create(cliente: Partial<Cliente>): Promise<Cliente> {
+    return this.clienteModel.create(cliente);
   }
 
   async update(id: string, data: Partial<Cliente>): Promise<[number, Cliente[]]> {
-    const [affectedCount, affectedRows] = await this.clienteModel.update(data, {
+    return this.clienteModel.update(data, {
       where: { id_cliente: id },
       returning: true,
     });
-    return [affectedCount, affectedRows];
   }
 
   async delete(id: string): Promise<number> {
@@ -58,8 +54,7 @@ export class ClienteRepositoryImpl implements ClienteRepository {
     });
   }
 
-  async findById(id: string): Promise<ClienteModel | null> {
-    const cliente = await this.clienteModel.findByPk(id);
-    return cliente ? (cliente.toJSON() as ClienteModel) : null;
+  async findById(id: string): Promise<Cliente | null> {
+    return this.clienteModel.findByPk(id, { include: [Usuario] });
   }
 } 

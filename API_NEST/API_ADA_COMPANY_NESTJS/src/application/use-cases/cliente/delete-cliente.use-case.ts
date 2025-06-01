@@ -1,9 +1,9 @@
-import { ClienteRepository } from '../../../domain/repositories/cliente.repository.interface';
+import { ClienteRepositoryImpl } from '../../../infrastructure/database/repositories/cliente.repository';
 
 export class DeleteClienteUseCase {
-  constructor(private readonly clienteRepository: ClienteRepository) {}
+  constructor(private readonly clienteRepository: ClienteRepositoryImpl) {}
 
-  async execute(id: string): Promise<number> {
-    return this.clienteRepository.delete(id);
+  async execute(id: string): Promise<void> {
+    await this.clienteRepository.delete(id);
   }
 } 

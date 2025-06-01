@@ -1,10 +1,15 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { FuncionarioService } from '../../funcionario/funcionario.service';
+import { Inject } from '@nestjs/common';
+import { FUNCIONARIO_REPOSITORY } from '../../../infrastructure/providers/funcionario.provider';
+import { FuncionarioRepository } from '../../../domain/repositories/funcionario.repository.interface';
 
 @Injectable()
 export class FuncionarioGuard implements CanActivate {
-  constructor(private readonly funcionarioService: FuncionarioService) {}
+  constructor(
+    @Inject(FUNCIONARIO_REPOSITORY)
+    private readonly funcionarioRepository: FuncionarioRepository,
+  ) {}
 
   async canActivate(
     context: ExecutionContext,
@@ -17,7 +22,7 @@ export class FuncionarioGuard implements CanActivate {
     }
 
     try {
-      const funcionario = await this.funcionarioService.findByEmail(user.email);
+      const funcionario = await this.funcionarioRepository.findByEmail(user.email);
       if (!funcionario) {
         throw new UnauthorizedException('Acesso permitido apenas para funcionários');
       }

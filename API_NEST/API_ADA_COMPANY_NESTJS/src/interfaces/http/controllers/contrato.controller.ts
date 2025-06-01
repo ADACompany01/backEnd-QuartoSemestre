@@ -1,17 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus, UseGuards, HttpException, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { ContratoService } from './contrato.service';
-import { CreateContratoDto } from './dto/create-contrato.dto';
-import { UpdateContratoDto } from './dto/update-contrato.dto';
-import { ContratoResponseDto } from '../../shared/dto/common-response.dto';
-import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
+import { CreateContratoDto } from '../../../interfaces/http/dtos/requests/create-contrato.dto';
+import { UpdateContratoDto } from '../../../interfaces/http/dtos/requests/update-contrato.dto';
+import { ContratoResponseDto } from '../../../interfaces/http/dtos/responses/contrato-response.dto';
+import { FuncionarioGuard } from '../../../modules/auth/guards/funcionario.guard';
+import { CreateContratoUseCase } from '../../../application/use-cases/contrato/create-contrato.use-case';
+import { ListContratosUseCase } from '../../../application/use-cases/contrato/list-contratos.use-case';
+import { GetContratoUseCase } from '../../../application/use-cases/contrato/get-contrato.use-case';
+import { UpdateContratoUseCase } from '../../../application/use-cases/contrato/update-contrato.use-case';
+import { DeleteContratoUseCase } from '../../../application/use-cases/contrato/delete-contrato.use-case';
+import { Contrato as ContratoModel } from '../../../domain/models/contrato.model';
 
 @ApiTags('contratos')
 @ApiBearerAuth()
 @Controller('contratos')
 @UseGuards(FuncionarioGuard)
 export class ContratoController {
-  constructor(private readonly contratoService: ContratoService) {}
+  private readonly logger = new Logger(ContratoController.name);
+
+  constructor(
+    private readonly createContratoUseCase: CreateContratoUseCase,
+    private readonly listContratosUseCase: ListContratosUseCase,
+    private readonly getContratoUseCase: GetContratoUseCase,
+    private readonly updateContratoUseCase: UpdateContratoUseCase,
+    private readonly deleteContratoUseCase: DeleteContratoUseCase,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar um novo contrato' })
@@ -32,8 +45,20 @@ export class ContratoController {
     status: HttpStatus.UNAUTHORIZED, 
     description: 'Token não fornecido ou inválido' 
   })
-  create(@Body() createContratoDto: CreateContratoDto) {
-    return this.contratoService.create(createContratoDto);
+  async create(@Body() createContratoDto: CreateContratoDto) {
+     try {
+      const contrato = await this.createContratoUseCase.execute(createContratoDto);
+      return this.toContratoResponseDto(contrato);
+     } catch (error) {
+        this.logger.error(`Erro ao criar contrato: ${error.message}`, error.stack);
+        // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+        // como BadRequestException ou ConflictException
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao criar contrato: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
   }
 
   @Get()
@@ -47,8 +72,18 @@ export class ContratoController {
     status: HttpStatus.UNAUTHORIZED, 
     description: 'Token não fornecido ou inválido' 
   })
-  findAll() {
-    return this.contratoService.findAll();
+  async findAll() {
+     try {
+      const contratos = await this.listContratosUseCase.execute();
+      return contratos.map(contrato => this.toContratoResponseDto(contrato));
+     } catch (error) {
+        this.logger.error(`Erro ao listar contratos: ${error.message}`, error.stack);
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao listar contratos: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
   }
 
   @Get(':id')
@@ -68,7 +103,25 @@ export class ContratoController {
     description: 'Token não fornecido ou inválido' 
   })
   async findOne(@Param('id') id: string) {
-    return this.contratoService.findOne(id);
+    try {
+      const contrato = await this.getContratoUseCase.execute(id);
+      if (!contrato) {
+        throw new HttpException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Contrato não encontrado',
+        }, HttpStatus.NOT_FOUND);
+      }
+      return this.toContratoResponseDto(contrato);
+    } catch (error) {
+       this.logger.error(`Erro ao buscar contrato por ID ${id}: ${error.message}`, error.stack);
+        // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+        // como NotFoundException
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao buscar contrato: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Patch(':id')
@@ -99,7 +152,19 @@ export class ContratoController {
     @Param('id') id: string,
     @Body() updateContratoDto: UpdateContratoDto,
   ) {
-    return this.contratoService.update(id, updateContratoDto);
+    try {
+      // Assumindo que o use-case de update retorna o contrato atualizado
+      const updatedContrato = await this.updateContratoUseCase.execute(id, updateContratoDto);
+      return this.toContratoResponseDto(updatedContrato);
+    } catch (error) {
+       this.logger.error(`Erro ao atualizar contrato com ID ${id}: ${error.message}`, error.stack);
+       // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao atualizar contrato: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
@@ -118,6 +183,34 @@ export class ContratoController {
     description: 'Token não fornecido ou inválido' 
   })
   async remove(@Param('id') id: string) {
-    return this.contratoService.remove(id);
+     try {
+      await this.deleteContratoUseCase.execute(id);
+      return { 
+        statusCode: HttpStatus.OK,
+        message: 'Contrato removido com sucesso' 
+      };
+     } catch (error) {
+       this.logger.error(`Erro ao remover contrato com ID ${id}: ${error.message}`, error.stack);
+        // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+        // como NotFoundException
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao remover contrato: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+  }
+
+   private toContratoResponseDto(contrato: ContratoModel): ContratoResponseDto {
+    return {
+      cod_contrato: contrato.id_contrato, // Mapear id_contrato do model para cod_contrato do DTO
+      id_orcamento: contrato.cod_orcamento, // Mapear cod_orcamento do model para id_orcamento do DTO
+      data_inicio: contrato.data_inicio,
+      data_fim: contrato.data_entrega, // Mapear data_entrega do model para data_fim do DTO
+      valor_total: contrato.valor_contrato, // Mapear valor_contrato do model para valor_total do DTO
+      status: contrato.status_contrato,
+      createdAt: (contrato as any).createdAt,
+      updatedAt: (contrato as any).updatedAt,
+    };
   }
 } 

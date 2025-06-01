@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException, UseGuards } from '@nestjs/common';
-import { Public } from '../../../modules/auth/decorators/public.decorator';
+import { Public } from '../../http/decorators/public.decorator';
 import { CreateClienteDto } from '../dtos/requests/create-cliente.dto';
 import { UpdateClienteDto } from '../dtos/requests/update-cliente.dto';
 import { ClienteResponseDto } from '../dtos/responses/cliente-response.dto';
@@ -11,9 +11,6 @@ import { ListClientesUseCase } from '../../../application/use-cases/cliente/list
 import { GetClienteUseCase } from '../../../application/use-cases/cliente/get-cliente.use-case';
 import { UpdateClienteUseCase } from '../../../application/use-cases/cliente/update-cliente.use-case';
 import { DeleteClienteUseCase } from '../../../application/use-cases/cliente/delete-cliente.use-case';
-import { Cliente } from '../../../domain/models/cliente.model';
-import { UsuarioRepository } from '../../../infrastructure/database/repositories/usuario.repository';
-import { Usuario } from '../../../domain/models/usuario.model';
 
 @ApiTags('clientes')
 @ApiBearerAuth()
@@ -27,7 +24,6 @@ export class ClienteController {
     private readonly getClienteUseCase: GetClienteUseCase,
     private readonly updateClienteUseCase: UpdateClienteUseCase,
     private readonly deleteClienteUseCase: DeleteClienteUseCase,
-    private readonly usuarioRepository: UsuarioRepository,
   ) {}
 
   @Public()
@@ -48,19 +44,8 @@ export class ClienteController {
   })
   async cadastro(@Body() createClienteDto: CreateClienteDto) {
     try {
-      // Cria o usuário primeiro
-      const usuario: Partial<Usuario> = {
-        nome_completo: createClienteDto.nome_completo,
-        telefone: createClienteDto.telefone,
-        email: createClienteDto.email,
-        senha: createClienteDto.senha,
-      };
-      const usuarioCriado = await this.usuarioRepository.create(usuario);
-      const id_usuario = usuarioCriado.id_usuario;
-      // Cria o cliente
-      const clienteModel = toClienteModelFromCreateDto(createClienteDto, id_usuario);
-      const cliente = await this.createClienteUseCase.execute(clienteModel);
-      return toClienteResponseDto(cliente);
+      const cliente = await this.createClienteUseCase.execute(createClienteDto);
+      return this.toClienteResponseDto(cliente);
     } catch (error) {
       this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
       throw new HttpException({
@@ -69,11 +54,6 @@ export class ClienteController {
         error: error.name,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  @Post()
-  async create(@Body() clienteDto: Cliente) {
-    return this.createClienteUseCase.execute(clienteDto);
   }
 
   @UseGuards(FuncionarioGuard)
@@ -90,7 +70,7 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Clientes encontrados com sucesso',
-      data: toClienteResponseDtoList(clientes),
+      data: clientes.map(this.toClienteResponseDto),
     };
   }
 
@@ -118,7 +98,7 @@ export class ClienteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Cliente encontrado com sucesso',
-      data: toClienteResponseDto(cliente),
+      data: this.toClienteResponseDto(cliente),
     };
   }
 
@@ -140,26 +120,11 @@ export class ClienteController {
     @Body() updateClienteDto: UpdateClienteDto,
   ) {
     try {
-      // Aqui você pode buscar o cliente para obter o id_usuario, se necessário
-      const cliente = await this.getClienteUseCase.execute(id);
-      if (!cliente) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Cliente não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
-      const clienteModel = toClienteModelFromUpdateDto(updateClienteDto, id, cliente.id_usuario);
-      const [affectedCount, affectedRows] = await this.updateClienteUseCase.execute(id, clienteModel);
-      if (affectedCount === 0) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Cliente não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
+      const cliente = await this.updateClienteUseCase.execute(id, updateClienteDto);
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente atualizado com sucesso',
-        data: toClienteResponseDtoList(affectedRows),
+        data: this.toClienteResponseDto(cliente),
       };
     } catch (error) {
       this.logger.error(`Erro ao atualizar cliente: ${error.message}`, error.stack);
@@ -177,21 +142,15 @@ export class ClienteController {
   @ApiParam({ name: 'id', description: 'ID do cliente' })
   @ApiResponse({ 
     status: 200, 
-    description: 'Cliente removido com sucesso'
+    description: 'Cliente removido com sucesso' 
   })
   @ApiResponse({ 
     status: 404, 
-    description: 'Cliente não encontrado'
+    description: 'Cliente não encontrado' 
   })
   async remove(@Param('id') id: string) {
     try {
-      const deleted = await this.deleteClienteUseCase.execute(id);
-      if (deleted === 0) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Cliente não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
+      await this.deleteClienteUseCase.execute(id);
       return {
         statusCode: HttpStatus.OK,
         message: 'Cliente removido com sucesso',
@@ -205,41 +164,17 @@ export class ClienteController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-}
 
-function toClienteModelFromCreateDto(dto: CreateClienteDto, id_usuario: string): Cliente {
-  return {
-    id_cliente: '', // será gerado pelo banco
-    nome_completo: dto.nome_completo,
-    cnpj: dto.cnpj,
-    telefone: dto.telefone,
-    email: dto.email,
-    id_usuario,
-  };
-}
-
-function toClienteModelFromUpdateDto(dto: UpdateClienteDto, id_cliente: string, id_usuario: string): Cliente {
-  return {
-    id_cliente,
-    nome_completo: dto.nome_completo ?? '',
-    cnpj: dto.cnpj ?? '',
-    telefone: dto.telefone ?? '',
-    email: dto.email ?? '',
-    id_usuario,
-  };
-}
-
-function toClienteResponseDto(cliente: Cliente): ClienteResponseDto {
-  return {
-    id_cliente: cliente.id_cliente,
-    nome_completo: cliente.nome_completo,
-    cnpj: cliente.cnpj,
-    telefone: cliente.telefone,
-    email: cliente.email,
-    id_usuario: cliente.id_usuario,
-  };
-}
-
-function toClienteResponseDtoList(clientes: Cliente[]): ClienteResponseDto[] {
-  return clientes.map(toClienteResponseDto);
+  private toClienteResponseDto(cliente: any): ClienteResponseDto {
+    return {
+      id_cliente: cliente.id_cliente,
+      nome_completo: cliente.nome_completo,
+      cnpj: cliente.cnpj,
+      telefone: cliente.telefone,
+      email: cliente.email,
+      id_usuario: cliente.id_usuario,
+      createdAt: cliente.createdAt,
+      updatedAt: cliente.updatedAt,
+    };
+  }
 }

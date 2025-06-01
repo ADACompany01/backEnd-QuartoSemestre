@@ -1,10 +1,15 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException, UseGuards } from '@nestjs/common';
-import { OrcamentoService } from './orcamento.service';
-import { CreateOrcamentoDto } from './dto/create-orcamento.dto';
-import { UpdateOrcamentoDto } from './dto/update-orcamento.dto';
-import { OrcamentoResponseDto } from '../../shared/dto/common-response.dto';
+import { CreateOrcamentoDto } from '../../../interfaces/http/dtos/requests/create-orcamento.dto';
+import { UpdateOrcamentoDto } from '../../../interfaces/http/dtos/requests/update-orcamento.dto';
+import { OrcamentoResponseDto } from '../../../interfaces/http/dtos/responses/orcamento-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
+import { FuncionarioGuard } from '../../../modules/auth/guards/funcionario.guard';
+import { CreateOrcamentoUseCase } from '../../../application/use-cases/orcamento/create-orcamento.use-case';
+import { ListOrcamentosUseCase } from '../../../application/use-cases/orcamento/list-orcamentos.use-case';
+import { GetOrcamentoUseCase } from '../../../application/use-cases/orcamento/get-orcamento.use-case';
+import { UpdateOrcamentoUseCase } from '../../../application/use-cases/orcamento/update-orcamento.use-case';
+import { DeleteOrcamentoUseCase } from '../../../application/use-cases/orcamento/delete-orcamento.use-case';
+import { Orcamento as OrcamentoModel } from '../../../domain/models/orcamento.model';
 
 @ApiTags('orcamentos')
 @ApiBearerAuth()
@@ -13,7 +18,13 @@ import { FuncionarioGuard } from '../auth/guards/funcionario.guard';
 export class OrcamentoController {
   private readonly logger = new Logger(OrcamentoController.name);
 
-  constructor(private readonly orcamentoService: OrcamentoService) {}
+  constructor(
+    private readonly createOrcamentoUseCase: CreateOrcamentoUseCase,
+    private readonly listOrcamentosUseCase: ListOrcamentosUseCase,
+    private readonly getOrcamentoUseCase: GetOrcamentoUseCase,
+    private readonly updateOrcamentoUseCase: UpdateOrcamentoUseCase,
+    private readonly deleteOrcamentoUseCase: DeleteOrcamentoUseCase,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar um novo orçamento' })
@@ -35,8 +46,19 @@ export class OrcamentoController {
     description: 'Token não fornecido ou inválido' 
   })
   async create(@Body() createOrcamentoDto: CreateOrcamentoDto) {
-    const orcamento = await this.orcamentoService.create(createOrcamentoDto);
-    return orcamento;
+    try {
+      const orcamento = await this.createOrcamentoUseCase.execute(createOrcamentoDto);
+      return this.toOrcamentoResponseDto(orcamento);
+    } catch (error) {
+      this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
+      // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+      // como BadRequestException ou ConflictException
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Erro ao criar orçamento: ${error.message}`,
+        error: error.name,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get()
@@ -53,11 +75,11 @@ export class OrcamentoController {
   })
   async findAll() {
     try {
-      const orcamentos = await this.orcamentoService.findAll();
+      const orcamentos = await this.listOrcamentosUseCase.execute();
       return {
         statusCode: HttpStatus.OK,
         message: 'Orçamentos encontrados com sucesso',
-        data: orcamentos,
+        data: orcamentos.map(orcamento => this.toOrcamentoResponseDto(orcamento)),
       };
     } catch (error) {
       this.logger.error(`Erro ao listar orçamentos: ${error.message}`, error.stack);
@@ -86,8 +108,25 @@ export class OrcamentoController {
     description: 'Token não fornecido ou inválido' 
   })
   async findOne(@Param('id') id: string) {
-    const orcamento = await this.orcamentoService.findOne(id);
-    return orcamento;
+    try {
+      const orcamento = await this.getOrcamentoUseCase.execute(id);
+      if (!orcamento) {
+        throw new HttpException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Orçamento não encontrado',
+        }, HttpStatus.NOT_FOUND);
+      }
+      return this.toOrcamentoResponseDto(orcamento);
+    } catch (error) {
+       this.logger.error(`Erro ao buscar orçamento por ID ${id}: ${error.message}`, error.stack);
+        // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+        // como NotFoundException
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao buscar orçamento: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Put(':id')
@@ -110,8 +149,30 @@ export class OrcamentoController {
     @Param('id') id: string,
     @Body() updateOrcamentoDto: UpdateOrcamentoDto,
   ) {
-    const orcamento = await this.orcamentoService.update(id, updateOrcamentoDto);
-    return orcamento;
+    try {
+      const [affectedCount, affectedRows] = await this.updateOrcamentoUseCase.execute(id, updateOrcamentoDto);
+
+      if (affectedCount === 0) {
+        throw new HttpException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Orçamento não encontrado para atualização',
+        }, HttpStatus.NOT_FOUND);
+      }
+
+      // Retorna o orçamento atualizado. Assumindo que affectedRows contém o orçamento atualizado.
+      // Se o use-case de update retornar apenas affectedCount, você precisaria buscar o orçamento novamente
+      const updatedOrcamento = affectedRows[0];
+      return this.toOrcamentoResponseDto(updatedOrcamento);
+
+    } catch (error) {
+       this.logger.error(`Erro ao atualizar orçamento com ID ${id}: ${error.message}`, error.stack);
+       // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao atualizar orçamento: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
@@ -130,7 +191,33 @@ export class OrcamentoController {
     description: 'Token não fornecido ou inválido' 
   })
   async remove(@Param('id') id: string) {
-    await this.orcamentoService.remove(id);
-    return { message: 'Orçamento removido com sucesso' };
+     try {
+      await this.deleteOrcamentoUseCase.execute(id);
+      return { 
+        statusCode: HttpStatus.OK,
+        message: 'Orçamento removido com sucesso' 
+      };
+     } catch (error) {
+       this.logger.error(`Erro ao remover orçamento com ID ${id}: ${error.message}`, error.stack);
+        // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
+        // como NotFoundException
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao remover orçamento: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+  }
+
+  private toOrcamentoResponseDto(orcamento: OrcamentoModel): OrcamentoResponseDto {
+    return {
+      cod_orcamento: orcamento.cod_orcamento,
+      valor_orcamento: orcamento.valor_orcamento,
+      data_orcamento: orcamento.data_orcamento,
+      data_validade: orcamento.data_validade,
+      id_pacote: orcamento.id_pacote,
+      createdAt: (orcamento as any).createdAt, // Assumindo que estes campos vêm da entidade Sequelize
+      updatedAt: (orcamento as any).updatedAt, // e estão disponíveis no objeto plain
+    };
   }
 }

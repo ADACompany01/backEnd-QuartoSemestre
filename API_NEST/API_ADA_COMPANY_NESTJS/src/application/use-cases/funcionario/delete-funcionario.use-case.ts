@@ -1,9 +1,9 @@
-import { FuncionarioRepository } from '../../../domain/repositories/funcionario.repository.interface';
+import { FuncionarioRepositoryImpl } from '../../../infrastructure/database/repositories/funcionario.repository';
 
 export class DeleteFuncionarioUseCase {
-  constructor(private readonly funcionarioRepository: FuncionarioRepository) {}
+  constructor(private readonly funcionarioRepository: FuncionarioRepositoryImpl) {}
 
-  async execute(id: string): Promise<number> {
-    return this.funcionarioRepository.delete(id);
+  async execute(id: string): Promise<void> {
+    await this.funcionarioRepository.delete(id);
   }
 } 

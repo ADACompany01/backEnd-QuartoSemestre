@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, HttpException, UseGuards } from '@nestjs/common';
-import { Public } from '../../../modules/auth/decorators/public.decorator';
+import { Public } from '../../http/decorators/public.decorator';
 import { CreateFuncionarioDto } from '../dtos/requests/create-funcionario.dto';
 import { UpdateFuncionarioDto } from '../dtos/requests/update-funcionario.dto';
 import { FuncionarioResponseDto } from '../dtos/responses/funcionario-response.dto';
@@ -14,6 +14,7 @@ import { DeleteFuncionarioUseCase } from '../../../application/use-cases/funcion
 import { Funcionario } from '../../../domain/models/funcionario.model';
 import { UsuarioRepository } from '../../../infrastructure/database/repositories/usuario.repository';
 import { Usuario } from '../../../domain/models/usuario.model';
+import { Usuario as UsuarioEntity } from '../../../infrastructure/database/entities/usuario.entity';
 
 @ApiTags('funcionarios')
 @ApiBearerAuth()
@@ -48,12 +49,11 @@ export class FuncionarioController {
       const usuarioCriado = await this.usuarioRepository.create(usuario);
       const id_usuario = usuarioCriado.id_usuario;
       // Cria o funcionário
-      const funcionarioModel = toFuncionarioModelFromCreateDto(createFuncionarioDto, id_usuario);
-      const funcionario = await this.createFuncionarioUseCase.execute(funcionarioModel);
+      const funcionario = await this.createFuncionarioUseCase.execute({ ...createFuncionarioDto, id_usuario });
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Funcionário criado com sucesso',
-        data: toFuncionarioResponseDto(funcionario),
+        data: this.toFuncionarioResponseDto(funcionario),
       };
     } catch (error) {
       this.logger.error(`Erro ao criar funcionário: ${error.message}`, error.stack);
@@ -74,7 +74,7 @@ export class FuncionarioController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Funcionários encontrados com sucesso',
-      data: toFuncionarioResponseDtoList(funcionarios),
+      data: funcionarios.map(this.toFuncionarioResponseDto),
     };
   }
 
@@ -95,7 +95,7 @@ export class FuncionarioController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Funcionário encontrado com sucesso',
-      data: toFuncionarioResponseDto(funcionario),
+      data: this.toFuncionarioResponseDto(funcionario),
     };
   }
 
@@ -107,25 +107,11 @@ export class FuncionarioController {
   @ApiResponse({ status: 404, description: 'Funcionário não encontrado' })
   async update(@Param('id') id: string, @Body() updateFuncionarioDto: UpdateFuncionarioDto) {
     try {
-      const funcionario = await this.getFuncionarioUseCase.execute(id);
-      if (!funcionario) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Funcionário não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
-      const funcionarioModel = toFuncionarioModelFromUpdateDto(updateFuncionarioDto, id, funcionario.id_usuario);
-      const [affectedCount, affectedRows] = await this.updateFuncionarioUseCase.execute(id, funcionarioModel);
-      if (affectedCount === 0) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Funcionário não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
+      const funcionario = await this.updateFuncionarioUseCase.execute(id, updateFuncionarioDto);
       return {
         statusCode: HttpStatus.OK,
         message: 'Funcionário atualizado com sucesso',
-        data: toFuncionarioResponseDtoList(affectedRows),
+        data: this.toFuncionarioResponseDto(funcionario),
       };
     } catch (error) {
       this.logger.error(`Erro ao atualizar funcionário: ${error.message}`, error.stack);
@@ -145,13 +131,7 @@ export class FuncionarioController {
   @ApiResponse({ status: 404, description: 'Funcionário não encontrado' })
   async remove(@Param('id') id: string) {
     try {
-      const deleted = await this.deleteFuncionarioUseCase.execute(id);
-      if (deleted === 0) {
-        throw new HttpException({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Funcionário não encontrado',
-        }, HttpStatus.NOT_FOUND);
-      }
+      await this.deleteFuncionarioUseCase.execute(id);
       return {
         statusCode: HttpStatus.OK,
         message: 'Funcionário removido com sucesso',
@@ -165,39 +145,20 @@ export class FuncionarioController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-}
 
-function toFuncionarioModelFromCreateDto(dto: CreateFuncionarioDto, id_usuario: string): Funcionario {
-  return {
-    id_funcionario: '', // será gerado pelo banco
-    nome_completo: dto.nome_completo,
-    email: dto.email,
-    telefone: dto.telefone,
-    id_usuario,
-  };
-}
-
-function toFuncionarioModelFromUpdateDto(dto: UpdateFuncionarioDto, id_funcionario: string, id_usuario: string): Funcionario {
-  return {
-    id_funcionario,
-    nome_completo: dto.nome_completo ?? '',
-    email: dto.email ?? '',
-    telefone: dto.telefone ?? '',
-    id_usuario: dto.id_usuario ?? id_usuario,
-  };
-}
-
-function toFuncionarioResponseDto(funcionario: Funcionario): FuncionarioResponseDto {
-  return {
-    id_funcionario: funcionario.id_funcionario,
-    nome_completo: funcionario.nome_completo,
-    email: funcionario.email,
-    telefone: funcionario.telefone,
-    id_usuario: funcionario.id_usuario,
-    usuario: undefined, // Adapte se quiser retornar dados do usuário
-  };
-}
-
-function toFuncionarioResponseDtoList(funcionarios: Funcionario[]): FuncionarioResponseDto[] {
-  return funcionarios.map(toFuncionarioResponseDto);
+  private toFuncionarioResponseDto(funcionario: any): FuncionarioResponseDto {
+    return {
+      id_funcionario: funcionario.id_funcionario,
+      nome_completo: funcionario.nome_completo,
+      email: funcionario.email,
+      telefone: funcionario.telefone,
+      id_usuario: funcionario.id_usuario,
+      usuario: funcionario.usuario ? {
+        id_usuario: funcionario.usuario.id_usuario,
+        nome_completo: funcionario.usuario.nome_completo,
+        email: funcionario.usuario.email,
+        telefone: funcionario.usuario.telefone,
+      } : undefined,
+    };
+  }
 }

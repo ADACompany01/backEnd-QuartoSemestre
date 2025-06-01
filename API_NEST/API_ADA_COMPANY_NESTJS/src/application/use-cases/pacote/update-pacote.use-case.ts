@@ -1,10 +1,12 @@
-import { PacoteRepository } from '../../../domain/repositories/pacote.repository.interface';
-import { Pacote } from '../../../domain/models/pacote.model';
+import { Pacote as PacoteModel } from '../../../domain/models/pacote.model';
+import { PacoteRepositoryImpl } from '../../../infrastructure/database/repositories/pacote.repository';
+import { UpdatePacoteDto } from '../../../interfaces/http/dtos/requests/update-pacote.dto';
 
 export class UpdatePacoteUseCase {
-  constructor(private readonly pacoteRepository: PacoteRepository) {}
+  constructor(private readonly pacoteRepository: PacoteRepositoryImpl) {}
 
-  async execute(id: string, data: Partial<Pacote>): Promise<[number, Pacote[]]> {
-    return this.pacoteRepository.update(id, data);
+  async execute(id: string, data: UpdatePacoteDto): Promise<PacoteModel> {
+    await this.pacoteRepository.update(id, data);
+    return this.pacoteRepository.findById(id);
   }
 } 

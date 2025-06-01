@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Orcamento } from '../entities/orcamento.entity';
+import { Orcamento as OrcamentoEntity } from '../entities/orcamento.entity';
+import { OrcamentoRepositoryInterface } from '../../../domain/repositories/orcamento.repository.interface';
+import { Orcamento as OrcamentoModel } from '../../../domain/models/orcamento.model';
 import { Pacote } from '../entities/pacote.entity';
 import { Cliente } from '../entities/cliente.entity';
 import { Contrato } from '../entities/contrato.entity';
 
 @Injectable()
-export class OrcamentoRepository {
+export class OrcamentoRepository implements OrcamentoRepositoryInterface {
   constructor(
-    @InjectModel(Orcamento)
-    private orcamentoModel: typeof Orcamento,
+    @InjectModel(OrcamentoEntity)
+    private orcamentoModel: typeof OrcamentoEntity,
   ) {}
 
-  async findAll(): Promise<Orcamento[]> {
-    return this.orcamentoModel.findAll({
+  async findAll(): Promise<OrcamentoModel[]> {
+    const orcamentos = await this.orcamentoModel.findAll({
       include: [
         {
           model: Pacote,
@@ -22,10 +24,11 @@ export class OrcamentoRepository {
         Contrato
       ]
     });
+    return orcamentos.map(orcamento => orcamento.toJSON() as OrcamentoModel);
   }
 
-  async findOne(id: string): Promise<Orcamento> {
-    return this.orcamentoModel.findByPk(id, {
+  async findOne(id: string): Promise<OrcamentoModel | null> {
+     const orcamento = await this.orcamentoModel.findByPk(id, {
       include: [
         {
           model: Pacote,
@@ -34,10 +37,24 @@ export class OrcamentoRepository {
         Contrato
       ]
     });
+    return orcamento ? orcamento.toJSON() as OrcamentoModel : null;
   }
 
-  async findByPacote(id_pacote: string): Promise<Orcamento> {
-    return this.orcamentoModel.findOne({
+   async findById(id: string): Promise<OrcamentoModel | null> {
+    const orcamento = await this.orcamentoModel.findByPk(id, {
+      include: [
+        {
+          model: Pacote,
+          include: [Cliente]
+        },
+        Contrato
+      ]
+    });
+    return orcamento ? orcamento.toJSON() as OrcamentoModel : null;
+  }
+
+  async findByPacote(id_pacote: string): Promise<OrcamentoModel | null> {
+    const orcamento = await this.orcamentoModel.findOne({
       where: { id_pacote },
       include: [
         {
@@ -47,10 +64,11 @@ export class OrcamentoRepository {
         Contrato
       ]
     });
+     return orcamento ? orcamento.toJSON() as OrcamentoModel : null;
   }
 
-  async findByCliente(id_cliente: string): Promise<Orcamento[]> {
-    return this.orcamentoModel.findAll({
+  async findByCliente(id_cliente: string): Promise<OrcamentoModel[]> {
+    const orcamentos = await this.orcamentoModel.findAll({
       include: [
         {
           model: Pacote,
@@ -66,17 +84,22 @@ export class OrcamentoRepository {
         Contrato
       ]
     });
+    return orcamentos.map(orcamento => orcamento.toJSON() as OrcamentoModel);
   }
 
-  async create(data: Partial<Orcamento>): Promise<Orcamento> {
-    return this.orcamentoModel.create(data);
+  async create(data: Partial<OrcamentoModel>): Promise<OrcamentoModel> {
+    const created = await this.orcamentoModel.create(data as any);
+    return created.toJSON() as OrcamentoModel;
   }
 
-  async update(id: string, data: Partial<Orcamento>): Promise<[number, Orcamento[]]> {
-    return this.orcamentoModel.update(data, {
+  async update(id: string, data: Partial<OrcamentoModel>): Promise<[number, OrcamentoModel[]]> {
+     const [affectedCount, affectedRows] = await this.orcamentoModel.update(data, {
       where: { cod_orcamento: id },
       returning: true
     });
+    // Assumindo que o update no Sequelize retorna as entidades atualizadas
+    const updatedOrcamentos = affectedRows.map(orcamento => orcamento.toJSON() as OrcamentoModel);
+    return [affectedCount, updatedOrcamentos];
   }
 
   async delete(id: string): Promise<number> {

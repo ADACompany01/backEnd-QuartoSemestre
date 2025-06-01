@@ -17,7 +17,13 @@ export class ContratoRepository {
     });
   }
 
-  async findOne(id: number): Promise<Contrato | null> {
+  async findOne(id: string): Promise<Contrato | null> {
+    return this.contratoModel.findByPk(id, {
+      include: [Cliente, Orcamento],
+    });
+  }
+
+  async findById(id: string): Promise<Contrato | null> {
     return this.contratoModel.findByPk(id, {
       include: [Cliente, Orcamento],
     });
@@ -27,28 +33,27 @@ export class ContratoRepository {
     return this.contratoModel.create(data);
   }
 
-  async update(id: number, data: Partial<Contrato>): Promise<[number, Contrato[]]> {
-    const [affectedCount, affectedRows] = await this.contratoModel.update(data, {
+  async update(id: string, data: Partial<Contrato>): Promise<[number, Contrato[]]> {
+    return this.contratoModel.update(data, {
       where: { id_contrato: id },
       returning: true,
     });
-    return [affectedCount, affectedRows];
   }
 
-  async delete(id: number): Promise<number> {
+  async delete(id: string): Promise<number> {
     return this.contratoModel.destroy({
       where: { id_contrato: id },
     });
   }
 
-  async findByCliente(id_cliente: number): Promise<Contrato[]> {
+  async findByCliente(id_cliente: string): Promise<Contrato[]> {
     return this.contratoModel.findAll({
       where: { id_cliente },
       include: [Cliente, Orcamento],
     });
   }
 
-  async findByOrcamento(cod_orcamento: number): Promise<Contrato[]> {
+  async findByOrcamento(cod_orcamento: string): Promise<Contrato[]> {
     return this.contratoModel.findAll({
       where: { cod_orcamento },
       include: [Cliente, Orcamento],

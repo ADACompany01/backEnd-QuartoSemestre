@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Funcionario as FuncionarioEntity } from '../entities/funcionario.entity';
 import { FuncionarioRepository } from '../../../domain/repositories/funcionario.repository.interface';
 import { Funcionario as FuncionarioModel } from '../../../domain/models/funcionario.model';
+import { Usuario } from '../entities/usuario.entity';
+import { CreateFuncionarioDto } from '../../../interfaces/http/dtos/requests/create-funcionario.dto';
 
 @Injectable()
 export class FuncionarioRepositoryImpl implements FuncionarioRepository {
@@ -11,19 +13,17 @@ export class FuncionarioRepositoryImpl implements FuncionarioRepository {
     private funcionarioModel: typeof FuncionarioEntity,
   ) {}
 
-  async create(funcionario: FuncionarioModel): Promise<FuncionarioModel> {
-    const created = await this.funcionarioModel.create(funcionario as any);
+  async create(data: CreateFuncionarioDto): Promise<FuncionarioModel> {
+    const created = await this.funcionarioModel.create(data as any);
     return created.toJSON() as FuncionarioModel;
   }
 
-  async findAll(): Promise<FuncionarioModel[]> {
-    const funcionarios = await this.funcionarioModel.findAll();
-    return funcionarios.map(f => f.toJSON() as FuncionarioModel);
+  async findAll(): Promise<FuncionarioEntity[]> {
+    return this.funcionarioModel.findAll({ include: [Usuario] });
   }
 
-  async findById(id: string): Promise<FuncionarioModel | null> {
-    const funcionario = await this.funcionarioModel.findByPk(id);
-    return funcionario ? (funcionario.toJSON() as FuncionarioModel) : null;
+  async findById(id: string): Promise<FuncionarioEntity | null> {
+    return this.funcionarioModel.findByPk(id, { include: [Usuario] });
   }
 
   async update(id: string, data: Partial<FuncionarioModel>): Promise<[number, FuncionarioModel[]]> {

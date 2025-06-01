@@ -1,12 +1,13 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { ClienteService } from '../../cliente/cliente.service';
+import { GetClienteUseCase } from '../../../application/use-cases/cliente/get-cliente.use-case';
+import { Cliente as ClienteModel } from '../../../domain/models/cliente.model';
 
 @Injectable()
 export class SelfAccessGuard implements CanActivate {
   private readonly logger = new Logger(SelfAccessGuard.name);
 
-  constructor(private readonly clienteService: ClienteService) {}
+  constructor(private readonly getClienteUseCase: GetClienteUseCase) {}
 
   async canActivate(
     context: ExecutionContext,
@@ -30,15 +31,15 @@ export class SelfAccessGuard implements CanActivate {
     // Se for cliente, verifica se está acessando seus próprios dados
     if (user.tipo_usuario === 'cliente') {
       try {
-        // Busca o cliente pelo ID da rota
-        const cliente = await this.clienteService.findOne(id);
+        // Busca o cliente pelo ID da rota usando o use-case
+        const cliente = await this.getClienteUseCase.execute(id);
         if (!cliente) {
           throw new UnauthorizedException('Cliente não encontrado');
         }
 
         // Compara o id_usuario do token com o id_usuario do cliente
         const tokenUserId = String(user.id_usuario);
-        const clienteUserId = String(cliente.id_usuario);
+        const clienteUserId = String((cliente as ClienteModel).id_usuario); // Assumindo que o model tem id_usuario
         
         this.logger.debug(`Token User ID: ${tokenUserId}`);
         this.logger.debug(`Cliente User ID: ${clienteUserId}`);

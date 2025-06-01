@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
-import { FuncionarioLoginDto } from './dto/funcionario-login.dto';
-import { ClienteLoginDto } from './dto/cliente-login.dto';
-import { Public } from './decorators/public.decorator';
+import { AuthService } from '../../../application/auth/auth.service';
+import { FuncionarioLoginDto } from '../dtos/requests/funcionario-login.dto';
+import { ClienteLoginDto } from '../dtos/requests/cliente-login.dto';
+import { Public } from '../decorators/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { AuthResponseDto } from './dto/auth-response.dto';
+import { AuthResponseDto } from '../dtos/responses/auth-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -62,4 +62,4 @@ export class AuthController {
   async loginCliente(@Body() loginDto: ClienteLoginDto) {
     return this.authService.loginCliente(loginDto);
   }
-}
+} 

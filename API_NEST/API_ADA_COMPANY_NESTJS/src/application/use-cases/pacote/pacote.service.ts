@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Pacote } from '../../database/entities/pacote.entity';
-import { Cliente } from '../../database/entities/cliente.entity';
-import { Orcamento } from '../../database/entities/orcamento.entity';
-import { CreatePacoteDto } from './dto/create-pacote.dto';
-import { UpdatePacoteDto } from './dto/update-pacote.dto';
+import { Pacote } from '../../infrastructure/database/entities/pacote.entity';
+import { Cliente } from '../../infrastructure/database/entities/cliente.entity';
+import { Orcamento } from '../../infrastructure/database/entities/orcamento.entity';
+import { CreatePacoteDto } from '../../../interfaces/http/dtos/requests/create-pacote.dto';
+import { UpdatePacoteDto } from '../../../interfaces/http/dtos/requests/update-pacote.dto';
 
 @Injectable()
 export class PacoteService {

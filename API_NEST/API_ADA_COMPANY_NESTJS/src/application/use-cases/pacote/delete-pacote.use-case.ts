@@ -1,9 +1,9 @@
-import { PacoteRepository } from '../../../domain/repositories/pacote.repository.interface';
+import { PacoteRepositoryImpl } from '../../../infrastructure/database/repositories/pacote.repository';
 
 export class DeletePacoteUseCase {
-  constructor(private readonly pacoteRepository: PacoteRepository) {}
+  constructor(private readonly pacoteRepository: PacoteRepositoryImpl) {}
 
-  async execute(id: string): Promise<number> {
-    return this.pacoteRepository.delete(id);
+  async execute(id: string): Promise<void> {
+    await this.pacoteRepository.delete(id);
   }
 } 

@@ -5,6 +5,7 @@ import { PacoteRepository } from '../../../domain/repositories/pacote.repository
 import { Pacote as PacoteModel } from '../../../domain/models/pacote.model';
 import { Cliente } from '../entities/cliente.entity';
 import { Orcamento } from '../entities/orcamento.entity';
+import { CreatePacoteDto } from '../../../interfaces/http/dtos/requests/create-pacote.dto';
 
 @Injectable()
 export class PacoteRepositoryImpl implements PacoteRepository {
@@ -13,8 +14,8 @@ export class PacoteRepositoryImpl implements PacoteRepository {
     private pacoteModel: typeof PacoteEntity,
   ) {}
 
-  async create(pacote: PacoteModel): Promise<PacoteModel> {
-    const created = await this.pacoteModel.create(pacote as any);
+  async create(data: CreatePacoteDto): Promise<PacoteModel> {
+    const created = await this.pacoteModel.create(data as any);
     return created.toJSON() as PacoteModel;
   }
 

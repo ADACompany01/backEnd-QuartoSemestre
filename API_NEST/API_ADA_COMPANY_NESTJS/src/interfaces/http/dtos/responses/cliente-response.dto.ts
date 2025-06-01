@@ -36,4 +36,15 @@ export class ClienteResponseDto {
     example: '123e4567-e89b-12d3-a456-426614174000'
   })
   id_usuario: string;
-} 
+  @ApiProperty({
+    description: 'Data de criação',
+    example: '2024-05-10T10:00:00.000Z'
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    description: 'Data da última atualização',
+    example: '2024-05-10T10:30:00.000Z'
+  })
+  updatedAt: Date;
+}

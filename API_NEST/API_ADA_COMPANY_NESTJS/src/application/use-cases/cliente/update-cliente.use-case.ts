@@ -1,10 +1,12 @@
-import { ClienteRepository } from '../../../domain/repositories/cliente.repository.interface';
-import { Cliente } from '../../../domain/models/cliente.model';
+import { Cliente } from '../../../infrastructure/database/entities/cliente.entity';
+import { ClienteRepositoryImpl } from '../../../infrastructure/database/repositories/cliente.repository';
+import { UpdateClienteDto } from '../../../interfaces/http/dtos/requests/update-cliente.dto';
 
 export class UpdateClienteUseCase {
-  constructor(private readonly clienteRepository: ClienteRepository) {}
+  constructor(private readonly clienteRepository: ClienteRepositoryImpl) {}
 
-  async execute(id: string, data: Partial<Cliente>): Promise<[number, Cliente[]]> {
-    return this.clienteRepository.update(id, data);
+  async execute(id: string, data: UpdateClienteDto): Promise<Cliente> {
+    await this.clienteRepository.update(id, data);
+    return this.clienteRepository.findById(id);
   }
 } 

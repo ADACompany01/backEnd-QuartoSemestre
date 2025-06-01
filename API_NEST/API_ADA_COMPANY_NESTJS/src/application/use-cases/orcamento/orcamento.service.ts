@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Orcamento } from '../../database/entities/orcamento.entity';
-import { Pacote } from '../../database/entities/pacote.entity';
-import { Contrato } from '../../database/entities/contrato.entity';
+import { Orcamento } from '../../../infrastructure/database/entities/orcamento.entity';
+import { Pacote } from '../../../infrastructure/database/entities/pacote.entity';
+import { Contrato } from '../../../infrastructure/database/entities/contrato.entity';
 import { Op } from 'sequelize';
+import { CreateOrcamentoDto } from '../../../interfaces/http/dtos/requests/create-orcamento.dto';
+import { UpdateOrcamentoDto } from '../../../interfaces/http/dtos/requests/update-orcamento.dto';
 
 @Injectable()
 export class OrcamentoService {
@@ -19,9 +21,7 @@ export class OrcamentoService {
       include: [
         {
           model: Pacote,
-          //include: [Cliente] // Cliente relationship removed from Orcamento entity
         },
-        //Cliente, // Cliente relationship removed from Orcamento entity
         Contrato
       ]
     });
@@ -32,9 +32,7 @@ export class OrcamentoService {
       include: [
         {
           model: Pacote,
-          //include: [Cliente] // Cliente relationship removed from Orcamento entity
         },
-        //Cliente, // Cliente relationship removed from Orcamento entity
         Contrato
       ]
     });
@@ -46,9 +44,8 @@ export class OrcamentoService {
     return orcamento;
   }
 
-  async create(orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
+  async create(orcamentoData: CreateOrcamentoDto): Promise<Orcamento> {
     try {
-      // Verificar se já existe um orçamento para o mesmo pacote
       const existingOrcamento = await this.orcamentoModel.findOne({
         where: {
           id_pacote: orcamentoData.id_pacote
@@ -59,16 +56,14 @@ export class OrcamentoService {
         throw new ConflictException(`Já existe um orçamento para este pacote`);
       }
 
-      // Verificar se o pacote existe
       const pacote = await Pacote.findByPk(orcamentoData.id_pacote);
       if (!pacote) {
         throw new NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
       }
 
-      // Definir data do orçamento como agora
       const dataAtual = new Date();
       const dataValidade = new Date();
-      dataValidade.setDate(dataValidade.getDate() + 30); // Validade de 30 dias
+      dataValidade.setDate(dataValidade.getDate() + 30);
 
       const orcamento = await this.orcamentoModel.create({
         ...orcamentoData,
@@ -83,11 +78,10 @@ export class OrcamentoService {
     }
   }
 
-  async update(id: string, orcamentoData: Partial<Orcamento>): Promise<Orcamento> {
+  async update(id: string, orcamentoData: UpdateOrcamentoDto): Promise<Orcamento> {
     try {
       const orcamento = await this.findOne(id);
       
-      // Verificar se o pacote está sendo alterado
       if (orcamentoData.id_pacote && orcamentoData.id_pacote !== orcamento.id_pacote) {
         const existingOrcamento = await this.orcamentoModel.findOne({
           where: {
@@ -100,14 +94,11 @@ export class OrcamentoService {
           throw new ConflictException(`Já existe um orçamento para este pacote`);
         }
 
-        // Verificar se o novo pacote existe
         const pacote = await Pacote.findByPk(orcamentoData.id_pacote);
         if (!pacote) {
           throw new NotFoundException(`Pacote com ID ${orcamentoData.id_pacote} não encontrado`);
         }
       }
-      
-      // A validação do cliente foi removida pois o id_cliente não está mais na entidade Orçamento
 
       await orcamento.update(orcamentoData);
       return this.findOne(id);
