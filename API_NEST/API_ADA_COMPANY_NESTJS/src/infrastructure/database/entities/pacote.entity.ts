@@ -3,6 +3,12 @@ import { Cliente } from './cliente.entity';
 import { Orcamento } from './orcamento.entity';
 // import { Orcamento } from './orcamento.entity'; // Será criado depois
 
+export enum TipoPacote {
+  A = 'A',
+  AA = 'AA',
+  AAA = 'AAA'
+}
+
 @Table({ tableName: 'pacotes' })
 export class Pacote extends Model<Pacote> {
   @Column({

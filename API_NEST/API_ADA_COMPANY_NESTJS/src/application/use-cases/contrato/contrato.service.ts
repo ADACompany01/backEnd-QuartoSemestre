@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Contrato } from '../../infrastructure/database/entities/contrato.entity';
-import { Cliente } from '../../infrastructure/database/entities/cliente.entity';
-import { Orcamento } from '../../infrastructure/database/entities/orcamento.entity';
-import { Pacote } from '../../infrastructure/database/entities/pacote.entity';
+import { Contrato } from '../../../infrastructure/database/entities/contrato.entity';
+import { Cliente } from '../../../infrastructure/database/entities/cliente.entity';
+import { Orcamento } from '../../../infrastructure/database/entities/orcamento.entity';
+import { Pacote } from '../../../infrastructure/database/entities/pacote.entity';
 import { CreateContratoDto } from '../../../interfaces/http/dtos/requests/create-contrato.dto';
 import { UpdateContratoDto } from '../../../interfaces/http/dtos/requests/update-contrato.dto';
 import { Op } from 'sequelize';

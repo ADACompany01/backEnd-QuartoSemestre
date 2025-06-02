@@ -8,10 +8,12 @@ import { ListPacotesUseCase } from '../../application/use-cases/pacote/list-paco
 import { GetPacoteUseCase } from '../../application/use-cases/pacote/get-pacote.use-case';
 import { UpdatePacoteUseCase } from '../../application/use-cases/pacote/update-pacote.use-case';
 import { DeletePacoteUseCase } from '../../application/use-cases/pacote/delete-pacote.use-case';
+import { FuncionarioModule } from '../funcionario/funcionario.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Pacote]),
+    FuncionarioModule,
   ],
   controllers: [PacoteController],
   providers: [

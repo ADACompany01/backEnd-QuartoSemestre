@@ -2,6 +2,13 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize
 import { Cliente } from './cliente.entity';
 import { Orcamento } from './orcamento.entity';
 
+export enum StatusContrato {
+  EM_ANALISE = 'EM_ANALISE',
+  EM_ANDAMENTO = 'EM_ANDAMENTO',
+  CANCELADO = 'CANCELADO',
+  CONCLUIDO = 'CONCLUIDO'
+}
+
 @Table({ tableName: 'contratos' })
 export class Contrato extends Model<Contrato> {
   @Column({

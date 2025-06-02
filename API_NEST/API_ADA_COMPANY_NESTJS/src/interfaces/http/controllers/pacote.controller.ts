@@ -3,7 +3,7 @@ import { CreatePacoteDto, TipoPacote } from '../dtos/requests/create-pacote.dto'
 import { UpdatePacoteDto } from '../dtos/requests/update-pacote.dto';
 import { PacoteResponseDto } from '../dtos/responses/pacote-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { FuncionarioGuard } from '../../../modules/auth/guards/funcionario.guard';
+import { FuncionarioGuard } from '../guards/funcionario.guard';
 import { CreatePacoteUseCase } from '../../../application/use-cases/pacote/create-pacote.use-case';
 import { ListPacotesUseCase } from '../../../application/use-cases/pacote/list-pacotes.use-case';
 import { GetPacoteUseCase } from '../../../application/use-cases/pacote/get-pacote.use-case';
@@ -99,8 +99,8 @@ export class PacoteController {
     @Body() updatePacoteDto: UpdatePacoteDto,
   ) {
     const pacoteModel = toPacoteModelFromUpdateDto(updatePacoteDto, id);
-    const [affectedCount, affectedRows] = await this.updatePacoteUseCase.execute(id, pacoteModel);
-    if (affectedCount === 0) {
+    const pacote = await this.updatePacoteUseCase.execute(id, pacoteModel);
+    if (!pacote) {
       throw new HttpException({
         statusCode: HttpStatus.NOT_FOUND,
         message: 'Pacote não encontrado',
@@ -109,7 +109,7 @@ export class PacoteController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Pacote atualizado com sucesso',
-      data: toPacoteResponseDtoList(affectedRows),
+      data: toPacoteResponseDto(pacote),
     };
   }
 
@@ -146,7 +146,7 @@ function toPacoteModelFromUpdateDto(dto: UpdatePacoteDto, id_pacote: string): Pa
   return {
     id_pacote,
     id_cliente: dto.id_cliente ?? '',
-    tipo_pacote: dto.tipo_pacote ?? '',
+    tipo_pacote: dto.tipo_pacote ?? TipoPacote.A,
     valor_base: dto.valor_base ?? 0,
   };
 }
@@ -155,7 +155,7 @@ function toPacoteResponseDto(pacote: Pacote): PacoteResponseDto {
   return {
     id_pacote: pacote.id_pacote,
     id_cliente: pacote.id_cliente,
-    tipo_pacote: pacote.tipo_pacote,
+    tipo_pacote: pacote.tipo_pacote as TipoPacote,
     valor_base: pacote.valor_base,
   };
 }

@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpStatus, UseGuards, HttpException, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { CreateContratoDto } from '../../../interfaces/http/dtos/requests/create-contrato.dto';
+import { CreateContratoDto, StatusContrato } from '../../../interfaces/http/dtos/requests/create-contrato.dto';
 import { UpdateContratoDto } from '../../../interfaces/http/dtos/requests/update-contrato.dto';
 import { ContratoResponseDto } from '../../../interfaces/http/dtos/responses/contrato-response.dto';
-import { FuncionarioGuard } from '../../../modules/auth/guards/funcionario.guard';
+import { FuncionarioGuard } from '../guards/funcionario.guard';
 import { CreateContratoUseCase } from '../../../application/use-cases/contrato/create-contrato.use-case';
 import { ListContratosUseCase } from '../../../application/use-cases/contrato/list-contratos.use-case';
 import { GetContratoUseCase } from '../../../application/use-cases/contrato/get-contrato.use-case';
@@ -203,14 +203,15 @@ export class ContratoController {
 
    private toContratoResponseDto(contrato: ContratoModel): ContratoResponseDto {
     return {
-      cod_contrato: contrato.id_contrato, // Mapear id_contrato do model para cod_contrato do DTO
-      id_orcamento: contrato.cod_orcamento, // Mapear cod_orcamento do model para id_orcamento do DTO
+      id_contrato: contrato.id_contrato,
+      id_cliente: (contrato as any).id_cliente,
+      valor_contrato: contrato.valor_contrato,
+      cod_orcamento: contrato.cod_orcamento,
+      status_contrato: contrato.status_contrato as StatusContrato,
       data_inicio: contrato.data_inicio,
-      data_fim: contrato.data_entrega, // Mapear data_entrega do model para data_fim do DTO
-      valor_total: contrato.valor_contrato, // Mapear valor_contrato do model para valor_total do DTO
-      status: contrato.status_contrato,
-      createdAt: (contrato as any).createdAt,
-      updatedAt: (contrato as any).updatedAt,
+      data_entrega: contrato.data_entrega,
+      cliente: (contrato as any).cliente,
+      orcamento: (contrato as any).orcamento
     };
   }
 } 

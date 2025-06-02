@@ -3,14 +3,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { Inject } from '@nestjs/common';
-import { FUNCIONARIO_REPOSITORY } from '../../infrastructure/providers/funcionario.provider';
 import { FuncionarioRepository } from '../../domain/repositories/funcionario.repository.interface';
 import { FuncionarioLoginDto } from '../../interfaces/http/dtos/requests/funcionario-login.dto';
 import { ClienteLoginDto } from '../../interfaces/http/dtos/requests/cliente-login.dto';
-import { GetClienteByEmailUseCase } from '../cliente/get-cliente-by-email.use-case';
+import { GetClienteByEmailUseCase } from '../use-cases/cliente/get-cliente-by-email.use-case';
 import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
 import { Usuario as UsuarioModel } from '../../domain/models/usuario.model';
+import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
 
 @Injectable()
 export class AuthService {
@@ -22,9 +22,9 @@ export class AuthService {
     private usuarioModel: typeof Usuario,
     private jwtService: JwtService,
     private configService: ConfigService,
-    @Inject(FUNCIONARIO_REPOSITORY)
     private funcionarioRepository: FuncionarioRepository,
     private getClienteByEmailUseCase: GetClienteByEmailUseCase,
+    private usuarioRepository: UsuarioRepository,
   ) {}
 
   gerarTokenValido(): string {
@@ -38,21 +38,15 @@ export class AuthService {
   }
 
   async loginFuncionario(loginDto: FuncionarioLoginDto) {
-    const funcionario = await this.funcionarioRepository.findByEmail(loginDto.email);
+    const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
     
-    if (!funcionario) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const senhaValida = await bcrypt.compare(loginDto.senha, (funcionario as any).usuario.senha);
-    
-    if (!senhaValida) {
+    if (!usuario || !usuario.funcionario || !await bcrypt.compare(loginDto.senha, usuario.senha)) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const payload = { 
-      id_usuario: (funcionario as any).id_usuario,
-      email: (funcionario as any).email,
+      id_usuario: String(usuario.id_usuario),
+      email: usuario.email,
       tipo_usuario: 'funcionario'
     };
 
@@ -62,30 +56,24 @@ export class AuthService {
         expiresIn: '1h'
       }),
       user: {
-        id: (funcionario as any).id_usuario,
-        nome: (funcionario as any).nome_completo,
-        email: (funcionario as any).email,
+        id: String(usuario.id_usuario),
+        nome: usuario.nome_completo,
+        email: usuario.email,
         tipo: 'funcionario'
       }
     };
   }
 
   async loginCliente(loginDto: ClienteLoginDto) {
-    const cliente = await this.getClienteByEmailUseCase.execute(loginDto.email);
+    const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
     
-    if (!cliente) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const senhaValida = await bcrypt.compare(loginDto.senha, (cliente as any).usuario.senha);
-    
-    if (!senhaValida) {
+    if (!usuario || !usuario.cliente || !await bcrypt.compare(loginDto.senha, usuario.senha)) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const payload = { 
-      id_usuario: String((cliente as any).id_usuario),
-      email: (cliente as any).email,
+      id_usuario: String(usuario.id_usuario),
+      email: usuario.email,
       tipo_usuario: 'cliente'
     };
 
@@ -95,34 +83,36 @@ export class AuthService {
         expiresIn: '1h'
       }),
       user: {
-        id: String((cliente as any).id_usuario),
-        nome: (cliente as any).nome_completo,
-        email: (cliente as any).email,
+        id: String(usuario.id_usuario),
+        nome: usuario.nome_completo,
+        email: usuario.email,
         tipo: 'cliente'
       }
     };
   }
 
   async validateUser(payload: any) {
-    if (payload.tipo_usuario === 'funcionario') {
-      const funcionario = await this.funcionarioRepository.findByEmail(payload.email);
-      if (funcionario) {
-        return {
-          id_usuario: String((funcionario as any).id_usuario),
-          email: (funcionario as any).email,
-          tipo_usuario: 'funcionario'
-        };
-      }
-    } else if (payload.tipo_usuario === 'cliente') {
-      const cliente = await this.getClienteByEmailUseCase.execute(payload.email);
-      if (cliente) {
-        return {
-          id_usuario: String((cliente as any).id_usuario),
-          email: (cliente as any).email,
-          tipo_usuario: 'cliente'
-        };
-      }
+    const usuario = await this.usuarioRepository.findOne(payload.sub);
+    
+    if (!usuario) {
+      return null;
     }
-    return null;
+
+    // Check for associated entities to determine user type
+    if (usuario.funcionario && payload.tipo_usuario === 'funcionario') {
+      return {
+        id_usuario: String(usuario.id_usuario),
+        email: usuario.email,
+        tipo_usuario: 'funcionario'
+      };
+    } else if (usuario.cliente && payload.tipo_usuario === 'cliente') {
+       return {
+        id_usuario: String(usuario.id_usuario),
+        email: usuario.email,
+        tipo_usuario: 'cliente'
+      };
+    }
+    
+    return null; // User found but type mismatch or no associated entity
   }
 } 

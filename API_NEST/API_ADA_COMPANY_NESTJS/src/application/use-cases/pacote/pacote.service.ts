@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Pacote } from '../../infrastructure/database/entities/pacote.entity';
-import { Cliente } from '../../infrastructure/database/entities/cliente.entity';
-import { Orcamento } from '../../infrastructure/database/entities/orcamento.entity';
+import { Pacote } from '../../../infrastructure/database/entities/pacote.entity';
+import { Cliente } from '../../../infrastructure/database/entities/cliente.entity';
+import { Orcamento } from '../../../infrastructure/database/entities/orcamento.entity';
 import { CreatePacoteDto } from '../../../interfaces/http/dtos/requests/create-pacote.dto';
 import { UpdatePacoteDto } from '../../../interfaces/http/dtos/requests/update-pacote.dto';
 

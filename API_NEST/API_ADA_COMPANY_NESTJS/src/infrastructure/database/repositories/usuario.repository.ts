@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from '../entities/usuario.entity';
+import { Cliente } from '../entities/cliente.entity';
+import { Funcionario } from '../entities/funcionario.entity';
 
 @Injectable()
 export class UsuarioRepository {
@@ -10,11 +12,11 @@ export class UsuarioRepository {
   ) {}
 
   async findAll(): Promise<Usuario[]> {
-    return this.usuarioModel.findAll();
+    return this.usuarioModel.findAll({ include: [Cliente, Funcionario] });
   }
 
   async findOne(id: string): Promise<Usuario | null> {
-    return this.usuarioModel.findByPk(id);
+    return this.usuarioModel.findByPk(id, { include: [Cliente, Funcionario] });
   }
 
   async create(data: Partial<Usuario>): Promise<Usuario> {
@@ -37,7 +39,8 @@ export class UsuarioRepository {
 
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioModel.findOne({
-      where: { email }
+      where: { email },
+      include: [Cliente, Funcionario],
     });
   }
 } 

@@ -3,7 +3,7 @@ import { CreateOrcamentoDto } from '../../../interfaces/http/dtos/requests/creat
 import { UpdateOrcamentoDto } from '../../../interfaces/http/dtos/requests/update-orcamento.dto';
 import { OrcamentoResponseDto } from '../../../interfaces/http/dtos/responses/orcamento-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { FuncionarioGuard } from '../../../modules/auth/guards/funcionario.guard';
+import { FuncionarioGuard } from '../guards/funcionario.guard';
 import { CreateOrcamentoUseCase } from '../../../application/use-cases/orcamento/create-orcamento.use-case';
 import { ListOrcamentosUseCase } from '../../../application/use-cases/orcamento/list-orcamentos.use-case';
 import { GetOrcamentoUseCase } from '../../../application/use-cases/orcamento/get-orcamento.use-case';
@@ -216,8 +216,9 @@ export class OrcamentoController {
       data_orcamento: orcamento.data_orcamento,
       data_validade: orcamento.data_validade,
       id_pacote: orcamento.id_pacote,
-      createdAt: (orcamento as any).createdAt, // Assumindo que estes campos vêm da entidade Sequelize
-      updatedAt: (orcamento as any).updatedAt, // e estão disponíveis no objeto plain
+      id_cliente: (orcamento as any).id_cliente,
+      pacote: (orcamento as any).pacote,
+      cliente: (orcamento as any).cliente
     };
   }
 }

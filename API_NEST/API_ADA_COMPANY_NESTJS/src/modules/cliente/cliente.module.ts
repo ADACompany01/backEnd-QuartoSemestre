@@ -9,22 +9,23 @@ import { ListClientesUseCase } from '../../application/use-cases/cliente/list-cl
 import { GetClienteUseCase } from '../../application/use-cases/cliente/get-cliente.use-case';
 import { UpdateClienteUseCase } from '../../application/use-cases/cliente/update-cliente.use-case';
 import { DeleteClienteUseCase } from '../../application/use-cases/cliente/delete-cliente.use-case';
-import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
 import { FuncionarioModule } from '../funcionario/funcionario.module';
+import { DatabaseModule } from '../../infrastructure/database/database.module';
+import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Cliente, Usuario]),
-    forwardRef(() => FuncionarioModule)
+    forwardRef(() => FuncionarioModule),
+    DatabaseModule,
   ],
   controllers: [ClienteController],
   providers: [
     ClienteRepositoryProvider,
-    UsuarioRepository,
     {
       provide: CreateClienteUseCase,
-      useFactory: (repo) => new CreateClienteUseCase(repo),
-      inject: [CLIENTE_REPOSITORY],
+      useFactory: (clienteRepo, usuarioRepo) => new CreateClienteUseCase(clienteRepo, usuarioRepo),
+      inject: [CLIENTE_REPOSITORY, UsuarioRepository],
     },
     {
       provide: ListClientesUseCase,
@@ -54,7 +55,6 @@ import { FuncionarioModule } from '../funcionario/funcionario.module';
     UpdateClienteUseCase,
     DeleteClienteUseCase,
     CLIENTE_REPOSITORY,
-    UsuarioRepository
   ]
 })
 export class ClienteModule {}

@@ -10,10 +10,12 @@ import { GetFuncionarioUseCase } from '../../application/use-cases/funcionario/g
 import { UpdateFuncionarioUseCase } from '../../application/use-cases/funcionario/update-funcionario.use-case';
 import { DeleteFuncionarioUseCase } from '../../application/use-cases/funcionario/delete-funcionario.use-case';
 import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
+import { ClienteModule } from '../cliente/cliente.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Funcionario, Usuario]),
+    ClienteModule,
   ],
   controllers: [FuncionarioController],
   providers: [

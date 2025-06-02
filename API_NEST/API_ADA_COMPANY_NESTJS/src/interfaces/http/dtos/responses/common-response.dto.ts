@@ -1,6 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TipoPacote } from '../../modules/pacote/dto/create-pacote.dto';
-import { StatusContrato } from '../../modules/contrato/dto/create-contrato.dto';
+import { TipoPacote } from '../../../../infrastructure/database/entities/pacote.entity';
+import { StatusContrato } from '../../../../infrastructure/database/entities/contrato.entity';
+
+export class CommonResponseDto<T> {
+  @ApiProperty({ description: 'Indica se a operação foi bem sucedida' })
+  success: boolean;
+
+  @ApiProperty({ description: 'Mensagem descritiva sobre o resultado da operação' })
+  message: string;
+
+  @ApiProperty({ description: 'Dados retornados pela operação', required: false })
+  data?: T;
+
+  @ApiProperty({ description: 'Erro ocorrido durante a operação', required: false })
+  error?: string;
+
+  constructor(success: boolean, message: string, data?: T, error?: string) {
+    this.success = success;
+    this.message = message;
+    this.data = data;
+    this.error = error;
+  }
+
+  static success<T>(message: string, data?: T): CommonResponseDto<T> {
+    return new CommonResponseDto<T>(true, message, data);
+  }
+
+  static error(message: string, error?: string): CommonResponseDto<null> {
+    return new CommonResponseDto<null>(false, message, null, error);
+  }
+}
 
 export class ClienteResponseDto {
   @ApiProperty({
