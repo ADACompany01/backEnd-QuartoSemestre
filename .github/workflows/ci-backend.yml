@@ -122,7 +122,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
             ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ github.ref_name }}
-            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }} # <--- AQUI ESTÁ A CORREÇÃO!
+            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }}
           cache-from: type=local,dest=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
