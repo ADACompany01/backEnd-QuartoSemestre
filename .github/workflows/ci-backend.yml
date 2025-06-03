@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-         # cache: 'npm'
+          # cache: 'npm'
 
       - name: Instalar Dependências do Backend
         run: npm install
@@ -47,6 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && success()
 
+    outputs:
+      app_version: ${{ steps.version_step.outputs.NEW_VERSION }}
+
     steps:
       - name: Checkout do Código com Token para Push (Backend)
         uses: actions/checkout@v4
@@ -55,6 +58,7 @@ jobs:
           fetch-depth: 0
 
       - name: Executar Lógica de Versionamento e Criar Tag/Commit
+        id: version_step
         run: |
           #!/bin/bash
           MAIN_BRANCH="main"
@@ -89,6 +93,9 @@ jobs:
           git push origin "$NEW_VERSION"
           echo "Processo de versionamento concluído com sucesso!"
 
+          # Adiciona a nova versão como uma saída deste passo
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT" # <--- Linha adicionada!
+
       # --- Etapa de Build e Push da Imagem Docker ---
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -115,7 +122,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
             ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ github.ref_name }}
-            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')
+            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }} # <--- AQUI ESTÁ A CORREÇÃO!
           cache-from: type=local,dest=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -125,46 +132,9 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Deploy da Aplicação (Placeholder)
-        # ESTE É O PASSO QUE VOCÊ PRECISA PERSONALIZAR PARA O SEU AMBIENTE DE PRODUÇÃO.
-        # Após a imagem ser publicada no Docker Hub, você precisará de comandos
-        # para puxar e executar essa imagem no seu servidor ou cluster.
-        #
-        # EXEMPLOS DE DEPLOY:
-        #
-        # 1. Deploy via SSH para um servidor:
-        #    - name: Deploy via SSH
-        #      uses: appleboy/ssh-action@v1.0.3
-        #      with:
-        #        host: ${{ secrets.SSH_HOST }}
-        #        username: ${{ secrets.SSH_USERNAME }}
-        #        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        #        script: |
-        #          docker pull ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
-        #          docker stop seu-backend-container || true
-        #          docker rm seu-backend-container || true
-        #          docker run -d --name seu-backend-container -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
-        #
-        # 2. Deploy para Kubernetes:
-        #    - name: Configurar Contexto Kubeconfig
-        #      uses: azure/k8s-set-context@v1
-        #      with:
-        #        kubeconfig: ${{ secrets.KUBE_CONFIG }}
-        #    - name: Deploy para Kubernetes
-        #      run: kubectl apply -f kubernetes/deployment.yaml
-        #
-        # 3. Deploy para AWS ECS/ECR:
-        #    - name: Configurar Credenciais AWS
-        #      uses: aws-actions/configure-aws-credentials@v4
-        #      with:
-        #        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #        aws-region: sua-regiao-aws
-        #    - name: Atualizar Serviço ECS
-        #      run: |
-        #        aws ecs update-service --cluster seu-cluster --service seu-servico --force-new-deployment
         run: |
           echo "Simulando a etapa de deploy da imagem Docker."
-          echo "A imagem ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:$(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A') foi publicada no Docker Hub."
+          echo "A imagem ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
           echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI NESTE BLOCO 'run:'."
           echo "Isso geralmente envolve puxar a imagem do Docker Hub e executá-la no seu ambiente de produção."
 
