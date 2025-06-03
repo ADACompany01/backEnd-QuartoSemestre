@@ -10,7 +10,6 @@ import { GetOrcamentoUseCase } from '../../../application/use-cases/orcamento/ge
 import { UpdateOrcamentoUseCase } from '../../../application/use-cases/orcamento/update-orcamento.use-case';
 import { DeleteOrcamentoUseCase } from '../../../application/use-cases/orcamento/delete-orcamento.use-case';
 import { Orcamento as OrcamentoModel } from '../../../domain/models/orcamento.model';
-import { OrcamentoService } from '../../../application/use-cases/orcamento/orcamento.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 @ApiTags('orcamentos')
@@ -26,7 +25,6 @@ export class OrcamentoController {
     private readonly getOrcamentoUseCase: GetOrcamentoUseCase,
     private readonly updateOrcamentoUseCase: UpdateOrcamentoUseCase,
     private readonly deleteOrcamentoUseCase: DeleteOrcamentoUseCase,
-    private readonly orcamentoService: OrcamentoService
   ) {}
 
   @Post()
@@ -73,7 +71,7 @@ export class OrcamentoController {
   })
   async create(@Body() createOrcamentoDto: CreateOrcamentoDto) {
     try {
-      const orcamento = await this.orcamentoService.create(createOrcamentoDto);
+      const orcamento = await this.createOrcamentoUseCase.execute(createOrcamentoDto);
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Orçamento criado com sucesso',

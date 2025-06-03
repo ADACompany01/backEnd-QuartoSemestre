@@ -9,19 +9,22 @@ import { GetPacoteUseCase } from '../../application/use-cases/pacote/get-pacote.
 import { UpdatePacoteUseCase } from '../../application/use-cases/pacote/update-pacote.use-case';
 import { DeletePacoteUseCase } from '../../application/use-cases/pacote/delete-pacote.use-case';
 import { FuncionarioModule } from '../funcionario/funcionario.module';
+import { ClienteModule } from '../cliente/cliente.module';
+import { CLIENTE_REPOSITORY } from '../../infrastructure/providers/cliente.provider';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Pacote]),
     FuncionarioModule,
+    ClienteModule,
   ],
   controllers: [PacoteController],
   providers: [
     PacoteRepositoryProvider,
     {
       provide: CreatePacoteUseCase,
-      useFactory: (repo) => new CreatePacoteUseCase(repo),
-      inject: [PACOTE_REPOSITORY],
+      useFactory: (pacoteRepo, clienteRepo) => new CreatePacoteUseCase(pacoteRepo, clienteRepo),
+      inject: [PACOTE_REPOSITORY, CLIENTE_REPOSITORY],
     },
     {
       provide: ListPacotesUseCase,

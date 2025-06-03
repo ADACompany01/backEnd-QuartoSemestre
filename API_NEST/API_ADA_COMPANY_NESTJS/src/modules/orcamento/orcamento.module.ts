@@ -11,7 +11,6 @@ import { ListOrcamentosUseCase } from '../../application/use-cases/orcamento/lis
 import { GetOrcamentoUseCase } from '../../application/use-cases/orcamento/get-orcamento.use-case';
 import { UpdateOrcamentoUseCase } from '../../application/use-cases/orcamento/update-orcamento.use-case';
 import { DeleteOrcamentoUseCase } from '../../application/use-cases/orcamento/delete-orcamento.use-case';
-import { OrcamentoService } from '../../application/use-cases/orcamento/orcamento.service';
 
 @Module({
   imports: [
@@ -23,11 +22,10 @@ import { OrcamentoService } from '../../application/use-cases/orcamento/orcament
   controllers: [OrcamentoController],
   providers: [
     OrcamentoRepositoryProvider,
-    OrcamentoService,
     {
       provide: CreateOrcamentoUseCase,
-      useFactory: (repo) => new CreateOrcamentoUseCase(repo),
-      inject: [ORCAMENTO_REPOSITORY],
+      useFactory: (repo, pacoteRepo) => new CreateOrcamentoUseCase(repo, pacoteRepo),
+      inject: [ORCAMENTO_REPOSITORY, 'PACOTE_REPOSITORY'],
     },
     {
       provide: ListOrcamentosUseCase,
@@ -56,8 +54,7 @@ import { OrcamentoService } from '../../application/use-cases/orcamento/orcament
     GetOrcamentoUseCase,
     UpdateOrcamentoUseCase,
     DeleteOrcamentoUseCase,
-    ORCAMENTO_REPOSITORY,
-    OrcamentoService,
+    ORCAMENTO_REPOSITORY
   ]
 })
 export class OrcamentoModule {}
