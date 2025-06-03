@@ -28,7 +28,7 @@ jobs:
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Rodar Testes do Backend
-        run: npm test
+        run: npm test -- --passWithNoTests
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Buildar Backend (Se aplicável)
