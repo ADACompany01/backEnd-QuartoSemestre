@@ -1,32 +1,168 @@
-name: Backend CI
+name: CI Backend, Versionamento e Deploy
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main # Aciona CI, versionamento e deploy em push para a branch 'main'
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main # Aciona apenas CI (testes/build) em Pull Requests
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  # Job 1: build_and_test_backend
+  # Responsável por executar os testes e o build do seu projeto de backend.
+  build_and_test_backend:
+    runs-on: ubuntu-latest # Ambiente de execução (Ubuntu Linux mais recente)
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout do Código do Backend
+        uses: actions/checkout@v4 # Action para clonar o repositório
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Configurar Ambiente do Backend
+        # Este passo configura o ambiente necessário para o seu backend.
+        # Adapte a 'uses' e 'with' para a tecnologia do seu backend (e.g., actions/setup-python@v5, actions/setup-java@v4).
+        uses: actions/setup-node@v4 # Exemplo para Node.js
+        with:
+          node-version: '18' # Defina a versão do Node.js que seu projeto usa
+          cache: 'npm' # Habilita o cache de dependências para instalações mais rápidas (pode ser 'yarn' ou 'pnpm')
 
-    - name: Install dependencies
-      run: npm install
-      working-directory: API_NEST/ada-company
+      - name: Instalar Dependências do Backend
+        # Comando para instalar as dependências do seu projeto.
+        run: npm install
 
-    - name: Run build
-      run: npm run build
-      working-directory: API_NEST/ada-company
+      - name: Rodar Testes do Backend
+        # Comando para executar os testes do seu projeto.
+        run: npm test # Se você tiver testes, adicione o comando aqui
 
-    - name: Run tests
-      run: npm run test
-      working-directory: API_NEST/ada-company
+      - name: Buildar Backend
+        run: npm run build
+
+  # Job 2: versioning_and_deploy_backend
+  # Responsável por gerenciar o versionamento do projeto e realizar o deploy.
+  # Este job só será executado se o 'build_and_test_backend' for bem-sucedido e se o push for para a branch 'main'.
+  versioning_and_deploy_backend:
+    needs: build_and_test_backend # Indica que este job depende do sucesso do job 'build_and_test_backend'
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && success() # Condição para execução: push na 'main' E job anterior OK
+
+    steps:
+      - name: Checkout do Código com Token para Push (Backend)
+        # Clona o repositório. O 'token' e 'fetch-depth: 0' são cruciais.
+        # O 'token' permite que o GitHub Actions faça commits e tags.
+        # O 'fetch-depth: 0' garante o histórico Git completo para o script de versionamento.
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }} # Usa o Secret 'GH_TOKEN' que você criou no repositório do backend
+          fetch-depth: 0
+
+      - name: Executar Lógica de Versionamento e Criar Tag/Commit
+        # O script de versionamento completo está incorporado aqui.
+        run: |
+          #!/bin/bash
+
+          # --- Lógica de Versionamento Direta no YAML ---
+          MAIN_BRANCH="main" # Defina a branch principal do seu projeto
+
+          echo "Iniciando processo de versionamento..."
+
+          # 1. Obtém a última tag (versão)
+          # Assume um formato de tag como vX.Y.Z
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+
+          if [ -z "$LAST_TAG" ]; then
+              echo "Nenhuma tag existente encontrada. Iniciando com v0.0.0."
+              LAST_TAG="v0.0.0"
+          fi
+
+          echo "Última tag encontrada: $LAST_TAG"
+
+          # 2. Incrementa a versão (PATCH)
+          # Remove o 'v' inicial se existir
+          VERSION_WITHOUT_V=${LAST_TAG#v}
+
+          # Quebra a versão em major, minor, patch
+          # 'IFS='.' read -r MAJOR MINOR PATCH' é uma forma segura de dividir strings no Bash
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_WITHOUT_V"
+
+          NEW_PATCH=$((PATCH + 1)) # Incrementa o número do patch
+          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}" # Monta a nova versão
+
+          echo "Nova versão proposta: $NEW_VERSION"
+
+          # 3. Atualiza ou cria o arquivo VERSION.txt
+          # Este arquivo irá armazenar a versão atual do backend.
+          VERSION_FILE="VERSION.txt"
+          echo "$NEW_VERSION" > "$VERSION_FILE"
+          echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
+
+          # 4. Configura o git user/email para o commit
+          git config user.name "ADACompany01"
+          git config user.email "ada2024fatec.mrs@outlook.com"
+
+          # 5. Adiciona o arquivo VERSION.txt ao stage e cria um commit
+          git add "$VERSION_FILE"
+
+          # Verifica se há alterações para commitar (se o VERSION.txt realmente mudou)
+          if git diff --cached --quiet; then
+              echo "Nenhuma alteração para commitar. A versão já está atualizada ou não há mudanças no VERSION.txt."
+              # Se não houver alterações, o script sai sem criar um novo commit/tag.
+              exit 0
+          fi
+
+          COMMIT_MESSAGE="chore(release): Bump version to $NEW_VERSION [skip ci]"
+          git commit -m "$COMMIT_MESSAGE"
+          echo "Commit criado: $COMMIT_MESSAGE"
+
+          # 6. Cria a nova tag
+          git tag "$NEW_VERSION"
+          echo "Tag criada: $NEW_VERSION"
+
+          # 7. Envia as mudanças (commit e tag) para o GitHub remoto
+          git push origin "$MAIN_BRANCH"
+          git push origin "$NEW_VERSION"
+
+          echo "Processo de versionamento concluído com sucesso!"
+
+      - name: Deploy do Backend
+        # ESTE É O PASSO CRÍTICO PARA O DEPLOY REAL DO SEU BACKEND.
+        # SUBSTITUA O CONTEÚDO DE 'run:' PELOS COMANDOS ESPECÍFICOS DO SEU PROJETO.
+        # Exemplos:
+        # - Construir e enviar imagem Docker para um registry:
+        #   run: |
+        #     docker build -t seu-usuario/seu-backend:$NEW_VERSION . # Usando a $NEW_VERSION gerada
+        #     echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        #     docker push seu-usuario/seu-backend:$NEW_VERSION
+        # - Deploy para um serviço de nuvem (AWS ECS, Google Cloud Run, Azure App Service, Heroku):
+        #   run: |
+        #     aws ecs update-service --cluster meu-cluster --service meu-backend-service --force-new-deployment
+        # - SSH para um servidor e pull do código:
+        #   uses: appleboy/ssh-action@v1.0.3
+        #   with:
+        #     host: ${{ secrets.SSH_HOST }}
+        #     username: ${{ secrets.SSH_USERNAME }}
+        #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+        #     script: |
+        #       cd /var/www/seu-app-backend
+        #       git pull origin main
+        #       npm install --production
+        #       pm2 restart seu-app-backend
+        run: |
+          echo "Simulando deploy do Backend para a nova versão: $(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A')"
+          echo "Adicione aqui os comandos reais para deployar seu backend."
+          # Ex: comando para reiniciar seu serviço, atualizar um container, etc.
+
+      - name: Enviar Notificação de Sucesso (Opcional - Backend)
+        # Use este passo para enviar notificações após o deploy.
+        # Requer configuração de secrets para um serviço de e-mail transacional (ex: SendGrid API Key).
+        # Veja as instruções para configurar isso em conversas anteriores.
+        # uses: dawidd6/action-send-mail@v3
+        # with:
+        #   server_address: smtp.sendgrid.net
+        #   server_port: 587
+        #   username: apikey
+        #   password: ${{ secrets.SENDGRID_API_KEY }}
+        #   subject: 'Backend Deploy Concluído: ${{ github.ref_name }}'
+        #   body: 'O deploy do backend foi concluído com sucesso. Nova versão: $(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A')'
+        #   to: 'seu-email-de-notificacao@example.com'
+        #   from: 'notificacoes@seu-dominio.com'
+        run: echo "Notificação de deploy de backend enviada (passo real a ser implementado se desejar)."
