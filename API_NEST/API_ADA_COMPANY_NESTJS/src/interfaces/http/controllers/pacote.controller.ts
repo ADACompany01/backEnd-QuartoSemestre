@@ -135,7 +135,6 @@ export class PacoteController {
 
 function toPacoteModelFromCreateDto(dto: CreatePacoteDto): Pacote {
   return {
-    id_pacote: '', // será gerado pelo banco
     id_cliente: dto.id_cliente,
     tipo_pacote: dto.tipo_pacote,
     valor_base: dto.valor_base,

@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from './infrastructure/database/database.module';
-import { AuthModule } from './infrastructure/auth/auth.module';
+import { AuthModule } from './application/auth/auth.module';
 import { ClienteModule } from './modules/cliente/cliente.module';
 import { FuncionarioModule } from './modules/funcionario/funcionario.module';
 import { OrcamentoModule } from './modules/orcamento/orcamento.module';

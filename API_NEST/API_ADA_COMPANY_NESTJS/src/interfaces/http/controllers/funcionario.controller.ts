@@ -39,17 +39,7 @@ export class FuncionarioController {
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
   async create(@Body() createFuncionarioDto: CreateFuncionarioDto) {
     try {
-      // Cria o usuário primeiro
-      const usuario: Partial<Usuario> = {
-        nome_completo: createFuncionarioDto.nome_completo,
-        telefone: createFuncionarioDto.telefone,
-        email: createFuncionarioDto.email,
-        senha: createFuncionarioDto.senha,
-      };
-      const usuarioCriado = await this.usuarioRepository.create(usuario);
-      const id_usuario = usuarioCriado.id_usuario;
-      // Cria o funcionário
-      const funcionario = await this.createFuncionarioUseCase.execute({ ...createFuncionarioDto, id_usuario });
+      const funcionario = await this.createFuncionarioUseCase.execute(createFuncionarioDto);
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Funcionário criado com sucesso',

@@ -4,7 +4,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class FuncionarioLoginDto {
   @ApiProperty({
     description: 'Email do funcionário',
-    example: 'funcionario@adacompany.com'
+    example: 'pedro.silva@adacompany.com',
+    required: true
   })
   @IsEmail()
   @IsNotEmpty()
@@ -12,7 +13,9 @@ export class FuncionarioLoginDto {
 
   @ApiProperty({
     description: 'Senha do funcionário',
-    example: 'senha123'
+    example: 'senha123',
+    required: true,
+    minLength: 6
   })
   @IsString()
   @IsNotEmpty()

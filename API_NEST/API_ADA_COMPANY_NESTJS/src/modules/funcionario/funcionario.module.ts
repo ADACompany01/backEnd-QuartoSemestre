@@ -23,8 +23,8 @@ import { ClienteModule } from '../cliente/cliente.module';
     UsuarioRepository,
     {
       provide: CreateFuncionarioUseCase,
-      useFactory: (repo) => new CreateFuncionarioUseCase(repo),
-      inject: [FUNCIONARIO_REPOSITORY],
+      useFactory: (funcionarioRepo, usuarioRepo) => new CreateFuncionarioUseCase(funcionarioRepo, usuarioRepo),
+      inject: [FUNCIONARIO_REPOSITORY, UsuarioRepository],
     },
     {
       provide: ListFuncionariosUseCase,
@@ -54,7 +54,8 @@ import { ClienteModule } from '../cliente/cliente.module';
     UpdateFuncionarioUseCase,
     DeleteFuncionarioUseCase,
     FUNCIONARIO_REPOSITORY,
-    UsuarioRepository
+    UsuarioRepository,
+    FuncionarioRepositoryProvider
   ]
 })
 export class FuncionarioModule {}

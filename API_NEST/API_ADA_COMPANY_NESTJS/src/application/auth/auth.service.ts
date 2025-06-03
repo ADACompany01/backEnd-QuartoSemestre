@@ -1,36 +1,36 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { Inject } from '@nestjs/common';
 import { FuncionarioRepository } from '../../domain/repositories/funcionario.repository.interface';
 import { FuncionarioLoginDto } from '../../interfaces/http/dtos/requests/funcionario-login.dto';
 import { ClienteLoginDto } from '../../interfaces/http/dtos/requests/cliente-login.dto';
 import { GetClienteByEmailUseCase } from '../use-cases/cliente/get-cliente-by-email.use-case';
 import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
-import { Usuario as UsuarioModel } from '../../domain/models/usuario.model';
 import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
+import { FUNCIONARIO_REPOSITORY } from '../../infrastructure/providers/funcionario.provider';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly jwtSecret = 'ada_company_secret_key_2025';
-  
+
   constructor(
     @InjectModel(Usuario)
     private usuarioModel: typeof Usuario,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Inject(FUNCIONARIO_REPOSITORY)
     private funcionarioRepository: FuncionarioRepository,
     private getClienteByEmailUseCase: GetClienteByEmailUseCase,
     private usuarioRepository: UsuarioRepository,
-  ) {}
+  ) { }
 
   gerarTokenValido(): string {
     const payload = { id_usuario: 123, tipo_usuario: 'admin' };
     const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
-    
+
     return this.jwtService.sign(payload, {
       secret: secret,
       expiresIn: '1h',
@@ -39,12 +39,17 @@ export class AuthService {
 
   async loginFuncionario(loginDto: FuncionarioLoginDto) {
     const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-    
-    if (!usuario || !usuario.funcionario || !await bcrypt.compare(loginDto.senha, usuario.senha)) {
+
+
+
+    const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
+
+
+    if (!usuario || !usuario.funcionario || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const payload = { 
+    const payload = {
       id_usuario: String(usuario.id_usuario),
       email: usuario.email,
       tipo_usuario: 'funcionario'
@@ -66,12 +71,17 @@ export class AuthService {
 
   async loginCliente(loginDto: ClienteLoginDto) {
     const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-    
-    if (!usuario || !usuario.cliente || !await bcrypt.compare(loginDto.senha, usuario.senha)) {
+
+
+
+    const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
+
+
+    if (!usuario || !usuario.cliente || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const payload = { 
+    const payload = {
       id_usuario: String(usuario.id_usuario),
       email: usuario.email,
       tipo_usuario: 'cliente'
@@ -93,7 +103,7 @@ export class AuthService {
 
   async validateUser(payload: any) {
     const usuario = await this.usuarioRepository.findOne(payload.sub);
-    
+
     if (!usuario) {
       return null;
     }
@@ -106,13 +116,13 @@ export class AuthService {
         tipo_usuario: 'funcionario'
       };
     } else if (usuario.cliente && payload.tipo_usuario === 'cliente') {
-       return {
+      return {
         id_usuario: String(usuario.id_usuario),
         email: usuario.email,
         tipo_usuario: 'cliente'
       };
     }
-    
+
     return null; // User found but type mismatch or no associated entity
   }
 } 

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Put, Delete, HttpStatus, Logger, Ht
 import { CreateOrcamentoDto } from '../../../interfaces/http/dtos/requests/create-orcamento.dto';
 import { UpdateOrcamentoDto } from '../../../interfaces/http/dtos/requests/update-orcamento.dto';
 import { OrcamentoResponseDto } from '../../../interfaces/http/dtos/responses/orcamento-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { FuncionarioGuard } from '../guards/funcionario.guard';
 import { CreateOrcamentoUseCase } from '../../../application/use-cases/orcamento/create-orcamento.use-case';
 import { ListOrcamentosUseCase } from '../../../application/use-cases/orcamento/list-orcamentos.use-case';
@@ -10,6 +10,8 @@ import { GetOrcamentoUseCase } from '../../../application/use-cases/orcamento/ge
 import { UpdateOrcamentoUseCase } from '../../../application/use-cases/orcamento/update-orcamento.use-case';
 import { DeleteOrcamentoUseCase } from '../../../application/use-cases/orcamento/delete-orcamento.use-case';
 import { Orcamento as OrcamentoModel } from '../../../domain/models/orcamento.model';
+import { OrcamentoService } from '../../../application/use-cases/orcamento/orcamento.service';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 
 @ApiTags('orcamentos')
 @ApiBearerAuth()
@@ -24,10 +26,26 @@ export class OrcamentoController {
     private readonly getOrcamentoUseCase: GetOrcamentoUseCase,
     private readonly updateOrcamentoUseCase: UpdateOrcamentoUseCase,
     private readonly deleteOrcamentoUseCase: DeleteOrcamentoUseCase,
+    private readonly orcamentoService: OrcamentoService
   ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar um novo orçamento' })
+  @ApiBody({
+    type: CreateOrcamentoDto,
+    description: 'Dados para criar um novo orçamento',
+    examples: {
+      example1: {
+        summary: 'Exemplo de criação de orçamento',
+        value: {
+          valor_orcamento: 2000.00,
+          data_orcamento: '2023-10-26T10:00:00Z',
+          data_validade: '2023-11-26T10:00:00Z',
+          id_pacote: '123e4567-e89b-12d3-a456-426614174000',
+        },
+      },
+    },
+  })
   @ApiResponse({ 
     status: 201, 
     description: 'Orçamento criado com sucesso',
@@ -36,6 +54,14 @@ export class OrcamentoController {
   @ApiResponse({ 
     status: 400, 
     description: 'Dados inválidos'
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Pacote não encontrado'
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Já existe orçamento para este pacote'
   })
   @ApiResponse({ 
     status: 500, 
@@ -47,17 +73,25 @@ export class OrcamentoController {
   })
   async create(@Body() createOrcamentoDto: CreateOrcamentoDto) {
     try {
-      const orcamento = await this.createOrcamentoUseCase.execute(createOrcamentoDto);
-      return this.toOrcamentoResponseDto(orcamento);
+      const orcamento = await this.orcamentoService.create(createOrcamentoDto);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Orçamento criado com sucesso',
+        data: orcamento,
+      };
     } catch (error) {
       this.logger.error(`Erro ao criar orçamento: ${error.message}`, error.stack);
-      // Aqui você pode adicionar lógica para tratar erros específicos dos use-cases,
-      // como BadRequestException ou ConflictException
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Erro ao criar orçamento: ${error.message}`,
-        error: error.name,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof NotFoundException) {
+        throw new HttpException({ statusCode: HttpStatus.NOT_FOUND, message: error.message }, HttpStatus.NOT_FOUND);
+      } else if (error instanceof ConflictException) {
+        throw new HttpException({ statusCode: HttpStatus.CONFLICT, message: error.message }, HttpStatus.CONFLICT);
+      } else {
+        throw new HttpException({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: `Erro ao criar orçamento: ${error.message}`,
+          error: error.name,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
   }
 

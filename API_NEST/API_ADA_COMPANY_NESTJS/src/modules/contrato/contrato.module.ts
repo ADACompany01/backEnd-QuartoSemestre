@@ -11,6 +11,7 @@ import { ListContratosUseCase } from '../../application/use-cases/contrato/list-
 import { GetContratoUseCase } from '../../application/use-cases/contrato/get-contrato.use-case';
 import { UpdateContratoUseCase } from '../../application/use-cases/contrato/update-contrato.use-case';
 import { DeleteContratoUseCase } from '../../application/use-cases/contrato/delete-contrato.use-case';
+import { OrcamentoService } from '../../application/use-cases/orcamento/orcamento.service';
 
 @Module({
   imports: [
@@ -22,8 +23,8 @@ import { DeleteContratoUseCase } from '../../application/use-cases/contrato/dele
     ContratoRepositoryProvider,
     {
       provide: CreateContratoUseCase,
-      useFactory: (repo) => new CreateContratoUseCase(repo),
-      inject: [CONTRATO_REPOSITORY],
+      useFactory: (contratoRepo, orcamentoService) => new CreateContratoUseCase(contratoRepo, orcamentoService),
+      inject: [CONTRATO_REPOSITORY, OrcamentoService],
     },
     {
       provide: ListContratosUseCase,
@@ -45,6 +46,7 @@ import { DeleteContratoUseCase } from '../../application/use-cases/contrato/dele
       useFactory: (repo) => new DeleteContratoUseCase(repo),
       inject: [CONTRATO_REPOSITORY],
     },
+    OrcamentoService,
   ],
   exports: [
     CreateContratoUseCase,
@@ -52,7 +54,8 @@ import { DeleteContratoUseCase } from '../../application/use-cases/contrato/dele
     GetContratoUseCase,
     UpdateContratoUseCase,
     DeleteContratoUseCase,
-    CONTRATO_REPOSITORY
+    CONTRATO_REPOSITORY,
+    OrcamentoService,
   ]
 })
 export class ContratoModule {} 

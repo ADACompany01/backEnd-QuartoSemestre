@@ -7,11 +7,18 @@ import { FuncionarioModule } from '../../modules/funcionario/funcionario.module'
 import { ClienteModule } from '../../modules/cliente/cliente.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from '../../infrastructure/auth/strategies/jwt.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { FuncionarioGuard } from '../../interfaces/http/guards/funcionario.guard';
 import { SelfAccessGuard } from '../../interfaces/http/guards/self-access.guard';
-import { FuncionarioRepositoryProvider } from '../../infrastructure/providers/funcionario.provider';
-import { ClienteRepositoryProvider } from '../../infrastructure/providers/cliente.provider';
+import { FuncionarioRepositoryProvider, FUNCIONARIO_REPOSITORY } from '../../infrastructure/providers/funcionario.provider';
+import { ClienteRepositoryProvider, CLIENTE_REPOSITORY } from '../../infrastructure/providers/cliente.provider';
+import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
+import { Funcionario as FuncionarioEntity } from '../../infrastructure/database/entities/funcionario.entity';
+import { Cliente as ClienteEntity } from '../../infrastructure/database/entities/cliente.entity';
+import { FuncionarioRepositoryImpl } from '../../infrastructure/database/repositories/funcionario.repository';
+import { ClienteRepositoryImpl } from '../../infrastructure/database/repositories/cliente.repository';
 
 @Module({
   imports: [
@@ -27,6 +34,7 @@ import { ClienteRepositoryProvider } from '../../infrastructure/providers/client
     PassportModule,
     FuncionarioModule,
     ClienteModule,
+    SequelizeModule.forFeature([Usuario, FuncionarioEntity, ClienteEntity]),
   ],
   controllers: [AuthController],
   providers: [
@@ -35,8 +43,15 @@ import { ClienteRepositoryProvider } from '../../infrastructure/providers/client
     FuncionarioGuard,
     SelfAccessGuard,
     GetClienteByEmailUseCase,
-    FuncionarioRepositoryProvider,
-    ClienteRepositoryProvider,
+    {
+      provide: FUNCIONARIO_REPOSITORY,
+      useClass: FuncionarioRepositoryImpl,
+    },
+    {
+      provide: CLIENTE_REPOSITORY,
+      useClass: ClienteRepositoryImpl,
+    },
+    UsuarioRepository,
   ],
   exports: [
     AuthService,
@@ -44,8 +59,11 @@ import { ClienteRepositoryProvider } from '../../infrastructure/providers/client
     FuncionarioGuard,
     SelfAccessGuard,
     GetClienteByEmailUseCase,
+    FUNCIONARIO_REPOSITORY,
     FuncionarioRepositoryProvider,
+    CLIENTE_REPOSITORY,
     ClienteRepositoryProvider,
+    UsuarioRepository,
   ],
 })
 export class AuthModule {} 

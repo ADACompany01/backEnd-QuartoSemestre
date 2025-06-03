@@ -34,11 +34,4 @@ export class CreateFuncionarioDto {
   @MinLength(6, { message: 'A senha deve ter pelo menos 6 caracteres.' })
   @IsNotEmpty({ message: 'A senha é obrigatória.' })
   senha: string;
-
-  @ApiProperty({
-    description: 'ID do usuário associado (gerado automaticamente)',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: false
-  })
-  id_usuario?: string;
 } 

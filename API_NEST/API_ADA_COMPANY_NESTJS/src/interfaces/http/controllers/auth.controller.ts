@@ -3,7 +3,7 @@ import { AuthService } from '../../../application/auth/auth.service';
 import { FuncionarioLoginDto } from '../dtos/requests/funcionario-login.dto';
 import { ClienteLoginDto } from '../dtos/requests/cliente-login.dto';
 import { Public } from '../decorators/public.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthResponseDto } from '../dtos/responses/auth-response.dto';
 
 @ApiTags('auth')
@@ -30,6 +30,18 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Login de funcionário' })
+  @ApiBody({ 
+    type: FuncionarioLoginDto,
+    description: 'Credenciais do funcionário',
+    examples: {
+      funcionario: {
+        value: {
+          email: 'funcionario@adacompany.com',
+          senha: 'senha123'
+        }
+      }
+    }
+  })
   @ApiResponse({ 
     status: 200, 
     description: 'Login realizado com sucesso',
@@ -47,6 +59,18 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Login de cliente' })
+  @ApiBody({ 
+    type: ClienteLoginDto,
+    description: 'Credenciais do cliente',
+    examples: {
+      cliente: {
+        value: {
+          email: 'cliente@email.com',
+          senha: 'senha123'
+        }
+      }
+    }
+  })
   @ApiResponse({ 
     status: 200, 
     description: 'Login realizado com sucesso',
