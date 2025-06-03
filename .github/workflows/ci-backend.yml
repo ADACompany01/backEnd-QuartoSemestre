@@ -124,51 +124,48 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      # --- A SEÇÃO ABAIXO FOI REVISADA PARA CORRIGIR O ERRO DE SINTAXE ---
-      - name: Deploy da Aplicação (Exemplo: Reiniciar Serviço, Aplicar K8s)
+      - name: Deploy da Aplicação (Placeholder)
         # ESTE É O PASSO QUE VOCÊ PRECISA PERSONALIZAR PARA O SEU AMBIENTE DE PRODUÇÃO.
         # Após a imagem ser publicada no Docker Hub, você precisará de comandos
         # para puxar e executar essa imagem no seu servidor ou cluster.
         #
-        # EXEMPLOS DE DEPLOY (Descomente e ajuste um deles para usar):
+        # EXEMPLOS DE DEPLOY:
         #
-        # CENÁRIO 1: Deploy via SSH para um servidor
-        # - name: Deploy via SSH
-        #   uses: appleboy/ssh-action@v1.0.3
-        #   with:
-        #     host: ${{ secrets.SSH_HOST }}             # IP ou hostname do seu servidor
-        #     username: ${{ secrets.SSH_USERNAME }}     # Usuário SSH
-        #     key: ${{ secrets.SSH_PRIVATE_KEY }}       # Chave SSH privada (como secret)
-        #     script: |
-        #       docker pull ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest # Puxa a imagem mais recente
-        #       docker stop seu-backend-container || true   # Para o contêiner antigo (se existir)
-        #       docker rm seu-backend-container || true     # Remove o contêiner antigo
-        #       docker run -d --name seu-backend-container -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest # Roda o novo contêiner
+        # 1. Deploy via SSH para um servidor:
+        #    - name: Deploy via SSH
+        #      uses: appleboy/ssh-action@v1.0.3
+        #      with:
+        #        host: ${{ secrets.SSH_HOST }}
+        #        username: ${{ secrets.SSH_USERNAME }}
+        #        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        #        script: |
+        #          docker pull ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
+        #          docker stop seu-backend-container || true
+        #          docker rm seu-backend-container || true
+        #          docker run -d --name seu-backend-container -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
         #
-        # CENÁRIO 2: Deploy para Kubernetes
-        # - name: Configurar Contexto Kubeconfig
-        #   uses: azure/k8s-set-context@v1
-        #   with:
-        #     kubeconfig: ${{ secrets.KUBE_CONFIG }} # Seu kubeconfig como secret
-        # - name: Deploy para Kubernetes
-        #   run: kubectl apply -f kubernetes/deployment.yaml # Seu arquivo de deploy do K8s
+        # 2. Deploy para Kubernetes:
+        #    - name: Configurar Contexto Kubeconfig
+        #      uses: azure/k8s-set-context@v1
+        #      with:
+        #        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+        #    - name: Deploy para Kubernetes
+        #      run: kubectl apply -f kubernetes/deployment.yaml
         #
-        # CENÁRIO 3: Deploy para AWS ECS/ECR
-        # - name: Configurar Credenciais AWS
-        #   uses: aws-actions/configure-aws-credentials@v4
-        #   with:
-        #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #     aws-region: sua-regiao-aws # Ex: 'us-east-1'
-        # - name: Atualizar Serviço ECS
-        #   run: |
-        #     aws ecs update-service --cluster seu-cluster --service seu-servico --force-new-deployment
-        #
-        # Placeholder para o deploy. REMOVA QUANDO TIVER SEUS COMANDOS REAIS.
+        # 3. Deploy para AWS ECS/ECR:
+        #    - name: Configurar Credenciais AWS
+        #      uses: aws-actions/configure-aws-credentials@v4
+        #      with:
+        #        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        #        aws-region: sua-regiao-aws
+        #    - name: Atualizar Serviço ECS
+        #      run: |
+        #        aws ecs update-service --cluster seu-cluster --service seu-servico --force-new-deployment
         run: |
           echo "Simulando a etapa de deploy da imagem Docker."
           echo "A imagem ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:$(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A') foi publicada no Docker Hub."
-          echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI."
+          echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI NESTE BLOCO 'run:'."
           echo "Isso geralmente envolve puxar a imagem do Docker Hub e executá-la no seu ambiente de produção."
 
       - name: Enviar Notificação de Sucesso (Opcional - Backend)
