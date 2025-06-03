@@ -20,7 +20,7 @@ jobs:
       - name: Configurar Ambiente do Backend (Node.js)
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           # cache: 'npm'
 
       - name: Instalar Dependências do Backend
@@ -77,8 +77,8 @@ jobs:
           VERSION_FILE="VERSION.txt"
           echo "$NEW_VERSION" > "$VERSION_FILE"
           echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
+          git config user.name "ADACompany01"
+          git config user.email "ada2024fatec.mrs@outlook.com"
           git add "$VERSION_FILE"
           if git diff --cached --quiet; then
               echo "Nenhuma alteração para commitar. A versão já está atualizada ou não há mudanças no VERSION.txt."
