@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Contrato } from '../../infrastructure/database/entities/contrato.entity';
-import { ContratoController } from '../../interfaces/http/controllers/contrato.controller';
-import { ClienteModule } from '../cliente/cliente.module';
-import { PacoteModule } from '../pacote/pacote.module';
-import { FuncionarioModule } from '../funcionario/funcionario.module';
-import { OrcamentoModule } from '../orcamento/orcamento.module';
-import { ContratoRepositoryProvider, CONTRATO_REPOSITORY } from '../../infrastructure/providers/contrato.provider';
-import { CreateContratoUseCase } from '../../application/use-cases/contrato/create-contrato.use-case';
-import { ListContratosUseCase } from '../../application/use-cases/contrato/list-contratos.use-case';
-import { GetContratoUseCase } from '../../application/use-cases/contrato/get-contrato.use-case';
-import { UpdateContratoUseCase } from '../../application/use-cases/contrato/update-contrato.use-case';
-import { DeleteContratoUseCase } from '../../application/use-cases/contrato/delete-contrato.use-case';
-import { ORCAMENTO_REPOSITORY } from '../../infrastructure/providers/orcamento.provider';
+import { Contrato } from '../infrastructure/database/entities/contrato.entity';
+import { ContratoController } from '../interfaces/http/controllers/contrato.controller';
+import { ClienteModule } from '../modules/cliente.module';
+import { PacoteModule } from '../modules/pacote.module';
+import { FuncionarioModule } from '../modules/funcionario.module';
+import { OrcamentoModule } from '../modules/orcamento.module';
+import { ContratoRepositoryProvider, CONTRATO_REPOSITORY } from '../infrastructure/providers/contrato.provider';
+import { CreateContratoUseCase } from '../application/use-cases/contrato/create-contrato.use-case';
+import { ListContratosUseCase } from '../application/use-cases/contrato/list-contratos.use-case';
+import { GetContratoUseCase } from '../application/use-cases/contrato/get-contrato.use-case';
+import { UpdateContratoUseCase } from '../application/use-cases/contrato/update-contrato.use-case';
+import { DeleteContratoUseCase } from '../application/use-cases/contrato/delete-contrato.use-case';
+import { ORCAMENTO_REPOSITORY } from '../infrastructure/providers/orcamento.provider';
 
 @Module({
   imports: [

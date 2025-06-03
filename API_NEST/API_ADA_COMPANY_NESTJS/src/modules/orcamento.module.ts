@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Orcamento } from '../../infrastructure/database/entities/orcamento.entity';
-import { OrcamentoController } from '../../interfaces/http/controllers/orcamento.controller';
-import { ClienteModule } from '../cliente/cliente.module';
-import { PacoteModule } from '../pacote/pacote.module';
-import { FuncionarioModule } from '../funcionario/funcionario.module';
-import { OrcamentoRepositoryProvider, ORCAMENTO_REPOSITORY } from '../../infrastructure/providers/orcamento.provider';
-import { CreateOrcamentoUseCase } from '../../application/use-cases/orcamento/create-orcamento.use-case';
-import { ListOrcamentosUseCase } from '../../application/use-cases/orcamento/list-orcamentos.use-case';
-import { GetOrcamentoUseCase } from '../../application/use-cases/orcamento/get-orcamento.use-case';
-import { UpdateOrcamentoUseCase } from '../../application/use-cases/orcamento/update-orcamento.use-case';
-import { DeleteOrcamentoUseCase } from '../../application/use-cases/orcamento/delete-orcamento.use-case';
+import { Orcamento } from '../infrastructure/database/entities/orcamento.entity';
+import { OrcamentoController } from '../interfaces/http/controllers/orcamento.controller';
+import { ClienteModule } from './cliente.module';
+import { PacoteModule } from './pacote.module';
+import { FuncionarioModule } from '../modules/funcionario.module';
+import { OrcamentoRepositoryProvider, ORCAMENTO_REPOSITORY } from '../infrastructure/providers/orcamento.provider';
+import { CreateOrcamentoUseCase } from '../application/use-cases/orcamento/create-orcamento.use-case';
+import { ListOrcamentosUseCase } from '../application/use-cases/orcamento/list-orcamentos.use-case';
+import { GetOrcamentoUseCase } from '../application/use-cases/orcamento/get-orcamento.use-case';
+import { UpdateOrcamentoUseCase } from '../application/use-cases/orcamento/update-orcamento.use-case';
+import { DeleteOrcamentoUseCase } from '../application/use-cases/orcamento/delete-orcamento.use-case';
 
 @Module({
   imports: [

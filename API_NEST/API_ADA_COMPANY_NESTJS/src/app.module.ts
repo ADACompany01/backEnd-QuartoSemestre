@@ -4,10 +4,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { AuthModule } from './application/auth/auth.module';
-import { ClienteModule } from './modules/cliente/cliente.module';
-import { FuncionarioModule } from './modules/funcionario/funcionario.module';
-import { OrcamentoModule } from './modules/orcamento/orcamento.module';
-import { ContratoModule } from './modules/contrato/contrato.module';
+import { ClienteModule } from './modules/cliente.module';
+import { FuncionarioModule } from './modules/funcionario.module';
+import { OrcamentoModule } from './modules/orcamento.module';
+import { ContratoModule } from './modules/contrato.module';
 import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
 
 @Module({

@@ -1,17 +1,17 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Cliente } from '../../infrastructure/database/entities/cliente.entity';
-import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
-import { ClienteController } from '../../interfaces/http/controllers/cliente.controller';
-import { ClienteRepositoryProvider, CLIENTE_REPOSITORY } from '../../infrastructure/providers/cliente.provider';
-import { CreateClienteUseCase } from '../../application/use-cases/cliente/create-cliente.use-case';
-import { ListClientesUseCase } from '../../application/use-cases/cliente/list-clientes.use-case';
-import { GetClienteUseCase } from '../../application/use-cases/cliente/get-cliente.use-case';
-import { UpdateClienteUseCase } from '../../application/use-cases/cliente/update-cliente.use-case';
-import { DeleteClienteUseCase } from '../../application/use-cases/cliente/delete-cliente.use-case';
-import { FuncionarioModule } from '../funcionario/funcionario.module';
-import { DatabaseModule } from '../../infrastructure/database/database.module';
-import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
+import { Cliente } from '../infrastructure/database/entities/cliente.entity';
+import { Usuario } from '../infrastructure/database/entities/usuario.entity';
+import { ClienteController } from '../interfaces/http/controllers/cliente.controller';
+import { ClienteRepositoryProvider, CLIENTE_REPOSITORY } from '../infrastructure/providers/cliente.provider';
+import { CreateClienteUseCase } from '../application/use-cases/cliente/create-cliente.use-case';
+import { ListClientesUseCase } from '../application/use-cases/cliente/list-clientes.use-case';
+import { GetClienteUseCase } from '../application/use-cases/cliente/get-cliente.use-case';
+import { UpdateClienteUseCase } from '../application/use-cases/cliente/update-cliente.use-case';
+import { DeleteClienteUseCase } from '../application/use-cases/cliente/delete-cliente.use-case';
+import { FuncionarioModule } from '../modules/funcionario.module';
+import { DatabaseModule } from '../infrastructure/database/database.module';
+import { UsuarioRepository } from '../infrastructure/database/repositories/usuario.repository';
 
 @Module({
   imports: [
