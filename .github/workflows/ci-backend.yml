@@ -9,8 +9,9 @@ on:
       - main
 
 jobs:
+  # Job 1: build_and_test_backend
   build_and_test_backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Ambiente de execução (Ubuntu Linux mais recente)
 
     steps:
       - name: Checkout do Código do Backend
@@ -34,10 +35,11 @@ jobs:
         run: npm run build
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
+  # Job 2: versioning_and_deploy_backend
   versioning_and_deploy_backend:
-    needs: build_and_test_backend
+    needs: build_and_test_backend # Indica que este job depende do sucesso do job 'build_and_test_backend'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.ref == 'refs/heads/main' && success() # Condição para execução: push na 'main' E job anterior OK
 
     steps:
       - name: Checkout do Código com Token para Push (Backend)
@@ -51,37 +53,41 @@ jobs:
           #!/bin/bash
 
           # --- Lógica de Versionamento Direta no YAML ---
-          MAIN_BRANCH="main"
+          MAIN_BRANCH="main" # Defina a branch principal do seu projeto
 
           echo "Iniciando processo de versionamento..."
 
-          # O script de versionamento vai rodar na raiz do repositório,
-          # então, o 'VERSION.txt' será criado na raiz.
-          # Se você quer que o VERSION.txt fique dentro de API_NEST/API_ADA_COMPANY_NESTJS,
-          # precisaria ajustar o caminho para 'API_NEST/API_ADA_COMPANY_NESTJS/VERSION.txt'
-          # e também o 'git add' para esse caminho.
-
+          # 1. Obtém a última tag (versão)
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+
           if [ -z "$LAST_TAG" ]; then
               echo "Nenhuma tag existente encontrada. Iniciando com v0.0.0."
               LAST_TAG="v0.0.0"
           fi
+
           echo "Última tag encontrada: $LAST_TAG"
 
+          # 2. Incrementa a versão (PATCH)
           VERSION_WITHOUT_V=${LAST_TAG#v}
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_WITHOUT_V"
+
           NEW_PATCH=$((PATCH + 1))
           NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+
           echo "Nova versão proposta: $NEW_VERSION"
 
+          # 3. Atualiza ou cria o arquivo VERSION.txt na raiz do repositório
           VERSION_FILE="VERSION.txt"
-          echo "$NEW_VERSION" > "$VERSION_FILE" # Cria VERSION.txt na raiz do repositório
+          echo "$NEW_VERSION" > "$VERSION_FILE"
           echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
 
+          # 4. Configura o git user/email para o commit
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
 
-          git add "$VERSION_FILE" # Adiciona o VERSION.txt da raiz
+          # 5. Adiciona o arquivo VERSION.txt ao stage e cria um commit
+          git add "$VERSION_FILE"
+
           if git diff --cached --quiet; then
               echo "Nenhuma alteração para commitar. A versão já está atualizada ou não há mudanças no VERSION.txt."
               exit 0
@@ -91,23 +97,96 @@ jobs:
           git commit -m "$COMMIT_MESSAGE"
           echo "Commit criado: $COMMIT_MESSAGE"
 
+          # 6. Cria a nova tag
           git tag "$NEW_VERSION"
           echo "Tag criada: $NEW_VERSION"
 
+          # 7. Envia as mudanças (commit e tag) para o GitHub remoto
           git push origin "$MAIN_BRANCH"
           git push origin "$NEW_VERSION"
 
           echo "Processo de versionamento concluído com sucesso!"
 
-      - name: Deploy do Backend
-        # Se o seu deploy precisa interagir com os arquivos compilados (ex: Dockerfile),
-        # você pode precisar apontar para 'API_NEST/API_ADA_COMPANY_NESTJS' ou para a pasta 'dist' dentro dela.
-        # Por exemplo, se seu Dockerfile está dentro de API_NEST/API_ADA_COMPANY_NESTJS:
-        # run: docker build -t seu-usuario/seu-backend:${{ github.ref_name }} ./API_NEST/API_ADA_COMPANY_NESTJS
-        # working-directory: API_NEST/API_ADA_COMPANY_NESTJS # Se os comandos de deploy precisam ser executados de lá
+      # --- Etapa de Build e Push da Imagem Docker ---
+      - name: Configurar Docker Buildx (Para builds otimizados e multi-plataforma)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache # Caminho onde o cache será armazenado
+          key: ${{ runner.os }}-buildx-${{ github.sha }} # Chave para identificar o cache
+          restore-keys: |
+            ${{ runner.os }}-buildx- # Tenta restaurar um cache mais antigo se o exato não for encontrado
+
+      - name: Login no Docker Hub
+        # Autentica no Docker Hub usando os secrets.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Buildar e Publicar Imagem Docker
+        # Constrói e envia a imagem Docker para o Docker Hub.
+        uses: docker/build-push-action@v5
+        with:
+          context: API_NEST/API_ADA_COMPANY_NESTJS
+          push: true # Indica para fazer o push para o registry
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest # Tag 'latest'
+            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ github.ref_name }} # Tag com o nome da branch (ex: 'main')
+            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0') # Tag com a versão semântica gerada pelo script
+          cache-from: type=local,dest=/tmp/.buildx-cache # Usa o cache de buildx
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max # Salva novo cache para futuras execuções
+
+      # Move o cache para o local correto para uso em futuras execuções
+      - name: Move cache
         run: |
-          echo "Simulando deploy do Backend para a nova versão: $(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A')"
-          echo "Adicione aqui os comandos reais para deployar seu backend."
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Deploy da Aplicação (Exemplo: Reiniciar Serviço, Aplicar K8s)
+        # ESTE É O PASSO QUE VOCÊ PRECISA PERSONALIZAR PARA O SEU AMBIENTE DE PRODUÇÃO.
+        # Após a imagem ser publicada no Docker Hub, você precisará de comandos
+        # para puxar e executar essa imagem no seu servidor ou cluster.
+        # Exemplos (remova os comentários e ajuste para sua necessidade):
+        #
+        # CENÁRIO 1: Deploy via SSH para um servidor
+        # uses: appleboy/ssh-action@v1.0.3
+        # with:
+        #   host: ${{ secrets.SSH_HOST }}             # IP ou hostname do seu servidor
+        #   username: ${{ secrets.SSH_USERNAME }}     # Usuário SSH
+        #   key: ${{ secrets.SSH_PRIVATE_KEY }}       # Chave SSH privada (como secret)
+        #   script: |
+        #     docker pull ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest # Puxa a imagem mais recente
+        #     docker stop seu-backend-container || true   # Para o contêiner antigo (se existir)
+        #     docker rm seu-backend-container || true     # Remove o contêiner antigo
+        #     docker run -d --name seu-backend-container -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest # Roda o novo contêiner
+        #
+        # CENÁRIO 2: Deploy para Kubernetes
+        # - name: Configurar Contexto Kubeconfig (se necessário)
+        #   uses: azure/k8s-set-context@v1
+        #   with:
+        #     kubeconfig: ${{ secrets.KUBE_CONFIG }} # Seu kubeconfig como secret
+        # - name: Deploy para Kubernetes
+        #   run: kubectl apply -f kubernetes/deployment.yaml # Seu arquivo de deploy do K8s
+        #
+        # CENÁRIO 3: Deploy para AWS ECS/ECR (se você já tem o ECR configurado e o ECS)
+        # - name: Configurar Credenciais AWS
+        #   uses: aws-actions/configure-aws-credentials@v4
+        #   with:
+        #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        #     aws-region: sua-regiao-aws # Ex: 'us-east-1'
+        # - name: Atualizar Serviço ECS
+        #   run: |
+        #     aws ecs update-service --cluster seu-cluster --service seu-servico --force-new-deployment
+        run: |
+          echo "Simulando a etapa de deploy da imagem Docker."
+          echo "A imagem ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:$(git describe --tags --abbrev=0 2>/dev/null || echo 'N/A') foi publicada no Docker Hub."
+          echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI."
+          echo "Isso geralmente envolve puxar a imagem do Docker Hub e executá-la no seu ambiente de produção."
 
       - name: Enviar Notificação de Sucesso (Opcional - Backend)
+        # Este passo é um placeholder para notificação por e-mail, como discutimos.
         run: echo "Notificação de deploy de backend enviada (passo real a ser implementado se desejar)."
