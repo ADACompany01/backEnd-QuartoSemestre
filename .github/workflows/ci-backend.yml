@@ -25,15 +25,17 @@ jobs:
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Buildar Backend
-        run: npx nest build 2>&1
+        run: |
+          npx nest build --verbose 2>&1
+          echo "Código de Saída do Build: $?"
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Verificar Conteúdo da Pasta Dist
         run: |
           echo "Conteúdo de API_NEST/API_ADA_COMPANY_NESTJS/dist:"
-          ls -l API_NEST/API_ADA_COMPANY_NESTJS/dist
+          ls -l dist # Caminho corrigido
           echo "Listando todos os arquivos dentro de API_NEST/API_ADA_COMPANY_NESTJS/dist (recursivamente):"
-          find API_NEST/API_ADA_COMPANY_NESTJS/dist -type f
+          find dist -type f # Caminho corrigido
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Upload de Artefatos do Backend (Opcional)
