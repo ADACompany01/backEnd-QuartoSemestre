@@ -14,7 +14,6 @@ import { FUNCIONARIO_REPOSITORY } from '../../infrastructure/providers/funcionar
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private readonly jwtSecret = 'ada_company_secret_key_2025';
 
   constructor(
     @InjectModel(Usuario)
@@ -26,6 +25,12 @@ export class AuthService {
     private getClienteByEmailUseCase: GetClienteByEmailUseCase,
     private usuarioRepository: UsuarioRepository,
   ) { }
+
+  private getJwtSecret(): string {
+    return process.env.NODE_ENV === 'test'
+      ? 'test-secret-key'
+      : this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
+  }
 
   gerarTokenValido(): string {
     const payload = { id_usuario: 123, tipo_usuario: 'admin' };
@@ -53,7 +58,7 @@ export class AuthService {
 
     return {
       access_token: this.jwtService.sign(payload, {
-        secret: this.jwtSecret,
+        secret: this.getJwtSecret(),
         expiresIn: '1h'
       }),
       user: {
@@ -81,7 +86,7 @@ export class AuthService {
 
     return {
       access_token: this.jwtService.sign(payload, {
-        secret: this.jwtSecret,
+        secret: this.getJwtSecret(),
         expiresIn: '1h'
       }),
       user: {
@@ -94,7 +99,7 @@ export class AuthService {
   }
 
   async validateUser(payload: any) {
-    const usuario = await this.usuarioRepository.findOne(payload.sub);
+    const usuario = await this.usuarioRepository.findOne(payload.id_usuario);
 
     if (!usuario) {
       return null;

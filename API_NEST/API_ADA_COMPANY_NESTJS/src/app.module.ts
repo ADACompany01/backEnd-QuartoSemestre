@@ -8,6 +8,7 @@ import { ClienteModule } from './modules/cliente.module';
 import { FuncionarioModule } from './modules/funcionario.module';
 import { OrcamentoModule } from './modules/orcamento.module';
 import { ContratoModule } from './modules/contrato.module';
+import { PacoteModule } from './modules/pacote.module';
 import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
 
 @Module({
@@ -32,6 +33,7 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
     FuncionarioModule,
     OrcamentoModule,
     ContratoModule,
+    PacoteModule,
   ],
   providers: [
     {
