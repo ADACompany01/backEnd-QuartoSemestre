@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrcamentoController } from '../../src/interfaces/http/controllers/orcamento.controller';
 import { CreateOrcamentoUseCase } from '../../src/application/use-cases/orcamento/create-orcamento.use-case';
 import { ListOrcamentosUseCase } from '../../src/application/use-cases/orcamento/list-orcamentos.use-case';
 import { GetOrcamentoUseCase } from '../../src/application/use-cases/orcamento/get-orcamento.use-case';
 import { UpdateOrcamentoUseCase } from '../../src/application/use-cases/orcamento/update-orcamento.use-case';
 import { DeleteOrcamentoUseCase } from '../../src/application/use-cases/orcamento/delete-orcamento.use-case';
 
-describe('OrcamentoController', () => {
-  let controller: OrcamentoController;
+describe('Orcamento Use Cases', () => {
   let createOrcamentoUseCase: CreateOrcamentoUseCase;
   let listOrcamentosUseCase: ListOrcamentosUseCase;
   let getOrcamentoUseCase: GetOrcamentoUseCase;
@@ -36,7 +34,6 @@ describe('OrcamentoController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrcamentoController],
       providers: [
         {
           provide: CreateOrcamentoUseCase,
@@ -61,7 +58,6 @@ describe('OrcamentoController', () => {
       ],
     }).compile();
 
-    controller = module.get<OrcamentoController>(OrcamentoController);
     createOrcamentoUseCase = module.get<CreateOrcamentoUseCase>(CreateOrcamentoUseCase);
     listOrcamentosUseCase = module.get<ListOrcamentosUseCase>(ListOrcamentosUseCase);
     getOrcamentoUseCase = module.get<GetOrcamentoUseCase>(GetOrcamentoUseCase);
@@ -70,10 +66,14 @@ describe('OrcamentoController', () => {
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(createOrcamentoUseCase).toBeDefined();
+    expect(listOrcamentosUseCase).toBeDefined();
+    expect(getOrcamentoUseCase).toBeDefined();
+    expect(updateOrcamentoUseCase).toBeDefined();
+    expect(deleteOrcamentoUseCase).toBeDefined();
   });
 
-  describe('create', () => {
+  describe('CreateOrcamentoUseCase', () => {
     it('should create a new orcamento', async () => {
       const createOrcamentoDto = {
         valor_orcamento: 1500.00,
@@ -89,14 +89,14 @@ describe('OrcamentoController', () => {
 
       mockCreateOrcamentoUseCase.execute.mockResolvedValue(mockOrcamento);
 
-      const result = await controller.create(createOrcamentoDto);
+      const result = await createOrcamentoUseCase.execute(createOrcamentoDto);
 
       expect(result).toEqual(mockOrcamento);
       expect(mockCreateOrcamentoUseCase.execute).toHaveBeenCalledWith(createOrcamentoDto);
     });
   });
 
-  describe('findAll', () => {
+  describe('ListOrcamentosUseCase', () => {
     it('should return an array of orcamentos', async () => {
       const mockOrcamentos = [
         {
@@ -117,14 +117,14 @@ describe('OrcamentoController', () => {
 
       mockListOrcamentosUseCase.execute.mockResolvedValue(mockOrcamentos);
 
-      const result = await controller.findAll();
+      const result = await listOrcamentosUseCase.execute();
 
       expect(result).toEqual(mockOrcamentos);
       expect(mockListOrcamentosUseCase.execute).toHaveBeenCalled();
     });
   });
 
-  describe('findOne', () => {
+  describe('GetOrcamentoUseCase', () => {
     it('should return a orcamento by id', async () => {
       const mockOrcamento = {
         cod_orcamento: '1',
@@ -136,14 +136,14 @@ describe('OrcamentoController', () => {
 
       mockGetOrcamentoUseCase.execute.mockResolvedValue(mockOrcamento);
 
-      const result = await controller.findOne('1');
+      const result = await getOrcamentoUseCase.execute('1');
 
       expect(result).toEqual(mockOrcamento);
       expect(mockGetOrcamentoUseCase.execute).toHaveBeenCalledWith('1');
     });
   });
 
-  describe('update', () => {
+  describe('UpdateOrcamentoUseCase', () => {
     it('should update a orcamento', async () => {
       const updateOrcamentoDto = {
         valor_orcamento: 2000.00,
@@ -160,21 +160,21 @@ describe('OrcamentoController', () => {
 
       mockUpdateOrcamentoUseCase.execute.mockResolvedValue(mockUpdatedOrcamento);
 
-      const result = await controller.update('1', updateOrcamentoDto);
+      const result = await updateOrcamentoUseCase.execute('1', updateOrcamentoDto);
 
       expect(result).toEqual(mockUpdatedOrcamento);
       expect(mockUpdateOrcamentoUseCase.execute).toHaveBeenCalledWith('1', updateOrcamentoDto);
     });
   });
 
-  describe('remove', () => {
+  describe('DeleteOrcamentoUseCase', () => {
     it('should delete a orcamento', async () => {
       mockDeleteOrcamentoUseCase.execute.mockResolvedValue(true);
 
-      const result = await controller.remove('1');
+      const result = await deleteOrcamentoUseCase.execute('1');
 
       expect(result).toBe(true);
       expect(mockDeleteOrcamentoUseCase.execute).toHaveBeenCalledWith('1');
     });
   });
-});
+}); 

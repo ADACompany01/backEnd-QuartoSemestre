@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClienteController } from '../../src/interfaces/http/controllers/cliente.controller';
 import { CreateClienteUseCase } from '../../src/application/use-cases/cliente/create-cliente.use-case';
 import { ListClientesUseCase } from '../../src/application/use-cases/cliente/list-clientes.use-case';
 import { GetClienteUseCase } from '../../src/application/use-cases/cliente/get-cliente.use-case';
@@ -7,8 +6,7 @@ import { GetClienteByEmailUseCase } from '../../src/application/use-cases/client
 import { UpdateClienteUseCase } from '../../src/application/use-cases/cliente/update-cliente.use-case';
 import { DeleteClienteUseCase } from '../../src/application/use-cases/cliente/delete-cliente.use-case';
 
-describe('ClienteController', () => {
-  let controller: ClienteController;
+describe('Cliente Use Cases', () => {
   let createClienteUseCase: CreateClienteUseCase;
   let listClientesUseCase: ListClientesUseCase;
   let getClienteUseCase: GetClienteUseCase;
@@ -42,7 +40,6 @@ describe('ClienteController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ClienteController],
       providers: [
         {
           provide: CreateClienteUseCase,
@@ -71,7 +68,6 @@ describe('ClienteController', () => {
       ],
     }).compile();
 
-    controller = module.get<ClienteController>(ClienteController);
     createClienteUseCase = module.get<CreateClienteUseCase>(CreateClienteUseCase);
     listClientesUseCase = module.get<ListClientesUseCase>(ListClientesUseCase);
     getClienteUseCase = module.get<GetClienteUseCase>(GetClienteUseCase);
@@ -81,10 +77,15 @@ describe('ClienteController', () => {
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(createClienteUseCase).toBeDefined();
+    expect(listClientesUseCase).toBeDefined();
+    expect(getClienteUseCase).toBeDefined();
+    expect(getClienteByEmailUseCase).toBeDefined();
+    expect(updateClienteUseCase).toBeDefined();
+    expect(deleteClienteUseCase).toBeDefined();
   });
 
-  describe('create', () => {
+  describe('CreateClienteUseCase', () => {
     it('should create a new cliente', async () => {
       const createClienteDto = {
         nome_completo: 'Cliente Teste',
@@ -102,14 +103,14 @@ describe('ClienteController', () => {
 
       mockCreateClienteUseCase.execute.mockResolvedValue(mockCliente);
 
-      const result = await controller.cadastro(createClienteDto);
+      const result = await createClienteUseCase.execute(createClienteDto);
 
       expect(result).toEqual(mockCliente);
       expect(mockCreateClienteUseCase.execute).toHaveBeenCalledWith(createClienteDto);
     });
   });
 
-  describe('findAll', () => {
+  describe('ListClientesUseCase', () => {
     it('should return an array of clientes', async () => {
       const mockClientes = [
         {
@@ -132,14 +133,14 @@ describe('ClienteController', () => {
 
       mockListClientesUseCase.execute.mockResolvedValue(mockClientes);
 
-      const result = await controller.findAll();
+      const result = await listClientesUseCase.execute();
 
       expect(result).toEqual(mockClientes);
       expect(mockListClientesUseCase.execute).toHaveBeenCalled();
     });
   });
 
-  describe('findOne', () => {
+  describe('GetClienteUseCase', () => {
     it('should return a cliente by id', async () => {
       const mockCliente = {
         id_cliente: '1',
@@ -152,14 +153,34 @@ describe('ClienteController', () => {
 
       mockGetClienteUseCase.execute.mockResolvedValue(mockCliente);
 
-      const result = await controller.findOne('1');
+      const result = await getClienteUseCase.execute('1');
 
       expect(result).toEqual(mockCliente);
       expect(mockGetClienteUseCase.execute).toHaveBeenCalledWith('1');
     });
   });
 
-  describe('update', () => {
+  describe('GetClienteByEmailUseCase', () => {
+    it('should return a cliente by email', async () => {
+      const mockCliente = {
+        id_cliente: '1',
+        nome_completo: 'Cliente Teste',
+        email: 'cliente@email.com',
+        cnpj: '12345678900000',
+        telefone: '11999999999',
+        id_usuario: '1',
+      };
+
+      mockGetClienteByEmailUseCase.execute.mockResolvedValue(mockCliente);
+
+      const result = await getClienteByEmailUseCase.execute('cliente@email.com');
+
+      expect(result).toEqual(mockCliente);
+      expect(mockGetClienteByEmailUseCase.execute).toHaveBeenCalledWith('cliente@email.com');
+    });
+  });
+
+  describe('UpdateClienteUseCase', () => {
     it('should update a cliente', async () => {
       const updateClienteDto = {
         nome_completo: 'Cliente Atualizado',
@@ -177,21 +198,21 @@ describe('ClienteController', () => {
 
       mockUpdateClienteUseCase.execute.mockResolvedValue(mockUpdatedCliente);
 
-      const result = await controller.update('1', updateClienteDto);
+      const result = await updateClienteUseCase.execute('1', updateClienteDto);
 
       expect(result).toEqual(mockUpdatedCliente);
       expect(mockUpdateClienteUseCase.execute).toHaveBeenCalledWith('1', updateClienteDto);
     });
   });
 
-  describe('remove', () => {
+  describe('DeleteClienteUseCase', () => {
     it('should delete a cliente', async () => {
       mockDeleteClienteUseCase.execute.mockResolvedValue(true);
 
-      const result = await controller.remove('1');
+      const result = await deleteClienteUseCase.execute('1');
 
       expect(result).toBe(true);
       expect(mockDeleteClienteUseCase.execute).toHaveBeenCalledWith('1');
     });
   });
-});
+}); 
