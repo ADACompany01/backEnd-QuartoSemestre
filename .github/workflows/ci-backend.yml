@@ -26,7 +26,7 @@ jobs:
 
       - name: Buildar Backend
         run: |
-          npx nest build --verbose 2>&1
+          npx nest build 2>&1
           echo "Código de Saída do Build: $?"
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
