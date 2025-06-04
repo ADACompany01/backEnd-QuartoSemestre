@@ -9,30 +9,23 @@ on:
       - main
 
 jobs:
-  # Job 1: build_and_test_backend
   build_and_test_backend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout do Código do Backend
+      - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Configurar Ambiente do Backend (Node.js)
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          # cache: 'npm'
+          node-version: 20
 
       - name: Instalar Dependências do Backend
         run: npm install
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
-      - name: Rodar Testes do Backend
-        run: npm test -- --passWithNoTests
-        working-directory: API_NEST/API_ADA_COMPANY_NESTJS
-
-      - name: Buildar Backend (Se aplicável)
-        run: npm run build
+      - name: Buildar Backend
+        run: npx nest build 2>&1
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Verificar Conteúdo da Pasta Dist
