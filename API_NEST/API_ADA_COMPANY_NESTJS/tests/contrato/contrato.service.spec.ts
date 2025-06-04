@@ -6,7 +6,7 @@ import { GetContratoUseCase } from '../../src/application/use-cases/contrato/get
 import { UpdateContratoUseCase } from '../../src/application/use-cases/contrato/update-contrato.use-case';
 import { DeleteContratoUseCase } from '../../src/application/use-cases/contrato/delete-contrato.use-case';
 import { CONTRATO_REPOSITORY } from '../../src/infrastructure/providers/contrato.provider';
-import { ClienteRepository } from '../../src/infrastructure/database/repositories/cliente.repository';
+import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
 import { OrcamentoRepository } from '../../src/infrastructure/database/repositories/orcamento.repository';
 import { StatusContrato } from '../../src/infrastructure/database/entities/contrato.entity';
 
@@ -39,7 +39,7 @@ describe('ContratoService', () => {
     })
       .overrideProvider(CONTRATO_REPOSITORY)
       .useValue(mockContratoRepository)
-      .overrideProvider(ClienteRepository)
+      .overrideProvider(ClienteRepositoryImpl)
       .useValue(mockClienteRepository)
       .overrideProvider(OrcamentoRepository)
       .useValue(mockOrcamentoRepository)
@@ -67,8 +67,8 @@ describe('ContratoService', () => {
         valor_contrato: 5000.00,
         cod_orcamento: '1',
         status_contrato: StatusContrato.EM_ANALISE,
-        data_inicio: new Date(),
-        data_entrega: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias depois
+        data_inicio: new Date().toISOString(),
+        data_entrega: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias depois
       };
 
       const expectedContrato = {

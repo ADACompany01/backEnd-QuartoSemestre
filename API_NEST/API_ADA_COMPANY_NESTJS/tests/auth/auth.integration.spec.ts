@@ -31,11 +31,11 @@ describe('AuthController (Integration)', () => {
     await app.close();
   });
 
-  describe('POST /auth/token', () => {
+  describe('GET /auth/token', () => {
     it('should generate a token', async () => {
-      const response = await supertest(app.getHttpServer()).post('/auth/token');
+      const response = await supertest(app.getHttpServer()).get('/auth/token');
 
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
     });
   });
@@ -67,8 +67,8 @@ describe('AuthController (Integration)', () => {
         .post('/auth/login/funcionario')
         .send(loginDto);
 
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('token');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('access_token');
       expect(response.body).toHaveProperty('user');
       expect(response.body.user.email).toBe(loginDto.email);
     });
@@ -115,8 +115,8 @@ describe('AuthController (Integration)', () => {
         .post('/auth/login/cliente')
         .send(loginDto);
 
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('token');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('access_token');
       expect(response.body).toHaveProperty('user');
       expect(response.body.user.email).toBe(loginDto.email);
     });

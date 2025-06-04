@@ -5,6 +5,7 @@ import { GetClienteUseCase } from '../../src/application/use-cases/cliente/get-c
 import { GetClienteByEmailUseCase } from '../../src/application/use-cases/cliente/get-cliente-by-email.use-case';
 import { UpdateClienteUseCase } from '../../src/application/use-cases/cliente/update-cliente.use-case';
 import { DeleteClienteUseCase } from '../../src/application/use-cases/cliente/delete-cliente.use-case';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('Cliente Use Cases', () => {
   let createClienteUseCase: CreateClienteUseCase;
@@ -96,9 +97,11 @@ describe('Cliente Use Cases', () => {
       };
 
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         ...createClienteDto,
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockCreateClienteUseCase.execute.mockResolvedValue(mockCliente);
@@ -114,20 +117,24 @@ describe('Cliente Use Cases', () => {
     it('should return an array of clientes', async () => {
       const mockClientes = [
         {
-          id_cliente: '1',
+          id_cliente: uuidv4(),
           nome_completo: 'Cliente 1',
           email: 'cliente1@email.com',
           cnpj: '12345678900001',
           telefone: '11999999999',
-          id_usuario: '1',
+          id_usuario: uuidv4(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         {
-          id_cliente: '2',
+          id_cliente: uuidv4(),
           nome_completo: 'Cliente 2',
           email: 'cliente2@email.com',
           cnpj: '12345678900002',
           telefone: '11999999998',
-          id_usuario: '2',
+          id_usuario: uuidv4(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       ];
 
@@ -143,32 +150,36 @@ describe('Cliente Use Cases', () => {
   describe('GetClienteUseCase', () => {
     it('should return a cliente by id', async () => {
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: 'Cliente Teste',
         email: 'cliente@email.com',
         cnpj: '12345678900000',
         telefone: '11999999999',
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockGetClienteUseCase.execute.mockResolvedValue(mockCliente);
 
-      const result = await getClienteUseCase.execute('1');
+      const result = await getClienteUseCase.execute(mockCliente.id_cliente);
 
       expect(result).toEqual(mockCliente);
-      expect(mockGetClienteUseCase.execute).toHaveBeenCalledWith('1');
+      expect(mockGetClienteUseCase.execute).toHaveBeenCalledWith(mockCliente.id_cliente);
     });
   });
 
   describe('GetClienteByEmailUseCase', () => {
     it('should return a cliente by email', async () => {
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: 'Cliente Teste',
         email: 'cliente@email.com',
         cnpj: '12345678900000',
         telefone: '11999999999',
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockGetClienteByEmailUseCase.execute.mockResolvedValue(mockCliente);
@@ -188,31 +199,34 @@ describe('Cliente Use Cases', () => {
       };
 
       const mockUpdatedCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: 'Cliente Atualizado',
         email: 'cliente@email.com',
         cnpj: '12345678900000',
         telefone: '11999999998',
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockUpdateClienteUseCase.execute.mockResolvedValue(mockUpdatedCliente);
 
-      const result = await updateClienteUseCase.execute('1', updateClienteDto);
+      const result = await updateClienteUseCase.execute(mockUpdatedCliente.id_cliente, updateClienteDto);
 
       expect(result).toEqual(mockUpdatedCliente);
-      expect(mockUpdateClienteUseCase.execute).toHaveBeenCalledWith('1', updateClienteDto);
+      expect(mockUpdateClienteUseCase.execute).toHaveBeenCalledWith(mockUpdatedCliente.id_cliente, updateClienteDto);
     });
   });
 
   describe('DeleteClienteUseCase', () => {
     it('should delete a cliente', async () => {
+      const clienteId = uuidv4();
       mockDeleteClienteUseCase.execute.mockResolvedValue(true);
 
-      const result = await deleteClienteUseCase.execute('1');
+      const result = await deleteClienteUseCase.execute(clienteId);
 
       expect(result).toBe(true);
-      expect(mockDeleteClienteUseCase.execute).toHaveBeenCalledWith('1');
+      expect(mockDeleteClienteUseCase.execute).toHaveBeenCalledWith(clienteId);
     });
   });
 }); 

@@ -6,6 +6,7 @@ import { GetPacoteUseCase } from '../../src/application/use-cases/pacote/get-pac
 import { UpdatePacoteUseCase } from '../../src/application/use-cases/pacote/update-pacote.use-case';
 import { DeletePacoteUseCase } from '../../src/application/use-cases/pacote/delete-pacote.use-case';
 import { TipoPacote } from '../../src/infrastructure/database/entities/pacote.entity';
+import { HttpStatus } from '@nestjs/common';
 
 describe('PacoteController', () => {
   let controller: PacoteController;
@@ -15,39 +16,49 @@ describe('PacoteController', () => {
   let updatePacoteUseCase: UpdatePacoteUseCase;
   let deletePacoteUseCase: DeletePacoteUseCase;
 
+  const mockCreatePacoteUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockListPacotesUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockGetPacoteUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockUpdatePacoteUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockDeletePacoteUseCase = {
+    execute: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PacoteController],
       providers: [
         {
           provide: CreatePacoteUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: mockCreatePacoteUseCase,
         },
         {
           provide: ListPacotesUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: mockListPacotesUseCase,
         },
         {
           provide: GetPacoteUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: mockGetPacoteUseCase,
         },
         {
           provide: UpdatePacoteUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: mockUpdatePacoteUseCase,
         },
         {
           provide: DeletePacoteUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: mockDeletePacoteUseCase,
         },
       ],
     }).compile();
@@ -66,75 +77,162 @@ describe('PacoteController', () => {
 
   describe('create', () => {
     it('should create a new pacote', async () => {
-      const pacoteData = {
+      const createPacoteDto = {
         id_cliente: '1',
         tipo_pacote: TipoPacote.A,
         valor_base: 1000.00,
       };
 
-      const expectedPacote = {
+      const mockPacote = {
         id_pacote: '1',
-        ...pacoteData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        ...createPacoteDto,
       };
 
-      jest.spyOn(createPacoteUseCase, 'execute').mockResolvedValue(expectedPacote);
+      mockCreatePacoteUseCase.execute.mockResolvedValue(mockPacote);
 
-      const result = await controller.create(pacoteData);
+      const result = await controller.create(createPacoteDto);
 
-      expect(result).toEqual(expectedPacote);
-      expect(createPacoteUseCase.execute).toHaveBeenCalledWith(pacoteData);
+      expect(result).toEqual({
+        statusCode: HttpStatus.CREATED,
+        message: 'Pacote criado com sucesso',
+        data: mockPacote,
+      });
+      expect(mockCreatePacoteUseCase.execute).toHaveBeenCalledWith(createPacoteDto);
+    });
+
+    it('should handle error when creating pacote', async () => {
+      const createPacoteDto = {
+        id_cliente: '1',
+        tipo_pacote: TipoPacote.A,
+        valor_base: 1000.00,
+      };
+
+      const error = new Error('Erro ao criar pacote');
+      mockCreatePacoteUseCase.execute.mockRejectedValue(error);
+
+      await expect(controller.create(createPacoteDto)).rejects.toThrow();
     });
   });
 
   describe('findAll', () => {
     it('should return an array of pacotes', async () => {
-      const expectedPacotes = [
+      const mockPacotes = [
         {
           id_pacote: '1',
           id_cliente: '1',
           tipo_pacote: TipoPacote.A,
           valor_base: 1000.00,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id_pacote: '2',
           id_cliente: '2',
           tipo_pacote: TipoPacote.AA,
           valor_base: 2000.00,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
-      jest.spyOn(listPacotesUseCase, 'execute').mockResolvedValue(expectedPacotes);
+      mockListPacotesUseCase.execute.mockResolvedValue(mockPacotes);
 
       const result = await controller.findAll();
 
-      expect(result).toEqual(expectedPacotes);
-      expect(listPacotesUseCase.execute).toHaveBeenCalled();
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Pacotes encontrados com sucesso',
+        data: mockPacotes,
+      });
+      expect(mockListPacotesUseCase.execute).toHaveBeenCalled();
+    });
+
+    it('should handle error when listing pacotes', async () => {
+      const error = new Error('Erro ao listar pacotes');
+      mockListPacotesUseCase.execute.mockRejectedValue(error);
+
+      await expect(controller.findAll()).rejects.toThrow();
     });
   });
 
   describe('findOne', () => {
     it('should return a single pacote', async () => {
-      const expectedPacote = {
+      const mockPacote = {
         id_pacote: '1',
         id_cliente: '1',
         tipo_pacote: TipoPacote.A,
         valor_base: 1000.00,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
-      jest.spyOn(getPacoteUseCase, 'execute').mockResolvedValue(expectedPacote);
+      mockGetPacoteUseCase.execute.mockResolvedValue(mockPacote);
 
       const result = await controller.findOne('1');
 
-      expect(result).toEqual(expectedPacote);
-      expect(getPacoteUseCase.execute).toHaveBeenCalledWith('1');
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Pacote encontrado com sucesso',
+        data: mockPacote,
+      });
+      expect(mockGetPacoteUseCase.execute).toHaveBeenCalledWith('1');
+    });
+
+    it('should throw error when pacote is not found', async () => {
+      mockGetPacoteUseCase.execute.mockResolvedValue(null);
+
+      await expect(controller.findOne('1')).rejects.toThrow();
+    });
+  });
+
+  describe('update', () => {
+    it('should update a pacote', async () => {
+      const updatePacoteDto = {
+        tipo_pacote: TipoPacote.AA,
+        valor_base: 2000.00,
+      };
+
+      const mockUpdatedPacote = {
+        id_pacote: '1',
+        id_cliente: '1',
+        ...updatePacoteDto,
+      };
+
+      mockUpdatePacoteUseCase.execute.mockResolvedValue(mockUpdatedPacote);
+
+      const result = await controller.update('1', updatePacoteDto);
+
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Pacote atualizado com sucesso',
+        data: mockUpdatedPacote,
+      });
+      expect(mockUpdatePacoteUseCase.execute).toHaveBeenCalledWith('1', expect.any(Object));
+    });
+
+    it('should throw error when pacote to update is not found', async () => {
+      const updatePacoteDto = {
+        tipo_pacote: TipoPacote.AA,
+        valor_base: 2000.00,
+      };
+
+      mockUpdatePacoteUseCase.execute.mockResolvedValue(null);
+
+      await expect(controller.update('1', updatePacoteDto)).rejects.toThrow();
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a pacote', async () => {
+      mockDeletePacoteUseCase.execute.mockResolvedValue(1);
+
+      const result = await controller.remove('1');
+
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Pacote removido com sucesso',
+      });
+      expect(mockDeletePacoteUseCase.execute).toHaveBeenCalledWith('1');
+    });
+
+    it('should throw error when pacote to delete is not found', async () => {
+      mockDeletePacoteUseCase.execute.mockResolvedValue(0);
+
+      await expect(controller.remove('1')).rejects.toThrow();
     });
   });
 }); 

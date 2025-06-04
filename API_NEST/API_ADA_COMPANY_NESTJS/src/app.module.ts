@@ -19,7 +19,9 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
+        secret: process.env.NODE_ENV === 'test' 
+          ? 'test-secret-key'
+          : configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
         signOptions: { expiresIn: '1h' },
       }),
       global: true,

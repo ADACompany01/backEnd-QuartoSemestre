@@ -6,23 +6,43 @@ import { Sequelize } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 import { Cliente } from '../../src/infrastructure/database/entities/cliente.entity';
 import { Usuario } from '../../src/infrastructure/database/entities/usuario.entity';
+import { FuncionarioGuard } from '../../src/interfaces/http/guards/funcionario.guard';
+import { FUNCIONARIO_REPOSITORY } from '../../src/infrastructure/providers/funcionario.provider';
+import { HttpStatus } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 
 describe('ClienteController (Integration)', () => {
   let app: INestApplication;
   let sequelize: Sequelize;
+  let jwtService: JwtService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+      imports: [
+        AppModule,
+        JwtModule.register({
+          secret: 'test-secret-key',
+          signOptions: { expiresIn: '1h' },
+        }),
+      ],
+    })
+    .overrideGuard(FuncionarioGuard)
+    .useValue({ canActivate: () => true })
+    .overrideProvider(FUNCIONARIO_REPOSITORY)
+    .useValue({
+      findByEmail: jest.fn().mockResolvedValue({ id: uuidv4(), email: 'funcionario@test.com' }),
+    })
+    .compile();
 
     app = moduleFixture.createNestApplication();
     sequelize = moduleFixture.get<Sequelize>(Sequelize);
+    jwtService = moduleFixture.get<JwtService>(JwtService);
     await app.init();
   });
 
   beforeEach(async () => {
-    // Limpar o banco de dados antes de cada teste
     await sequelize.truncate({ cascade: true });
   });
 
@@ -30,7 +50,16 @@ describe('ClienteController (Integration)', () => {
     await app.close();
   });
 
-  describe('POST /cliente', () => {
+  const generateToken = () => {
+    return jwtService.sign({
+      sub: uuidv4(),
+      email: 'funcionario@test.com',
+      tipo_usuario: 'funcionario',
+      id_usuario: uuidv4(),
+    });
+  };
+
+  describe('POST /clientes/cadastro', () => {
     it('should create a new cliente', async () => {
       const createClienteDto = {
         nome_completo: 'Cliente Teste',
@@ -41,10 +70,10 @@ describe('ClienteController (Integration)', () => {
       };
 
       const response = await supertest(app.getHttpServer())
-        .post('/cliente')
+        .post('/clientes/cadastro')
         .send(createClienteDto);
 
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toHaveProperty('id_cliente');
       expect(response.body.nome_completo).toBe(createClienteDto.nome_completo);
       expect(response.body.email).toBe(createClienteDto.email);
@@ -53,7 +82,6 @@ describe('ClienteController (Integration)', () => {
     });
 
     it('should return 400 when email already exists', async () => {
-      // Criar um usuário e cliente de teste
       const hashedPassword = await bcrypt.hash('senha123', 10);
       const usuario = await Usuario.create({
         nome_completo: 'Cliente Teste',
@@ -79,16 +107,17 @@ describe('ClienteController (Integration)', () => {
       };
 
       const response = await supertest(app.getHttpServer())
-        .post('/cliente')
+        .post('/clientes/cadastro')
         .send(createClienteDto);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Email já cadastrado');
     });
   });
 
-  describe('GET /cliente', () => {
+  describe('GET /clientes', () => {
     it('should return a list of clientes', async () => {
-      // Criar alguns clientes de teste
       const hashedPassword = await bcrypt.hash('senha123', 10);
       const usuario1 = await Usuario.create({
         nome_completo: 'Cliente 1',
@@ -120,17 +149,23 @@ describe('ClienteController (Integration)', () => {
         id_usuario: usuario2.id_usuario,
       });
 
-      const response = await supertest(app.getHttpServer()).get('/cliente');
+      const token = generateToken();
 
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBe(2);
+      const response = await supertest(app.getHttpServer())
+        .get('/clientes')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
+      expect(response.body).toHaveProperty('message', 'Clientes encontrados com sucesso');
+      expect(response.body).toHaveProperty('data');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBe(2);
     });
   });
 
-  describe('GET /cliente/:id', () => {
+  describe('GET /clientes/:id', () => {
     it('should return a cliente by id', async () => {
-      // Criar um cliente de teste
       const hashedPassword = await bcrypt.hash('senha123', 10);
       const usuario = await Usuario.create({
         nome_completo: 'Cliente Teste',
@@ -147,26 +182,36 @@ describe('ClienteController (Integration)', () => {
         id_usuario: usuario.id_usuario,
       });
 
-      const response = await supertest(app.getHttpServer()).get(`/cliente/${cliente.id_cliente}`);
+      const token = generateToken();
 
-      expect(response.status).toBe(200);
-      expect(response.body.id_cliente).toBe(cliente.id_cliente);
-      expect(response.body.nome_completo).toBe(cliente.nome_completo);
-      expect(response.body.email).toBe(cliente.email);
-      expect(response.body.cnpj).toBe(cliente.cnpj);
-      expect(response.body.telefone).toBe(cliente.telefone);
+      const response = await supertest(app.getHttpServer())
+        .get(`/clientes/${cliente.id_cliente}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
+      expect(response.body).toHaveProperty('message', 'Cliente encontrado com sucesso');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data.id_cliente).toBe(cliente.id_cliente);
+      expect(response.body.data.nome_completo).toBe(cliente.nome_completo);
+      expect(response.body.data.email).toBe(cliente.email);
+      expect(response.body.data.cnpj).toBe(cliente.cnpj);
+      expect(response.body.data.telefone).toBe(cliente.telefone);
     });
 
     it('should return 404 when cliente is not found', async () => {
-      const response = await supertest(app.getHttpServer()).get('/cliente/1');
+      const token = generateToken();
 
-      expect(response.status).toBe(404);
+      const response = await supertest(app.getHttpServer())
+        .get(`/clientes/${uuidv4()}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 
-  describe('PUT /cliente/:id', () => {
+  describe('PUT /clientes/:id', () => {
     it('should update a cliente', async () => {
-      // Criar um cliente de teste
       const hashedPassword = await bcrypt.hash('senha123', 10);
       const usuario = await Usuario.create({
         nome_completo: 'Cliente Teste',
@@ -188,13 +233,19 @@ describe('ClienteController (Integration)', () => {
         telefone: '11999999998',
       };
 
+      const token = generateToken();
+
       const response = await supertest(app.getHttpServer())
-        .put(`/cliente/${cliente.id_cliente}`)
+        .put(`/clientes/${cliente.id_cliente}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(updateClienteDto);
 
-      expect(response.status).toBe(200);
-      expect(response.body.nome_completo).toBe(updateClienteDto.nome_completo);
-      expect(response.body.telefone).toBe(updateClienteDto.telefone);
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
+      expect(response.body).toHaveProperty('message', 'Cliente atualizado com sucesso');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data.nome_completo).toBe(updateClienteDto.nome_completo);
+      expect(response.body.data.telefone).toBe(updateClienteDto.telefone);
     });
 
     it('should return 404 when cliente is not found', async () => {
@@ -203,17 +254,19 @@ describe('ClienteController (Integration)', () => {
         telefone: '11999999998',
       };
 
+      const token = generateToken();
+
       const response = await supertest(app.getHttpServer())
-        .put('/cliente/1')
+        .put(`/clientes/${uuidv4()}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(updateClienteDto);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 
-  describe('DELETE /cliente/:id', () => {
+  describe('DELETE /clientes/:id', () => {
     it('should delete a cliente', async () => {
-      // Criar um cliente de teste
       const hashedPassword = await bcrypt.hash('senha123', 10);
       const usuario = await Usuario.create({
         nome_completo: 'Cliente Teste',
@@ -230,19 +283,25 @@ describe('ClienteController (Integration)', () => {
         id_usuario: usuario.id_usuario,
       });
 
-      const response = await supertest(app.getHttpServer()).delete(`/cliente/${cliente.id_cliente}`);
+      const token = generateToken();
 
-      expect(response.status).toBe(200);
+      const response = await supertest(app.getHttpServer())
+        .delete(`/clientes/${cliente.id_cliente}`)
+        .set('Authorization', `Bearer ${token}`);
 
-      // Verificar se o cliente foi realmente excluído
-      const getResponse = await supertest(app.getHttpServer()).get(`/cliente/${cliente.id_cliente}`);
-      expect(getResponse.status).toBe(404);
+      expect(response.status).toBe(HttpStatus.OK);
+      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
+      expect(response.body).toHaveProperty('message', 'Cliente removido com sucesso');
     });
 
     it('should return 404 when cliente is not found', async () => {
-      const response = await supertest(app.getHttpServer()).delete('/cliente/1');
+      const token = generateToken();
 
-      expect(response.status).toBe(404);
+      const response = await supertest(app.getHttpServer())
+        .delete(`/clientes/${uuidv4()}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
   });
 }); 

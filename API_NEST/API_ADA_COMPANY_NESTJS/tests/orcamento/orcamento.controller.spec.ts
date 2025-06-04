@@ -5,6 +5,7 @@ import { ListOrcamentosUseCase } from '../../src/application/use-cases/orcamento
 import { GetOrcamentoUseCase } from '../../src/application/use-cases/orcamento/get-orcamento.use-case';
 import { UpdateOrcamentoUseCase } from '../../src/application/use-cases/orcamento/update-orcamento.use-case';
 import { DeleteOrcamentoUseCase } from '../../src/application/use-cases/orcamento/delete-orcamento.use-case';
+import { HttpStatus, HttpException, NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('OrcamentoController', () => {
   let controller: OrcamentoController;
@@ -91,8 +92,40 @@ describe('OrcamentoController', () => {
 
       const result = await controller.create(createOrcamentoDto);
 
-      expect(result).toEqual(mockOrcamento);
+      expect(result).toEqual({
+        statusCode: HttpStatus.CREATED,
+        message: 'Orçamento criado com sucesso',
+        data: mockOrcamento,
+      });
       expect(mockCreateOrcamentoUseCase.execute).toHaveBeenCalledWith(createOrcamentoDto);
+    });
+
+    it('should handle NotFoundException when creating orcamento', async () => {
+      const createOrcamentoDto = {
+        valor_orcamento: 1500.00,
+        data_orcamento: new Date(),
+        data_validade: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        id_pacote: '1',
+      };
+
+      const error = new NotFoundException('Pacote não encontrado');
+      mockCreateOrcamentoUseCase.execute.mockRejectedValue(error);
+
+      await expect(controller.create(createOrcamentoDto)).rejects.toThrow(HttpException);
+    });
+
+    it('should handle ConflictException when creating orcamento', async () => {
+      const createOrcamentoDto = {
+        valor_orcamento: 1500.00,
+        data_orcamento: new Date(),
+        data_validade: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        id_pacote: '1',
+      };
+
+      const error = new ConflictException('Já existe orçamento para este pacote');
+      mockCreateOrcamentoUseCase.execute.mockRejectedValue(error);
+
+      await expect(controller.create(createOrcamentoDto)).rejects.toThrow(HttpException);
     });
   });
 
@@ -119,8 +152,19 @@ describe('OrcamentoController', () => {
 
       const result = await controller.findAll();
 
-      expect(result).toEqual(mockOrcamentos);
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Orçamentos encontrados com sucesso',
+        data: mockOrcamentos,
+      });
       expect(mockListOrcamentosUseCase.execute).toHaveBeenCalled();
+    });
+
+    it('should handle error when listing orcamentos', async () => {
+      const error = new Error('Erro ao listar orçamentos');
+      mockListOrcamentosUseCase.execute.mockRejectedValue(error);
+
+      await expect(controller.findAll()).rejects.toThrow(HttpException);
     });
   });
 
@@ -141,6 +185,12 @@ describe('OrcamentoController', () => {
       expect(result).toEqual(mockOrcamento);
       expect(mockGetOrcamentoUseCase.execute).toHaveBeenCalledWith('1');
     });
+
+    it('should throw error when orcamento is not found', async () => {
+      mockGetOrcamentoUseCase.execute.mockResolvedValue(null);
+
+      await expect(controller.findOne('1')).rejects.toThrow(HttpException);
+    });
   });
 
   describe('update', () => {
@@ -158,23 +208,43 @@ describe('OrcamentoController', () => {
         id_pacote: '1',
       };
 
-      mockUpdateOrcamentoUseCase.execute.mockResolvedValue(mockUpdatedOrcamento);
+      mockUpdateOrcamentoUseCase.execute.mockResolvedValue([1, [mockUpdatedOrcamento]]);
 
       const result = await controller.update('1', updateOrcamentoDto);
 
       expect(result).toEqual(mockUpdatedOrcamento);
       expect(mockUpdateOrcamentoUseCase.execute).toHaveBeenCalledWith('1', updateOrcamentoDto);
     });
+
+    it('should throw error when orcamento to update is not found', async () => {
+      const updateOrcamentoDto = {
+        valor_orcamento: 2000.00,
+        data_validade: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+      };
+
+      mockUpdateOrcamentoUseCase.execute.mockResolvedValue([0, []]);
+
+      await expect(controller.update('1', updateOrcamentoDto)).rejects.toThrow(HttpException);
+    });
   });
 
   describe('remove', () => {
     it('should delete a orcamento', async () => {
-      mockDeleteOrcamentoUseCase.execute.mockResolvedValue(true);
+      mockDeleteOrcamentoUseCase.execute.mockResolvedValue(1);
 
       const result = await controller.remove('1');
 
-      expect(result).toBe(true);
+      expect(result).toEqual({
+        statusCode: HttpStatus.OK,
+        message: 'Orçamento removido com sucesso',
+      });
       expect(mockDeleteOrcamentoUseCase.execute).toHaveBeenCalledWith('1');
+    });
+
+    it('should throw error when orcamento to delete is not found', async () => {
+      mockDeleteOrcamentoUseCase.execute.mockRejectedValue(new Error('Orçamento não encontrado'));
+
+      await expect(controller.remove('1')).rejects.toThrow(HttpException);
     });
   });
 });

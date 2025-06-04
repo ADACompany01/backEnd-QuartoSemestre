@@ -1,29 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { DeleteClienteUseCase } from '../../src/application/use-cases/cliente/delete-cliente.use-case';
-import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
 
 describe('DeleteClienteUseCase', () => {
   let useCase: DeleteClienteUseCase;
-  let clienteRepository: ClienteRepositoryImpl;
+  let mockClienteRepository: any;
 
-  const mockClienteRepository = {
-    delete: jest.fn(),
-    findOne: jest.fn(),
-  };
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DeleteClienteUseCase,
-        {
-          provide: ClienteRepositoryImpl,
-          useValue: mockClienteRepository,
-        },
-      ],
-    }).compile();
-
-    useCase = module.get<DeleteClienteUseCase>(DeleteClienteUseCase);
-    clienteRepository = module.get<ClienteRepositoryImpl>(ClienteRepositoryImpl);
+  beforeEach(() => {
+    mockClienteRepository = {
+      delete: jest.fn(),
+      findById: jest.fn(),
+    };
+    useCase = new DeleteClienteUseCase(mockClienteRepository);
   });
 
   it('should be defined', () => {
@@ -41,21 +27,20 @@ describe('DeleteClienteUseCase', () => {
         id_usuario: '1',
       };
 
-      mockClienteRepository.findOne.mockResolvedValue(mockCliente);
-      mockClienteRepository.delete.mockResolvedValue(1);
+      mockClienteRepository.findById.mockResolvedValue(mockCliente);
+      mockClienteRepository.delete.mockResolvedValue(undefined);
 
-      const result = await useCase.execute('1');
+      await useCase.execute('1');
 
-      expect(result).toBe(true);
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(mockClienteRepository.findById).toHaveBeenCalledWith('1');
       expect(mockClienteRepository.delete).toHaveBeenCalledWith('1');
     });
 
     it('should throw an error when cliente is not found', async () => {
-      mockClienteRepository.findOne.mockResolvedValue(null);
+      mockClienteRepository.findById.mockResolvedValue(null);
 
       await expect(useCase.execute('1')).rejects.toThrow('Cliente não encontrado');
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(mockClienteRepository.findById).toHaveBeenCalledWith('1');
       expect(mockClienteRepository.delete).not.toHaveBeenCalled();
     });
   });

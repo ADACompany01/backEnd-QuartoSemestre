@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetClienteUseCase } from '../../src/application/use-cases/cliente/get-cliente.use-case';
-import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
+import { CLIENTE_REPOSITORY } from '../../src/infrastructure/providers/cliente.provider';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('GetClienteUseCase', () => {
   let useCase: GetClienteUseCase;
-  let clienteRepository: ClienteRepositoryImpl;
+  let clienteRepository: any;
 
   const mockClienteRepository = {
-    findOne: jest.fn(),
+    findById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -15,14 +16,14 @@ describe('GetClienteUseCase', () => {
       providers: [
         GetClienteUseCase,
         {
-          provide: ClienteRepositoryImpl,
+          provide: CLIENTE_REPOSITORY,
           useValue: mockClienteRepository,
         },
       ],
     }).compile();
 
     useCase = module.get<GetClienteUseCase>(GetClienteUseCase);
-    clienteRepository = module.get<ClienteRepositoryImpl>(ClienteRepositoryImpl);
+    clienteRepository = module.get(CLIENTE_REPOSITORY);
   });
 
   it('should be defined', () => {
@@ -32,29 +33,32 @@ describe('GetClienteUseCase', () => {
   describe('execute', () => {
     it('should return a cliente when found', async () => {
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: 'Cliente Teste',
         email: 'cliente@email.com',
         cnpj: '12345678900000',
         telefone: '11999999999',
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      mockClienteRepository.findOne.mockResolvedValue(mockCliente);
+      mockClienteRepository.findById.mockResolvedValue(mockCliente);
 
-      const result = await useCase.execute('1');
+      const result = await useCase.execute(mockCliente.id_cliente);
 
       expect(result).toEqual(mockCliente);
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(clienteRepository.findById).toHaveBeenCalledWith(mockCliente.id_cliente);
     });
 
     it('should return null when cliente is not found', async () => {
-      mockClienteRepository.findOne.mockResolvedValue(null);
+      const id = uuidv4();
+      mockClienteRepository.findById.mockResolvedValue(null);
 
-      const result = await useCase.execute('1');
+      const result = await useCase.execute(id);
 
       expect(result).toBeNull();
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(clienteRepository.findById).toHaveBeenCalledWith(id);
     });
   });
 }); 

@@ -1,29 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UpdateClienteUseCase } from '../../src/application/use-cases/cliente/update-cliente.use-case';
-import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
 
 describe('UpdateClienteUseCase', () => {
   let useCase: UpdateClienteUseCase;
-  let clienteRepository: ClienteRepositoryImpl;
+  let mockClienteRepository: any;
 
-  const mockClienteRepository = {
-    update: jest.fn(),
-    findOne: jest.fn(),
-  };
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UpdateClienteUseCase,
-        {
-          provide: ClienteRepositoryImpl,
-          useValue: mockClienteRepository,
-        },
-      ],
-    }).compile();
-
-    useCase = module.get<UpdateClienteUseCase>(UpdateClienteUseCase);
-    clienteRepository = module.get<ClienteRepositoryImpl>(ClienteRepositoryImpl);
+  beforeEach(() => {
+    mockClienteRepository = {
+      update: jest.fn(),
+      findById: jest.fn(),
+    };
+    useCase = new UpdateClienteUseCase(mockClienteRepository);
   });
 
   it('should be defined', () => {
@@ -51,13 +37,15 @@ describe('UpdateClienteUseCase', () => {
         ...updateClienteDto,
       };
 
-      mockClienteRepository.findOne.mockResolvedValue(mockCliente);
-      mockClienteRepository.update.mockResolvedValue([1, [mockUpdatedCliente]]);
+      mockClienteRepository.findById
+        .mockResolvedValueOnce(mockCliente)
+        .mockResolvedValueOnce(mockUpdatedCliente);
+      mockClienteRepository.update.mockResolvedValue(undefined);
 
       const result = await useCase.execute('1', updateClienteDto);
 
       expect(result).toEqual(mockUpdatedCliente);
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(mockClienteRepository.findById).toHaveBeenCalledWith('1');
       expect(mockClienteRepository.update).toHaveBeenCalledWith('1', updateClienteDto);
     });
 
@@ -67,10 +55,10 @@ describe('UpdateClienteUseCase', () => {
         telefone: '11999999998',
       };
 
-      mockClienteRepository.findOne.mockResolvedValue(null);
+      mockClienteRepository.findById.mockResolvedValue(null);
 
       await expect(useCase.execute('1', updateClienteDto)).rejects.toThrow('Cliente não encontrado');
-      expect(mockClienteRepository.findOne).toHaveBeenCalledWith('1');
+      expect(mockClienteRepository.findById).toHaveBeenCalledWith('1');
       expect(mockClienteRepository.update).not.toHaveBeenCalled();
     });
   });

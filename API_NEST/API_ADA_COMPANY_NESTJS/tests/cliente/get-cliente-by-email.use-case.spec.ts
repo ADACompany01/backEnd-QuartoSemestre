@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetClienteByEmailUseCase } from '../../src/application/use-cases/cliente/get-cliente-by-email.use-case';
-import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
+import { CLIENTE_REPOSITORY } from '../../src/infrastructure/providers/cliente.provider';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('GetClienteByEmailUseCase', () => {
   let useCase: GetClienteByEmailUseCase;
-  let clienteRepository: ClienteRepositoryImpl;
+  let clienteRepository: any;
 
   const mockClienteRepository = {
     findByEmail: jest.fn(),
@@ -15,14 +16,14 @@ describe('GetClienteByEmailUseCase', () => {
       providers: [
         GetClienteByEmailUseCase,
         {
-          provide: ClienteRepositoryImpl,
+          provide: CLIENTE_REPOSITORY,
           useValue: mockClienteRepository,
         },
       ],
     }).compile();
 
     useCase = module.get<GetClienteByEmailUseCase>(GetClienteByEmailUseCase);
-    clienteRepository = module.get<ClienteRepositoryImpl>(ClienteRepositoryImpl);
+    clienteRepository = module.get(CLIENTE_REPOSITORY);
   });
 
   it('should be defined', () => {
@@ -32,12 +33,14 @@ describe('GetClienteByEmailUseCase', () => {
   describe('execute', () => {
     it('should return a cliente when found by email', async () => {
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: 'Cliente Teste',
         email: 'cliente@email.com',
         cnpj: '12345678900000',
         telefone: '11999999999',
-        id_usuario: '1',
+        id_usuario: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockClienteRepository.findByEmail.mockResolvedValue(mockCliente);
@@ -45,16 +48,16 @@ describe('GetClienteByEmailUseCase', () => {
       const result = await useCase.execute('cliente@email.com');
 
       expect(result).toEqual(mockCliente);
-      expect(mockClienteRepository.findByEmail).toHaveBeenCalledWith('cliente@email.com');
+      expect(clienteRepository.findByEmail).toHaveBeenCalledWith('cliente@email.com');
     });
 
     it('should return null when cliente is not found by email', async () => {
       mockClienteRepository.findByEmail.mockResolvedValue(null);
 
-      const result = await useCase.execute('cliente@email.com');
+      const result = await useCase.execute('nonexistent@email.com');
 
       expect(result).toBeNull();
-      expect(mockClienteRepository.findByEmail).toHaveBeenCalledWith('cliente@email.com');
+      expect(clienteRepository.findByEmail).toHaveBeenCalledWith('nonexistent@email.com');
     });
   });
 }); 

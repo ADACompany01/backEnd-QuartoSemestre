@@ -7,6 +7,7 @@ import { FuncionarioRepositoryProvider, FUNCIONARIO_REPOSITORY } from '../infras
 import { CreateFuncionarioUseCase } from '../application/use-cases/funcionario/create-funcionario.use-case';
 import { ListFuncionariosUseCase } from '../application/use-cases/funcionario/list-funcionarios.use-case';
 import { GetFuncionarioUseCase } from '../application/use-cases/funcionario/get-funcionario.use-case';
+import { GetFuncionarioByEmailUseCase } from '../application/use-cases/funcionario/get-funcionario-by-email.use-case';
 import { UpdateFuncionarioUseCase } from '../application/use-cases/funcionario/update-funcionario.use-case';
 import { DeleteFuncionarioUseCase } from '../application/use-cases/funcionario/delete-funcionario.use-case';
 import { UsuarioRepository } from '../infrastructure/database/repositories/usuario.repository';
@@ -37,6 +38,11 @@ import { ClienteModule } from '../modules/cliente.module';
       inject: [FUNCIONARIO_REPOSITORY],
     },
     {
+      provide: GetFuncionarioByEmailUseCase,
+      useFactory: (repo) => new GetFuncionarioByEmailUseCase(repo),
+      inject: [FUNCIONARIO_REPOSITORY],
+    },
+    {
       provide: UpdateFuncionarioUseCase,
       useFactory: (repo) => new UpdateFuncionarioUseCase(repo),
       inject: [FUNCIONARIO_REPOSITORY],
@@ -51,6 +57,7 @@ import { ClienteModule } from '../modules/cliente.module';
     CreateFuncionarioUseCase,
     ListFuncionariosUseCase,
     GetFuncionarioUseCase,
+    GetFuncionarioByEmailUseCase,
     UpdateFuncionarioUseCase,
     DeleteFuncionarioUseCase,
     FUNCIONARIO_REPOSITORY,

@@ -43,7 +43,7 @@ describe('AuthController', () => {
       const mockResponse = {
         token: 'jwt-token',
         user: {
-          id: '1',
+          id_cliente: '123e4567-e89b-12d3-a456-426614174000',
           email: 'cliente@email.com',
         },
       };
@@ -79,7 +79,7 @@ describe('AuthController', () => {
       const mockResponse = {
         token: 'jwt-token',
         user: {
-          id: '1',
+          id_funcionario: '123e4567-e89b-12d3-a456-426614174001',
           email: 'funcionario@adacompany.com',
         },
       };

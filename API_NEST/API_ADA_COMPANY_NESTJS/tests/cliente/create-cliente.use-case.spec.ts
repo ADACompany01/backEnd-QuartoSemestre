@@ -1,42 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { CreateClienteUseCase } from '../../src/application/use-cases/cliente/create-cliente.use-case';
-import { ClienteRepositoryImpl } from '../../src/infrastructure/database/repositories/cliente.repository';
-import { UsuarioRepository } from '../../src/infrastructure/database/repositories/usuario.repository';
 import * as bcrypt from 'bcrypt';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('CreateClienteUseCase', () => {
   let useCase: CreateClienteUseCase;
-  let clienteRepository: ClienteRepositoryImpl;
-  let usuarioRepository: UsuarioRepository;
+  let mockClienteRepository: any;
+  let mockUsuarioRepository: any;
 
-  const mockClienteRepository = {
-    create: jest.fn(),
-    findByEmail: jest.fn(),
-  };
-
-  const mockUsuarioRepository = {
-    create: jest.fn(),
-    findByEmail: jest.fn(),
-  };
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CreateClienteUseCase,
-        {
-          provide: ClienteRepositoryImpl,
-          useValue: mockClienteRepository,
-        },
-        {
-          provide: UsuarioRepository,
-          useValue: mockUsuarioRepository,
-        },
-      ],
-    }).compile();
-
-    useCase = module.get<CreateClienteUseCase>(CreateClienteUseCase);
-    clienteRepository = module.get<ClienteRepositoryImpl>(ClienteRepositoryImpl);
-    usuarioRepository = module.get<UsuarioRepository>(UsuarioRepository);
+  beforeEach(() => {
+    mockClienteRepository = {
+      create: jest.fn(),
+    };
+    mockUsuarioRepository = {
+      create: jest.fn(),
+      findByEmail: jest.fn(),
+    };
+    useCase = new CreateClienteUseCase(mockClienteRepository, mockUsuarioRepository);
   });
 
   it('should be defined', () => {
@@ -54,7 +34,7 @@ describe('CreateClienteUseCase', () => {
       };
 
       const mockUsuario = {
-        id_usuario: '1',
+        id_usuario: uuidv4(),
         nome_completo: createClienteDto.nome_completo,
         email: createClienteDto.email,
         senha: await bcrypt.hash(createClienteDto.senha, 10),
@@ -62,7 +42,7 @@ describe('CreateClienteUseCase', () => {
       };
 
       const mockCliente = {
-        id_cliente: '1',
+        id_cliente: uuidv4(),
         nome_completo: createClienteDto.nome_completo,
         email: createClienteDto.email,
         cnpj: createClienteDto.cnpj,
@@ -78,8 +58,19 @@ describe('CreateClienteUseCase', () => {
 
       expect(result).toEqual(mockCliente);
       expect(mockUsuarioRepository.findByEmail).toHaveBeenCalledWith(createClienteDto.email);
-      expect(mockUsuarioRepository.create).toHaveBeenCalled();
-      expect(mockClienteRepository.create).toHaveBeenCalled();
+      expect(mockUsuarioRepository.create).toHaveBeenCalledWith({
+        nome_completo: createClienteDto.nome_completo,
+        email: createClienteDto.email,
+        senha: expect.any(String),
+        telefone: createClienteDto.telefone,
+      });
+      expect(mockClienteRepository.create).toHaveBeenCalledWith({
+        nome_completo: createClienteDto.nome_completo,
+        email: createClienteDto.email,
+        cnpj: createClienteDto.cnpj,
+        telefone: createClienteDto.telefone,
+        id_usuario: mockUsuario.id_usuario,
+      });
     });
 
     it('should throw an error when email already exists', async () => {
@@ -92,11 +83,11 @@ describe('CreateClienteUseCase', () => {
       };
 
       mockUsuarioRepository.findByEmail.mockResolvedValue({
-        id_usuario: '1',
+        id_usuario: uuidv4(),
         email: createClienteDto.email,
       });
 
-      await expect(useCase.execute(createClienteDto)).rejects.toThrow('Email já cadastrado');
+      await expect(useCase.execute(createClienteDto)).rejects.toThrow(new HttpException('Email já cadastrado', HttpStatus.BAD_REQUEST));
       expect(mockUsuarioRepository.findByEmail).toHaveBeenCalledWith(createClienteDto.email);
       expect(mockUsuarioRepository.create).not.toHaveBeenCalled();
       expect(mockClienteRepository.create).not.toHaveBeenCalled();
