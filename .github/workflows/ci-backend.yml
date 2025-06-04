@@ -35,6 +35,14 @@ jobs:
         run: npm run build
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
+      - name: Verificar Conteúdo da Pasta Dist
+        run: |
+          echo "Conteúdo de API_NEST/API_ADA_COMPANY_NESTJS/dist:"
+          ls -l API_NEST/API_ADA_COMPANY_NESTJS/dist
+          echo "Listando todos os arquivos dentro de API_NEST/API_ADA_COMPANY_NESTJS/dist (recursivamente):"
+          find API_NEST/API_ADA_COMPANY_NESTJS/dist -type f
+        working-directory: API_NEST/API_ADA_COMPANY_NESTJS
+
       - name: Upload de Artefatos do Backend (Opcional)
         uses: actions/upload-artifact@v4
         with:
