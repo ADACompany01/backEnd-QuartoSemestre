@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Contrato } from '../entities/contrato.entity';
-import { Cliente } from '../entities/cliente.entity';
 import { Orcamento } from '../entities/orcamento.entity';
+import { Pacote } from '../entities/pacote.entity';
 
 @Injectable()
 export class ContratoRepository {
@@ -13,19 +13,37 @@ export class ContratoRepository {
 
   async findAll(): Promise<Contrato[]> {
     return this.contratoModel.findAll({
-      include: [Cliente, Orcamento],
+      include: [{
+        model: Orcamento,
+        include: [{
+          model: Pacote,
+          include: ['cliente']
+        }]
+      }],
     });
   }
 
   async findOne(id: string): Promise<Contrato | null> {
     return this.contratoModel.findByPk(id, {
-      include: [Cliente, Orcamento],
+      include: [{
+        model: Orcamento,
+        include: [{
+          model: Pacote,
+          include: ['cliente']
+        }]
+      }],
     });
   }
 
   async findById(id: string): Promise<Contrato | null> {
     return this.contratoModel.findByPk(id, {
-      include: [Cliente, Orcamento],
+      include: [{
+        model: Orcamento,
+        include: [{
+          model: Pacote,
+          include: ['cliente']
+        }]
+      }],
     });
   }
 
@@ -48,15 +66,27 @@ export class ContratoRepository {
 
   async findByCliente(id_cliente: string): Promise<Contrato[]> {
     return this.contratoModel.findAll({
-      where: { id_cliente },
-      include: [Cliente, Orcamento],
+      include: [{
+        model: Orcamento,
+        include: [{
+          model: Pacote,
+          where: { id_cliente },
+          include: ['cliente']
+        }]
+      }],
     });
   }
 
   async findByOrcamento(cod_orcamento: string): Promise<Contrato[]> {
     return this.contratoModel.findAll({
       where: { cod_orcamento },
-      include: [Cliente, Orcamento],
+      include: [{
+        model: Orcamento,
+        include: [{
+          model: Pacote,
+          include: ['cliente']
+        }]
+      }],
     });
   }
 } 

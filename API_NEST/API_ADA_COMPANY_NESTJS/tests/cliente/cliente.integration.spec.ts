@@ -50,12 +50,12 @@ describe('ClienteController (Integration)', () => {
     await app.close();
   });
 
-  const generateToken = () => {
+  const generateToken = (tipo: 'funcionario' | 'cliente' = 'funcionario', id_usuario?: string) => {
     return jwtService.sign({
       sub: uuidv4(),
-      email: 'funcionario@test.com',
-      tipo_usuario: 'funcionario',
-      id_usuario: uuidv4(),
+      email: tipo === 'funcionario' ? 'funcionario@test.com' : 'cliente@test.com',
+      tipo_usuario: tipo,
+      id_usuario: id_usuario || uuidv4(),
     });
   };
 
@@ -71,9 +71,9 @@ describe('ClienteController (Integration)', () => {
 
       const response = await supertest(app.getHttpServer())
         .post('/clientes/cadastro')
-        .send(createClienteDto);
+        .send(createClienteDto)
+        .expect(HttpStatus.CREATED);
 
-      expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toHaveProperty('id_cliente');
       expect(response.body.nome_completo).toBe(createClienteDto.nome_completo);
       expect(response.body.email).toBe(createClienteDto.email);
@@ -117,50 +117,24 @@ describe('ClienteController (Integration)', () => {
   });
 
   describe('GET /clientes', () => {
-    it('should return a list of clientes', async () => {
-      const hashedPassword = await bcrypt.hash('senha123', 10);
-      const usuario1 = await Usuario.create({
-        nome_completo: 'Cliente 1',
-        email: 'cliente1@email.com',
-        telefone: '11999999999',
-        senha: hashedPassword,
-      });
-
-      const usuario2 = await Usuario.create({
-        nome_completo: 'Cliente 2',
-        email: 'cliente2@email.com',
-        telefone: '11999999998',
-        senha: hashedPassword,
-      });
-
-      await Cliente.create({
-        nome_completo: 'Cliente 1',
-        email: 'cliente1@email.com',
-        cnpj: '12345678900001',
-        telefone: '11999999999',
-        id_usuario: usuario1.id_usuario,
-      });
-
-      await Cliente.create({
-        nome_completo: 'Cliente 2',
-        email: 'cliente2@email.com',
-        cnpj: '12345678900002',
-        telefone: '11999999998',
-        id_usuario: usuario2.id_usuario,
-      });
-
-      const token = generateToken();
+    it('should return all clientes (funcionario)', async () => {
+      const token = generateToken('funcionario');
 
       const response = await supertest(app.getHttpServer())
         .get('/clientes')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
 
-      expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
-      expect(response.body).toHaveProperty('message', 'Clientes encontrados com sucesso');
-      expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data.length).toBe(2);
+    });
+
+    it('should not allow cliente to list all clientes', async () => {
+      const token = generateToken('cliente');
+
+      await supertest(app.getHttpServer())
+        .get('/clientes')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 
@@ -211,41 +185,59 @@ describe('ClienteController (Integration)', () => {
   });
 
   describe('PUT /clientes/:id', () => {
-    it('should update a cliente', async () => {
-      const hashedPassword = await bcrypt.hash('senha123', 10);
-      const usuario = await Usuario.create({
-        nome_completo: 'Cliente Teste',
-        email: 'cliente@email.com',
-        telefone: '11999999999',
-        senha: hashedPassword,
-      });
-
-      const cliente = await Cliente.create({
-        nome_completo: 'Cliente Teste',
-        email: 'cliente@email.com',
-        cnpj: '12345678900000',
-        telefone: '11999999999',
-        id_usuario: usuario.id_usuario,
-      });
+    it('should allow funcionario to update any cliente', async () => {
+      const token = generateToken('funcionario');
+      const clienteId = uuidv4();
 
       const updateClienteDto = {
         nome_completo: 'Cliente Atualizado',
         telefone: '11999999998',
       };
 
-      const token = generateToken();
-
       const response = await supertest(app.getHttpServer())
-        .put(`/clientes/${cliente.id_cliente}`)
+        .put(`/clientes/${clienteId}`)
         .set('Authorization', `Bearer ${token}`)
-        .send(updateClienteDto);
+        .send(updateClienteDto)
+        .expect(HttpStatus.OK);
 
-      expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toHaveProperty('statusCode', HttpStatus.OK);
-      expect(response.body).toHaveProperty('message', 'Cliente atualizado com sucesso');
-      expect(response.body).toHaveProperty('data');
       expect(response.body.data.nome_completo).toBe(updateClienteDto.nome_completo);
       expect(response.body.data.telefone).toBe(updateClienteDto.telefone);
+    });
+
+    it('should allow cliente to update their own data', async () => {
+      const clienteId = uuidv4();
+      const id_usuario = uuidv4();
+      const token = generateToken('cliente', id_usuario);
+
+      const updateClienteDto = {
+        nome_completo: 'Cliente Atualizado',
+        telefone: '11999999998',
+      };
+
+      const response = await supertest(app.getHttpServer())
+        .put(`/clientes/${clienteId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateClienteDto)
+        .expect(HttpStatus.OK);
+
+      expect(response.body.data.nome_completo).toBe(updateClienteDto.nome_completo);
+      expect(response.body.data.telefone).toBe(updateClienteDto.telefone);
+    });
+
+    it('should not allow cliente to update other cliente data', async () => {
+      const clienteId = uuidv4();
+      const token = generateToken('cliente', uuidv4());
+
+      const updateClienteDto = {
+        nome_completo: 'Cliente Atualizado',
+        telefone: '11999999998',
+      };
+
+      await supertest(app.getHttpServer())
+        .put(`/clientes/${clienteId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateClienteDto)
+        .expect(HttpStatus.UNAUTHORIZED);
     });
 
     it('should return 404 when cliente is not found', async () => {

@@ -39,6 +39,7 @@ describe('CreateClienteUseCase', () => {
         email: createClienteDto.email,
         senha: await bcrypt.hash(createClienteDto.senha, 10),
         telefone: createClienteDto.telefone,
+        tipo_usuario: 'cliente',
       };
 
       const mockCliente = {
@@ -63,6 +64,7 @@ describe('CreateClienteUseCase', () => {
         email: createClienteDto.email,
         senha: expect.any(String),
         telefone: createClienteDto.telefone,
+        tipo_usuario: 'cliente',
       });
       expect(mockClienteRepository.create).toHaveBeenCalledWith({
         nome_completo: createClienteDto.nome_completo,

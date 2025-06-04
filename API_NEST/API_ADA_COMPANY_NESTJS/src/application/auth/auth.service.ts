@@ -39,13 +39,9 @@ export class AuthService {
 
   async loginFuncionario(loginDto: FuncionarioLoginDto) {
     const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-
-
-
     const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
 
-
-    if (!usuario || !usuario.funcionario || !isPasswordValid) {
+    if (!usuario || usuario.tipo_usuario !== 'funcionario' || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
@@ -71,13 +67,9 @@ export class AuthService {
 
   async loginCliente(loginDto: ClienteLoginDto) {
     const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-
-
-
     const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
 
-
-    if (!usuario || !usuario.cliente || !isPasswordValid) {
+    if (!usuario || usuario.tipo_usuario !== 'cliente' || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
@@ -108,21 +100,14 @@ export class AuthService {
       return null;
     }
 
-    // Check for associated entities to determine user type
-    if (usuario.funcionario && payload.tipo_usuario === 'funcionario') {
+    if (usuario.tipo_usuario === payload.tipo_usuario) {
       return {
         id_usuario: String(usuario.id_usuario),
         email: usuario.email,
-        tipo_usuario: 'funcionario'
-      };
-    } else if (usuario.cliente && payload.tipo_usuario === 'cliente') {
-      return {
-        id_usuario: String(usuario.id_usuario),
-        email: usuario.email,
-        tipo_usuario: 'cliente'
+        tipo_usuario: usuario.tipo_usuario
       };
     }
 
-    return null; // User found but type mismatch or no associated entity
+    return null;
   }
 } 

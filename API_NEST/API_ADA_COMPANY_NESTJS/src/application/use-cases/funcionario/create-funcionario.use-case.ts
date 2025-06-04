@@ -19,6 +19,7 @@ export class CreateFuncionarioUseCase {
       email: data.email,
       telefone: data.telefone,
       senha: hashedPassword,
+      tipo_usuario: 'funcionario',
     });
 
     const funcionarioData = {

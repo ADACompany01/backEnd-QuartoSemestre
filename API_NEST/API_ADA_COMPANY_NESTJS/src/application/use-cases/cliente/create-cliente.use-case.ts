@@ -28,6 +28,7 @@ export class CreateClienteUseCase {
         email: data.email,
         senha: hashedPassword,
         telefone: data.telefone,
+        tipo_usuario: 'cliente',
       });
 
       // Create cliente with the associated user's ID
@@ -39,7 +40,8 @@ export class CreateClienteUseCase {
         id_usuario: usuario.id_usuario,
       });
 
-      return cliente;
+      // Retorna o cliente com o usuário associado
+      return this.clienteRepository.findById(cliente.id_cliente);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

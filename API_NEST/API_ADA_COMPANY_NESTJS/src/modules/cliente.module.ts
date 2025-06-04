@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Cliente } from '../infrastructure/database/entities/cliente.entity';
 import { Usuario } from '../infrastructure/database/entities/usuario.entity';
+import { Funcionario } from '../infrastructure/database/entities/funcionario.entity';
 import { ClienteController } from '../interfaces/http/controllers/cliente.controller';
 import { ClienteRepositoryProvider, CLIENTE_REPOSITORY } from '../infrastructure/providers/cliente.provider';
 import { CreateClienteUseCase } from '../application/use-cases/cliente/create-cliente.use-case';
@@ -15,7 +16,7 @@ import { UsuarioRepository } from '../infrastructure/database/repositories/usuar
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Cliente, Usuario]),
+    SequelizeModule.forFeature([Cliente, Usuario, Funcionario]),
     forwardRef(() => FuncionarioModule),
     DatabaseModule,
   ],
