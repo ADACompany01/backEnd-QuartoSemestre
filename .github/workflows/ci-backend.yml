@@ -24,6 +24,10 @@ jobs:
         run: npm install
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
+      - name: Executar Testes do Backend
+        run: npm jest
+        working-directory: API_NEST/API_ADA_COMPANY_NESTJS
+
       - name: Buildar Backend
         run: |
           npx nest build 2>&1
