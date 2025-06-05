@@ -4,4 +4,5 @@ export interface Usuario {
   telefone: string;
   email: string;
   senha: string;
+  tipo_usuario: 'funcionario' | 'cliente';
 } 

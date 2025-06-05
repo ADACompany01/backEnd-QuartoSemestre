@@ -14,19 +14,15 @@ export class CreateContratoUseCase {
   ) {}
 
   async execute(data: CreateContratoDto): Promise<ContratoModel> {
-    // Buscar o orçamento para obter o id_cliente
+    // Buscar o orçamento para validar sua existência
     const orcamento = await this.orcamentoRepository.findById(data.cod_orcamento);
     if (!orcamento) {
       throw new NotFoundException(`Orçamento não encontrado para o código ${data.cod_orcamento}`);
     }
 
-    // Obter o id_cliente do orçamento através do pacote
-    const id_cliente = (orcamento as any).pacote.id_cliente;
-
-    // Criar o contrato com o id_cliente obtido
+    // Criar o contrato
     return this.contratoRepository.create({
       ...data,
-      id_cliente,
       data_inicio: new Date(data.data_inicio),
       data_entrega: new Date(data.data_entrega),
     });

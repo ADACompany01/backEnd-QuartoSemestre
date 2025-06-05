@@ -1,7 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { Usuario } from './usuario.entity';
 import { Pacote } from './pacote.entity';
-import { Contrato } from './contrato.entity';
 // import { Pacote } from './pacote.entity'; // Será criado depois
 
 @Table({ tableName: 'clientes' })
@@ -47,7 +46,7 @@ export class Cliente extends Model<Cliente> {
   @ForeignKey(() => Usuario)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: true,
     field: 'id_usuario',
   })
   id_usuario: string;
@@ -57,7 +56,4 @@ export class Cliente extends Model<Cliente> {
 
   @HasMany(() => Pacote)
   pacotes: Pacote[];
-
-  @HasMany(() => Contrato)
-  contratos: Contrato[];
 } 

@@ -28,6 +28,9 @@ export class FuncionarioGuard implements CanActivate {
       }
       return true;
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Acesso permitido apenas para funcionários');
     }
   }

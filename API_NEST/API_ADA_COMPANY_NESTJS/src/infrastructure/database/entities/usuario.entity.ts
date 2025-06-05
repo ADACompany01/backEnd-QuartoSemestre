@@ -41,11 +41,16 @@ export class Usuario extends Model<Usuario> {
   })
   senha: string;
 
+  @Column({
+    type: DataType.ENUM('funcionario', 'cliente'),
+    allowNull: false,
+    field: 'tipo_usuario',
+  })
+  tipo_usuario: 'funcionario' | 'cliente';
+
   @HasOne(() => Cliente)
   cliente: Cliente;
 
   @HasOne(() => Funcionario)
   funcionario: Funcionario;
-
-  // Relacionamentos serão definidos nas entidades Cliente e FuncionarioADA
 } 

@@ -36,7 +36,7 @@ export class Funcionario extends Model<Funcionario> {
   @ForeignKey(() => Usuario)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: true,
     field: 'id_usuario',
   })
   id_usuario: string;

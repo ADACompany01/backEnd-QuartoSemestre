@@ -9,6 +9,7 @@ import { SelfAccessGuard } from '../guards/self-access.guard';
 import { CreateFuncionarioUseCase } from '../../../application/use-cases/funcionario/create-funcionario.use-case';
 import { ListFuncionariosUseCase } from '../../../application/use-cases/funcionario/list-funcionarios.use-case';
 import { GetFuncionarioUseCase } from '../../../application/use-cases/funcionario/get-funcionario.use-case';
+import { GetFuncionarioByEmailUseCase } from '../../../application/use-cases/funcionario/get-funcionario-by-email.use-case';
 import { UpdateFuncionarioUseCase } from '../../../application/use-cases/funcionario/update-funcionario.use-case';
 import { DeleteFuncionarioUseCase } from '../../../application/use-cases/funcionario/delete-funcionario.use-case';
 import { Funcionario } from '../../../domain/models/funcionario.model';
@@ -26,6 +27,7 @@ export class FuncionarioController {
     private readonly createFuncionarioUseCase: CreateFuncionarioUseCase,
     private readonly listFuncionariosUseCase: ListFuncionariosUseCase,
     private readonly getFuncionarioUseCase: GetFuncionarioUseCase,
+    private readonly getFuncionarioByEmailUseCase: GetFuncionarioByEmailUseCase,
     private readonly updateFuncionarioUseCase: UpdateFuncionarioUseCase,
     private readonly deleteFuncionarioUseCase: DeleteFuncionarioUseCase,
     private readonly usuarioRepository: UsuarioRepository,
@@ -134,6 +136,19 @@ export class FuncionarioController {
         error: error.name,
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Get('email/:email')
+  @ApiOperation({ summary: 'Get funcionario by email' })
+  @ApiParam({ name: 'email', description: 'Email of the funcionario' })
+  @ApiResponse({ status: 200, description: 'Returns the funcionario', type: FuncionarioResponseDto })
+  @ApiResponse({ status: 404, description: 'Funcionario not found' })
+  async findByEmail(@Param('email') email: string): Promise<Funcionario> {
+    const funcionario = await this.getFuncionarioByEmailUseCase.execute(email);
+    if (!funcionario) {
+      throw new HttpException('Funcionario not found', HttpStatus.NOT_FOUND);
+    }
+    return funcionario;
   }
 
   private toFuncionarioResponseDto(funcionario: any): FuncionarioResponseDto {

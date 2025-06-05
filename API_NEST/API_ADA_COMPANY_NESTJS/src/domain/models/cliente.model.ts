@@ -4,5 +4,5 @@ export interface Cliente {
   cnpj: string;
   telefone: string;
   email: string;
-  id_usuario: string;
+  id_usuario?: string;
 } 
