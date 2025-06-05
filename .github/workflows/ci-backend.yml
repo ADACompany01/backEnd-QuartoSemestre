@@ -1,4 +1,4 @@
-name: CI Backend, Versionamento e Deploy
+name: CI/CD - Backend e Banco de Dados
 
 on:
   push:
@@ -9,7 +9,82 @@ on:
       - main
 
 jobs:
+  # NOVO JOB: build_and_publish_database_image - Constrói e publica a imagem Docker do PostgreSQL
+  build_and_publish_database_image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Necessário para criar e empurrar tags para o Docker Hub
+
+    steps:
+      - name: Checkout do Código (para o DB)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necessário para a lógica de tags
+
+      - name: Configurar Docker Buildx (para o DB)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers (para o DB)
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache-db # Cache separado para o DB
+          key: ${{ runner.os }}-buildx-db-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-db-
+
+      - name: Fazer Login no Docker Hub (para o DB)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Definir Versão da Imagem do Banco de Dados
+        id: db_versioning
+        run: |
+          git fetch origin --tags # Buscar todas as tags existentes do repositório
+          # Usamos um prefixo "db-v" para as tags do banco de dados, para diferenciá-las das tags das aplicações
+          LATEST_DB_TAG=$(git describe --tags --abbrev=0 --match "db-v*" 2>/dev/null || echo "db-v0.0.0")
+          echo "Última tag DB encontrada: $LATEST_DB_TAG"
+
+          DB_VERSION_WITHOUT_PREFIX=${LATEST_DB_TAG#db-v}
+          if [ -z "$DB_VERSION_WITHOUT_PREFIX" ]; then
+              DB_MAJOR=0
+              DB_MINOR=0
+              DB_PATCH=0
+          else
+              IFS='.' read -r DB_MAJOR DB_MINOR DB_PATCH <<< "$DB_VERSION_WITHOUT_PREFIX"
+          fi
+
+          NEW_DB_PATCH=$((DB_PATCH + 1))
+          NEW_DB_VERSION="db-v${DB_MAJOR}.${DB_MINOR}.${NEW_DB_PATCH}"
+          
+          echo "Nova versão proposta para o DB: $NEW_DB_VERSION"
+
+          # Criar e empurrar a nova tag (prefixada com db-)
+          git tag "$NEW_DB_VERSION"
+          git push origin "$NEW_DB_VERSION"
+
+          echo "db_new_version=$NEW_DB_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Buildar e Publicar Imagem Docker do Banco de Dados
+        uses: docker/build-push-action@v5
+        with:
+          context: database/postgres # <-- Caminho CORRETO para o Dockerfile do DB dentro do repositório
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ github.ref_name }}
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ steps.db_versioning.outputs.db_new_version }}
+          cache-from: type=local,src=/tmp/.buildx-cache-db
+          cache-to: type=local,dest=/tmp/.buildx-cache-db-new,mode=max
+
+      - name: Mover Cache de Buildx (para o DB)
+        run: |
+          rm -rf /tmp/.buildx-cache-db
+          mv /tmp/.buildx-cache-db-new /tmp/.buildx-cache-db
+
   build_and_test_backend:
+    needs: build_and_publish_database_image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do Código
@@ -24,9 +99,10 @@ jobs:
         run: npm install
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
-      #- name: Executar Testes do Backend
-      # run: npm run test:e2e
-      # working-directory: API_NEST/API_ADA_COMPANY_NESTJS
+      # --- Etapa de Testes (Temporariamente Desativada) ---
+      # - name: Executar Testes do Backend
+      #   run: npm run test:e2e
+      #   working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Buildar Backend
         run: |
@@ -48,9 +124,8 @@ jobs:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
 
-  # Job 2: versioning_and_deploy_backend
   versioning_and_deploy_backend:
-    needs: build_and_test_backend
+    needs: build_and_test_backend 
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && success()
 
@@ -100,28 +175,26 @@ jobs:
           git push origin "$NEW_VERSION"
           echo "Processo de versionamento concluído com sucesso!"
 
-          # Adiciona a nova versão como uma saída deste passo
-          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT" # <--- Linha adicionada!
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      # --- Etapa de Build e Push da Imagem Docker ---
-      - name: Configurar Docker Buildx
+      - name: Configurar Docker Buildx (para o Backend)
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
+      - name: Cache Docker layers (para o Backend)
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.buildx-cache-backend
+          key: ${{ runner.os }}-buildx-backend-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-backend-
 
-      - name: Login no Docker Hub
+      - name: Login no Docker Hub (para o Backend)
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Buildar e Publicar Imagem Docker
+      - name: Buildar e Publicar Imagem Docker do Backend
         uses: docker/build-push-action@v5
         with:
           context: API_NEST/API_ADA_COMPANY_NESTJS
@@ -130,13 +203,13 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
             ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ github.ref_name }}
             ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache-backend
+          cache-to: type=local,dest=/tmp/.buildx-cache-backend-new,mode=max
 
-      - name: Move cache
+      - name: Move cache (para o Backend)
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-cache-backend
+          mv /tmp/.buildx-cache-backend-new /tmp/.buildx-cache-backend
 
       - name: Deploy da Aplicação (Placeholder)
         run: |
