@@ -25,7 +25,7 @@ jobs:
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Executar Testes do Backend
-        run: npm test
+        run: npm run test:e2e
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
       - name: Buildar Backend
