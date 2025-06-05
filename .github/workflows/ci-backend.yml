@@ -127,9 +127,9 @@ jobs:
           context: API_NEST/API_ADA_COMPANY_NESTJS
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:latest
-            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ github.ref_name }}
-            ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ github.ref_name }}
+            ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -141,7 +141,7 @@ jobs:
       - name: Deploy da Aplicação (Placeholder)
         run: |
           echo "Simulando a etapa de deploy da imagem Docker."
-          echo "A imagem ${{ secrets.DOCKER_USERNAME }}/seu-backend-image:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
+          echo "A imagem ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
           echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI NESTE BLOCO 'run:'."
           echo "Isso geralmente envolve puxar a imagem do Docker Hub e executá-la no seu ambiente de produção."
 
