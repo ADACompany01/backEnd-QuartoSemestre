@@ -1,5 +1,4 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Cliente } from './cliente.entity';
 import { Orcamento } from './orcamento.entity';
 
 export enum StatusContrato {
@@ -18,17 +17,6 @@ export class Contrato extends Model<Contrato> {
     field: 'id_contrato',
   })
   id_contrato: string;
-
-  @ForeignKey(() => Cliente)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false,
-    field: 'id_cliente',
-  })
-  id_cliente: string;
-
-  @BelongsTo(() => Cliente)
-  cliente: Cliente;
 
   @Column({
     type: DataType.DECIMAL(10,2),

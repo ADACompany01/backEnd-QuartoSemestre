@@ -15,14 +15,12 @@ import { UsuarioRepository } from './repositories/usuario.repository';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        /*dialect: 'postgres',
+        dialect: 'postgres',
         host: configService.get('DB_HOST', 'localhost'),
         port: configService.get('DB_PORT', 5432),
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD', 'postgres'),
-        database: configService.get('DB_DATABASE', 'ada_company'), */
-        dialect: 'sqlite',
-        storage: ':memory:',
+        database: configService.get('DB_DATABASE', 'ada_company'),
         autoLoadModels: true,
         synchronize: true,
         models: [Usuario, Cliente, Funcionario, Orcamento, Contrato, Pacote],

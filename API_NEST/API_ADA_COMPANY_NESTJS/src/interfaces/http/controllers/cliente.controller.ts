@@ -48,6 +48,9 @@ export class ClienteController {
       return this.toClienteResponseDto(cliente);
     } catch (error) {
       this.logger.error(`Erro ao cadastrar cliente: ${error.message}`, error.stack);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: `Erro ao cadastrar cliente: ${error.message}`,
@@ -66,12 +69,21 @@ export class ClienteController {
     isArray: true
   })
   async findAll() {
-    const clientes = await this.listClientesUseCase.execute();
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Clientes encontrados com sucesso',
-      data: clientes.map(this.toClienteResponseDto),
-    };
+    try {
+      const clientes = await this.listClientesUseCase.execute();
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Clientes encontrados com sucesso',
+        data: clientes.map(this.toClienteResponseDto),
+      };
+    } catch (error) {
+      this.logger.error(`Erro ao listar clientes: ${error.message}`, error.stack);
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Erro ao listar clientes: ${error.message}`,
+        error: error.name,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @UseGuards(FuncionarioGuard)
@@ -88,18 +100,30 @@ export class ClienteController {
     description: 'Cliente não encontrado'
   })
   async findOne(@Param('id') id: string) {
-    const cliente = await this.getClienteUseCase.execute(id);
-    if (!cliente) {
+    try {
+      const cliente = await this.getClienteUseCase.execute(id);
+      if (!cliente) {
+        throw new HttpException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cliente não encontrado',
+        }, HttpStatus.NOT_FOUND);
+      }
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Cliente encontrado com sucesso',
+        data: this.toClienteResponseDto(cliente),
+      };
+    } catch (error) {
+      this.logger.error(`Erro ao buscar cliente: ${error.message}`, error.stack);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Cliente não encontrado',
-      }, HttpStatus.NOT_FOUND);
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Erro ao buscar cliente: ${error.message}`,
+        error: error.name,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Cliente encontrado com sucesso',
-      data: this.toClienteResponseDto(cliente),
-    };
   }
 
   @UseGuards(SelfAccessGuard)
@@ -128,6 +152,9 @@ export class ClienteController {
       };
     } catch (error) {
       this.logger.error(`Erro ao atualizar cliente: ${error.message}`, error.stack);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: `Erro ao atualizar cliente: ${error.message}`,
@@ -157,6 +184,9 @@ export class ClienteController {
       };
     } catch (error) {
       this.logger.error(`Erro ao remover cliente: ${error.message}`, error.stack);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: `Erro ao remover cliente: ${error.message}`,

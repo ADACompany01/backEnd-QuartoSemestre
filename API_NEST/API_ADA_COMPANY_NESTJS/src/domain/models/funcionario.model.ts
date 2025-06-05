@@ -3,5 +3,5 @@ export interface Funcionario {
   nome_completo: string;
   email: string;
   telefone: string;
-  id_usuario: string;
+  id_usuario?: string;
 } 

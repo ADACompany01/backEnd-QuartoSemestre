@@ -8,6 +8,7 @@ import { ClienteModule } from './modules/cliente.module';
 import { FuncionarioModule } from './modules/funcionario.module';
 import { OrcamentoModule } from './modules/orcamento.module';
 import { ContratoModule } from './modules/contrato.module';
+import { PacoteModule } from './modules/pacote.module';
 import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
 
 @Module({
@@ -19,7 +20,9 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
+        secret: process.env.NODE_ENV === 'test' 
+          ? 'test-secret-key'
+          : configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
         signOptions: { expiresIn: '1h' },
       }),
       global: true,
@@ -30,6 +33,7 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
     FuncionarioModule,
     OrcamentoModule,
     ContratoModule,
+    PacoteModule,
   ],
   providers: [
     {
