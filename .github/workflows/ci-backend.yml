@@ -30,7 +30,7 @@ jobs:
           path: /tmp/.buildx-cache-db # Cache separado para o DB
           key: ${{ runner.os }}-buildx-db-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-db-
+             ${{ runner.os }}-buildx-db-
 
       - name: Fazer Login no Docker Hub (para o DB)
         uses: docker/login-action@v3
@@ -52,7 +52,7 @@ jobs:
               DB_MINOR=0
               DB_PATCH=0
           else
-              IFS='.' read -r DB_MAJOR DB_MINOR DB_PATCH <<< "$DB_VERSION_WITHOUT_PREFIX"
+            IFS='.' read -r DB_MAJOR DB_MINOR DB_PATCH <<< "$DB_VERSION_WITHOUT_PREFIX"
           fi
 
           NEW_DB_PATCH=$((DB_PATCH + 1))
@@ -125,100 +125,125 @@ jobs:
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
 
   versioning_and_deploy_backend:
-    needs: build_and_test_backend 
+    if: startsWith(github.ref, 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/db-v'))
+    needs: build_and_test_backend
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && success()
+    permissions:
+      contents: write # Adicionado para permitir criação de tags
+      packages: write # Para push no Docker Hub
 
     outputs:
       app_version: ${{ steps.version_step.outputs.NEW_VERSION }}
 
     steps:
-      - name: Checkout do Código com Token para Push (Backend)
+      - name: Checkout do Código com Token para Push
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }} 
           fetch-depth: 0
 
-      - name: Executar Lógica de Versionamento e Criar Tag/Commit
+      - name: Fetch todas as tags
+        run: |
+          echo "Buscando todas as tags do repositório..."
+          git fetch --tags
+          echo "Tags existentes:"
+          git tag
+
+      - name: Executar Lógica de Versionamento
         id: version_step
         run: |
           #!/bin/bash
-          MAIN_BRANCH="main"
-          echo "Iniciando processo de versionamento..."
+          set -e # Sai imediatamente se algum comando falhar
 
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+          echo "--- Iniciando processo de versionamento para backend ---"
+          
+          # Buscar apenas tags de backend (prefixo 'v')
+          # Garante que só pegamos tags como v1.0.0, v2.1.5, etc.
+          LAST_TAG=$(git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || echo "")
+          
+          echo "DEBUG: Valor inicial de LAST_TAG: '$LAST_TAG'"
+
           if [ -z "$LAST_TAG" ]; then
-              echo "Nenhuma tag existente encontrada. Iniciando com v0.0.0."
+              echo "Nenhuma tag de backend 'vX.Y.Z' encontrada. Iniciando com v0.0.0."
               LAST_TAG="v0.0.0"
           fi
-          echo "Última tag encontrada: $LAST_TAG"
 
+          echo "Última tag de backend considerada: $LAST_TAG"
+
+          # Extrair componentes da versão
           VERSION_WITHOUT_V=${LAST_TAG#v}
-          IFS='.' read -r MAJOR_VERSION MINOR_VERSION PATCH_VERSION <<< "$VERSION_WITHOUT_V"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_WITHOUT_V"
+          echo "DEBUG: Versão atual - Major: $MAJOR, Minor: $MINOR, Patch: $PATCH"
 
-          COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"%s%n%b")
+          # Determinar incremento de versão
+          echo "Obtendo commits desde a última tag..."
+          COMMITS_SINCE_LAST_TAG=$(git log "$LAST_TAG..HEAD" --pretty=format:"%s")
+          echo "DEBUG: Commits desde '$LAST_TAG':"
+          echo "$COMMITS_SINCE_LAST_TAG"
+          echo "-----------------------------------"
 
-          INCREMENT_MAJOR=0
-          INCREMENT_MINOR=0
-          INCREMENT_PATCH=0
+          INCREMENT="patch" # Padrão: incremento de patch
+          if [[ "$COMMITS_SINCE_LAST_TAG" == *"BREAKING CHANGE"* ]]; then
+              INCREMENT="major"
+          elif [[ "$COMMITS_SINCE_LAST_TAG" == *"feat"* ]]; then
+              INCREMENT="minor"
+          fi
+          echo "DEBUG: Tipo de incremento determinado: $INCREMENT"
 
-          while read -r COMMIT_LINE; do
-            if [[ "$COMMIT_LINE" == *"BREAKING CHANGE"* ]]; then
-              INCREMENT_MAJOR=1
-            elif [[ "$COMMIT_LINE" == *"feat"* ]]; then
-              INCREMENT_MINOR=1
-            elif [[ "$COMMIT_LINE" == *"fix"* ]]; then
-              INCREMENT_PATCH=1
-            fi
-          done <<< "$COMMITS"
+          # Incrementar versão
+          case $INCREMENT in
+              major)
+                  MAJOR=$((MAJOR + 1))
+                  MINOR=0
+                  PATCH=0
+                  ;;
+              minor)
+                  MINOR=$((MINOR + 1))
+                  PATCH=0
+                  ;;
+              patch)
+                  PATCH=$((PATCH + 1))
+                  ;;
+          esac
 
-          if [ "$INCREMENT_MAJOR" -eq 1 ]; then
-            NEW_MAJOR=$((MAJOR_VERSION + 1))
-            NEW_MINOR=0
-            NEW_PATCH=0
-          elif [ "$INCREMENT_MINOR" -eq 1 ]; then
-            NEW_MAJOR=$MAJOR_VERSION
-            NEW_MINOR=$((MINOR_VERSION + 1))
-            NEW_PATCH=0
-          elif [ "$INCREMENT_PATCH" -eq 1 ]; then
-            NEW_MAJOR=$MAJOR_VERSION
-            NEW_MINOR=$MINOR_VERSION
-            NEW_PATCH=$((PATCH_VERSION + 1))
-          else
-            echo "Nenhum commit relevante encontrado para incrementar versão. Abortando."
-            # Importante: definir NEW_VERSION vazio para o output para evitar erro
-            echo "NEW_VERSION=" >> "$GITHUB_OUTPUT"
-            exit 0
+          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Nova versão calculada: $NEW_VERSION"
+
+          # Verificar se a nova versão é a mesma da última tag (caso não haja commits relevantes)
+          if [ "$NEW_VERSION" == "$LAST_TAG" ] && [ "$LAST_TAG" != "v0.0.0" ]; then
+            echo "A nova versão ($NEW_VERSION) é a mesma da última tag existente ($LAST_TAG). Não há necessidade de criar uma nova tag ou fazer push."
+            # Neste caso, não criamos a tag e saímos sem erro, mas a imagem Docker NÃO será publicada com uma nova tag
+            # Você pode ajustar este comportamento se quiser forçar uma nova tag mesmo sem mudanças.
+            echo "NEW_VERSION=" >> $GITHUB_OUTPUT # Garante que output esteja vazio para os próximos steps
+            exit 0 # Sai do script com sucesso
           fi
 
-          NEW_VERSION="v${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
-          echo "Nova versão proposta: $NEW_VERSION"
+          # Criar arquivo de versão (opcional, mas bom para rastreamento)
+          echo "$NEW_VERSION" > VERSION.txt
+          git add VERSION.txt
+          echo "DEBUG: Adicionado VERSION.txt ao git"
 
-          VERSION_FILE="VERSION.txt"
-          echo "$NEW_VERSION" > "$VERSION_FILE"
-          echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
+          # Configurar git
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          echo "DEBUG: Configuração do Git definida"
 
-          git config user.name "ADACompany01"
-          git config user.email "ada2024fatec.mrs@outlook.com"
-          git add "$VERSION_FILE"
+          # Commit e tag
+          echo "DEBUG: Realizando commit com a nova versão..."
+          git commit -m "chore: release $NEW_VERSION [skip ci]"
+          echo "DEBUG: Criando tag '$NEW_VERSION'..."
+          git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
-          if git diff --cached --quiet; then
-              echo "Nenhuma alteração para commitar."
-              echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-              exit 0
-          fi
-
-          COMMIT_MESSAGE="chore(release): Bump version to $NEW_VERSION [skip ci]"
-          git commit -m "$COMMIT_MESSAGE"
-          echo "Commit criado: $COMMIT_MESSAGE"
-
-          git tag "$NEW_VERSION"
-          echo "Tag criada: $NEW_VERSION"
-
-          git push origin "$MAIN_BRANCH"
+          # Push do commit e da tag
+          echo "DEBUG: Fazendo push para 'main'..."
+          git push origin main
+          echo "DEBUG: Fazendo push da tag '$NEW_VERSION'..."
           git push origin "$NEW_VERSION"
+          echo "DEBUG: Push de commit e tag concluído."
 
+          # Output para os próximos steps
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "--- Processo de versionamento de backend concluído ---"
 
       - name: Configurar Docker Buildx (para o Backend)
         uses: docker/setup-buildx-action@v3
@@ -238,7 +263,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Buildar e Publicar Imagem Docker do Backend
-        if: steps.version_step.outputs.NEW_VERSION != ''
+        if: steps.version_step.outputs.NEW_VERSION != '' # Condição para garantir que só roda se uma nova versão foi gerada
         uses: docker/build-push-action@v5
         with:
           context: API_NEST/API_ADA_COMPANY_NESTJS
@@ -250,14 +275,14 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache-backend
           cache-to: type=local,dest=/tmp/.buildx-cache-backend-new,mode=max
 
-      - name: Move cache (para o Backend)
-        if: steps.version_step.outputs.NEW_VERSION != ''
+      - name: Mover Cache (para o Backend)
+        if: steps.version_step.outputs.NEW_VERSION != '' # Condição para garantir que só roda se uma nova versão foi gerada
         run: |
           rm -rf /tmp/.buildx-cache-backend
           mv /tmp/.buildx-cache-backend-new /tmp/.buildx-cache-backend
 
       - name: Deploy da Aplicação (Placeholder)
-        if: steps.version_step.outputs.NEW_VERSION != ''
+        if: steps.version_step.outputs.NEW_VERSION != '' # Condição para garantir que só roda se uma nova versão foi gerada
         run: |
           echo "Simulando a etapa de deploy da imagem Docker."
           echo "A imagem ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
