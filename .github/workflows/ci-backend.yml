@@ -139,7 +139,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-            - name: Executar Lógica de Versionamento e Criar Tag/Commit
+      - name: Executar Lógica de Versionamento e Criar Tag/Commit
         id: version_step
         run: |
           #!/bin/bash
@@ -222,7 +222,6 @@ jobs:
           git push origin "$NEW_VERSION"
 
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-
 
       - name: Configurar Docker Buildx (para o Backend)
         uses: docker/setup-buildx-action@v3
