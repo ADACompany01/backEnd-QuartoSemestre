@@ -34,7 +34,7 @@
     "db:seed:undo:all": "npm run build && npx sequelize-cli db:seed:undo:all --env development --seeders-path=src/database/seeders --config=src/database/config.js",
     "db:create:migration": "npx sequelize-cli migration:generate --name",
     "db:create:seed": "npx sequelize-cli seed:generate --name",
-    "migrate": "npx -r ts-node/register sequelize-cli db:migrate --config src/database/config.js"
+    "migrate": "npx -r ts-node/register sequelize-cli db:migrate --config src/infrastructure/database/config.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.2",
