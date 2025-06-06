@@ -224,8 +224,8 @@ jobs:
           echo "DEBUG: Adicionado VERSION.txt ao git"
 
           # Configurar git
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "ADACompany01"
+          git config user.email "ada2024fatec.mrs@outlook.com"
           echo "DEBUG: Configuração do Git definida"
 
           # Commit e tag
