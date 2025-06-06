@@ -146,7 +146,6 @@ jobs:
           MAIN_BRANCH="main"
           echo "Iniciando processo de versionamento..."
 
-          # Buscar última tag existente
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
           if [ -z "$LAST_TAG" ]; then
               echo "Nenhuma tag existente encontrada. Iniciando com v0.0.0."
@@ -157,15 +156,12 @@ jobs:
           VERSION_WITHOUT_V=${LAST_TAG#v}
           IFS='.' read -r MAJOR_VERSION MINOR_VERSION PATCH_VERSION <<< "$VERSION_WITHOUT_V"
 
-          # Obter mensagens de commit desde a última tag
           COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"%s%n%b")
 
-          # Inicializar flags de incremento
           INCREMENT_MAJOR=0
           INCREMENT_MINOR=0
           INCREMENT_PATCH=0
 
-          # Verificar tipo de mudança nos commits
           while read -r COMMIT_LINE; do
             if [[ "$COMMIT_LINE" == *"BREAKING CHANGE"* ]]; then
               INCREMENT_MAJOR=1
@@ -176,7 +172,6 @@ jobs:
             fi
           done <<< "$COMMITS"
 
-          # Determinar nova versão
           if [ "$INCREMENT_MAJOR" -eq 1 ]; then
             NEW_MAJOR=$((MAJOR_VERSION + 1))
             NEW_MINOR=0
@@ -191,13 +186,14 @@ jobs:
             NEW_PATCH=$((PATCH_VERSION + 1))
           else
             echo "Nenhum commit relevante encontrado para incrementar versão. Abortando."
+            # Importante: definir NEW_VERSION vazio para o output para evitar erro
+            echo "NEW_VERSION=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           NEW_VERSION="v${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
           echo "Nova versão proposta: $NEW_VERSION"
 
-          # Atualizar arquivo VERSION.txt
           VERSION_FILE="VERSION.txt"
           echo "$NEW_VERSION" > "$VERSION_FILE"
           echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
@@ -208,6 +204,7 @@ jobs:
 
           if git diff --cached --quiet; then
               echo "Nenhuma alteração para commitar."
+              echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
               exit 0
           fi
 
@@ -241,6 +238,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Buildar e Publicar Imagem Docker do Backend
+        if: steps.version_step.outputs.NEW_VERSION != ''
         uses: docker/build-push-action@v5
         with:
           context: API_NEST/API_ADA_COMPANY_NESTJS
@@ -253,11 +251,13 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-backend-new,mode=max
 
       - name: Move cache (para o Backend)
+        if: steps.version_step.outputs.NEW_VERSION != ''
         run: |
           rm -rf /tmp/.buildx-cache-backend
           mv /tmp/.buildx-cache-backend-new /tmp/.buildx-cache-backend
 
       - name: Deploy da Aplicação (Placeholder)
+        if: steps.version_step.outputs.NEW_VERSION != ''
         run: |
           echo "Simulando a etapa de deploy da imagem Docker."
           echo "A imagem ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
