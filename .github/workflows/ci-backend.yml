@@ -139,43 +139,90 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-      - name: Executar Lógica de Versionamento e Criar Tag/Commit
+            - name: Executar Lógica de Versionamento e Criar Tag/Commit
         id: version_step
         run: |
           #!/bin/bash
           MAIN_BRANCH="main"
           echo "Iniciando processo de versionamento..."
+
+          # Buscar última tag existente
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
           if [ -z "$LAST_TAG" ]; then
               echo "Nenhuma tag existente encontrada. Iniciando com v0.0.0."
               LAST_TAG="v0.0.0"
           fi
           echo "Última tag encontrada: $LAST_TAG"
+
           VERSION_WITHOUT_V=${LAST_TAG#v}
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_WITHOUT_V"
-          NEW_PATCH=$((PATCH + 1))
-          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+          IFS='.' read -r MAJOR_VERSION MINOR_VERSION PATCH_VERSION <<< "$VERSION_WITHOUT_V"
+
+          # Obter mensagens de commit desde a última tag
+          COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"%s%n%b")
+
+          # Inicializar flags de incremento
+          INCREMENT_MAJOR=0
+          INCREMENT_MINOR=0
+          INCREMENT_PATCH=0
+
+          # Verificar tipo de mudança nos commits
+          while read -r COMMIT_LINE; do
+            if [[ "$COMMIT_LINE" == *"BREAKING CHANGE"* ]]; then
+              INCREMENT_MAJOR=1
+            elif [[ "$COMMIT_LINE" == *"feat"* ]]; then
+              INCREMENT_MINOR=1
+            elif [[ "$COMMIT_LINE" == *"fix"* ]]; then
+              INCREMENT_PATCH=1
+            fi
+          done <<< "$COMMITS"
+
+          # Determinar nova versão
+          if [ "$INCREMENT_MAJOR" -eq 1 ]; then
+            NEW_MAJOR=$((MAJOR_VERSION + 1))
+            NEW_MINOR=0
+            NEW_PATCH=0
+          elif [ "$INCREMENT_MINOR" -eq 1 ]; then
+            NEW_MAJOR=$MAJOR_VERSION
+            NEW_MINOR=$((MINOR_VERSION + 1))
+            NEW_PATCH=0
+          elif [ "$INCREMENT_PATCH" -eq 1 ]; then
+            NEW_MAJOR=$MAJOR_VERSION
+            NEW_MINOR=$MINOR_VERSION
+            NEW_PATCH=$((PATCH_VERSION + 1))
+          else
+            echo "Nenhum commit relevante encontrado para incrementar versão. Abortando."
+            exit 0
+          fi
+
+          NEW_VERSION="v${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
           echo "Nova versão proposta: $NEW_VERSION"
+
+          # Atualizar arquivo VERSION.txt
           VERSION_FILE="VERSION.txt"
           echo "$NEW_VERSION" > "$VERSION_FILE"
           echo "Arquivo $VERSION_FILE atualizado para $NEW_VERSION"
+
           git config user.name "ADACompany01"
           git config user.email "ada2024fatec.mrs@outlook.com"
           git add "$VERSION_FILE"
+
           if git diff --cached --quiet; then
-              echo "Nenhuma alteração para commitar. A versão já está atualizada ou não há mudanças no VERSION.txt."
+              echo "Nenhuma alteração para commitar."
               exit 0
           fi
+
           COMMIT_MESSAGE="chore(release): Bump version to $NEW_VERSION [skip ci]"
           git commit -m "$COMMIT_MESSAGE"
           echo "Commit criado: $COMMIT_MESSAGE"
+
           git tag "$NEW_VERSION"
           echo "Tag criada: $NEW_VERSION"
+
           git push origin "$MAIN_BRANCH"
           git push origin "$NEW_VERSION"
-          echo "Processo de versionamento concluído com sucesso!"
 
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
 
       - name: Configurar Docker Buildx (para o Backend)
         uses: docker/setup-buildx-action@v3
