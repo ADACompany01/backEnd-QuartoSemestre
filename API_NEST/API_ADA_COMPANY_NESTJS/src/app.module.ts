@@ -19,12 +19,16 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: process.env.NODE_ENV === 'test' 
-          ? 'test-secret-key'
-          : configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025',
-        signOptions: { expiresIn: '1h' },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET não configurado no arquivo .env');
+        }
+        return {
+          secret,
+          signOptions: { expiresIn: '1h' },
+        };
+      },
       global: true,
     }),
     DatabaseModule,
