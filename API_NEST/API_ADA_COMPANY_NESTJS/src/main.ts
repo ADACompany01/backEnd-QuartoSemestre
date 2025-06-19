@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-   origin: ['http://localhost:3000', 'https://backend-adacompany.onrender.com'], // ajuste os domínios
+   origin: ['http://localhost:3000', 'https://newadacompany.vercel.app'], // ajuste os domínios
    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
    credentials: true,
   });
