@@ -37,6 +37,7 @@
     "migrate": "npx -r ts-node/register sequelize-cli db:migrate --config src/infrastructure/database/config.js"
   },
   "dependencies": {
+    "@nestjs/cli": "^10.4.9",
     "@nestjs/common": "^11.1.2",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.2",
