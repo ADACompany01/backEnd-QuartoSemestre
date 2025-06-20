@@ -3,8 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { FuncionarioRepository } from '../../domain/repositories/funcionario.repository.interface';
-import { FuncionarioLoginDto } from '../../interfaces/http/dtos/requests/funcionario-login.dto';
-import { ClienteLoginDto } from '../../interfaces/http/dtos/requests/cliente-login.dto';
 import { GetClienteByEmailUseCase } from '../use-cases/cliente/get-cliente-by-email.use-case';
 import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
@@ -42,22 +40,22 @@ export class AuthService {
     });
   }
 
-  async loginFuncionario(loginDto: FuncionarioLoginDto) {
-    const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-    const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
+  async login({ email, senha }: { email: string; senha: string }) {
+    const usuario = await this.usuarioRepository.findByEmail(email);
+    const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(senha, usuario.senha) : false;
 
-    if (!usuario || usuario.tipo_usuario !== 'funcionario' || !isPasswordValid) {
+    if (!usuario || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const payload = {
       id_usuario: String(usuario.id_usuario),
       email: usuario.email,
-      tipo_usuario: 'funcionario'
+      tipo_usuario: usuario.tipo_usuario
     };
 
     return {
-      access_token: this.jwtService.sign(payload, {
+      token: this.jwtService.sign(payload, {
         secret: this.getJwtSecret(),
         expiresIn: '1h'
       }),
@@ -65,35 +63,7 @@ export class AuthService {
         id: String(usuario.id_usuario),
         nome: usuario.nome_completo,
         email: usuario.email,
-        tipo: 'funcionario'
-      }
-    };
-  }
-
-  async loginCliente(loginDto: ClienteLoginDto) {
-    const usuario = await this.usuarioRepository.findByEmail(loginDto.email);
-    const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(loginDto.senha, usuario.senha) : false;
-
-    if (!usuario || usuario.tipo_usuario !== 'cliente' || !isPasswordValid) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const payload = {
-      id_usuario: String(usuario.id_usuario),
-      email: usuario.email,
-      tipo_usuario: 'cliente'
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload, {
-        secret: this.getJwtSecret(),
-        expiresIn: '1h'
-      }),
-      user: {
-        id: String(usuario.id_usuario),
-        nome: usuario.nome_completo,
-        email: usuario.email,
-        tipo: 'cliente'
+        tipo: usuario.tipo_usuario
       }
     };
   }
