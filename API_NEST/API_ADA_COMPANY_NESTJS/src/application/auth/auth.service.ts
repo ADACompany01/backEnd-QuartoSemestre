@@ -27,12 +27,14 @@ export class AuthService {
   ) { }
 
   private getJwtSecret(): string {
-    return this.configService.get<string>('JWT_SECRET');
+    return process.env.NODE_ENV === 'test'
+      ? 'test-secret-key'
+      : this.configService.get<string>('JWT_SECRET');
   }
 
   gerarTokenValido(): string {
     const payload = { id_usuario: 123, tipo_usuario: 'admin' };
-    const secret = this.getJwtSecret();
+    const secret = this.configService.get<string>('JWT_SECRET');
 
     return this.jwtService.sign(payload, {
       secret: secret,

@@ -9,6 +9,7 @@ import { FuncionarioModule } from './modules/funcionario.module';
 import { OrcamentoModule } from './modules/orcamento.module';
 import { ContratoModule } from './modules/contrato.module';
 import { PacoteModule } from './modules/pacote.module';
+import { LighthouseModule } from './modules/lighthouse.module';
 import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
 
 @Module({
@@ -38,6 +39,7 @@ import { JwtAuthGuard } from './interfaces/http/guards/jwt-auth.guard';
     OrcamentoModule,
     ContratoModule,
     PacoteModule,
+    LighthouseModule,
   ],
   providers: [
     {

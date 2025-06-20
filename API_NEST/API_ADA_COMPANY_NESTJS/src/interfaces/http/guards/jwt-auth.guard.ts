@@ -27,7 +27,9 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
+      const secret = process.env.NODE_ENV === 'test'
+        ? 'test-secret-key'
+        : this.configService.get<string>('JWT_SECRET');
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secret,
       });
