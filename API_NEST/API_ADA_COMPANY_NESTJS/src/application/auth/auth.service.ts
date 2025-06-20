@@ -29,12 +29,12 @@ export class AuthService {
   private getJwtSecret(): string {
     return process.env.NODE_ENV === 'test'
       ? 'test-secret-key'
-      : this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
+      : this.configService.get<string>('JWT_SECRET');
   }
 
   gerarTokenValido(): string {
     const payload = { id_usuario: 123, tipo_usuario: 'admin' };
-    const secret = this.configService.get<string>('JWT_SECRET') || 'ada_company_secret_key_2025';
+    const secret = this.configService.get<string>('JWT_SECRET');
 
     return this.jwtService.sign(payload, {
       secret: secret,
