@@ -83,6 +83,24 @@ jobs:
           rm -rf /tmp/.buildx-cache-db
           mv /tmp/.buildx-cache-db-new /tmp/.buildx-cache-db
 
+      - name: Enviar Notificação de Erro (se o job falhar)
+        if: failure() # Esta etapa só será executada se o job anterior falhar
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: '🚨 FALHA NO CI/CD - Repositório: ${{ github.repository }} - Job: ${{ github.job }}'
+          body: |
+            O job "${{ github.job }}" do workflow CI/CD no repositório ${{ github.repository }} falhou.
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Por favor, verifique os logs para mais detalhes.
+          to: ${{ secrets.MAIL_TO }}
+          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
+
   build_and_test_backend:
     needs: build_and_publish_database_image
     runs-on: ubuntu-latest
@@ -126,6 +144,24 @@ jobs:
         with:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
+
+      - name: Enviar Notificação de Erro (se o job falhar)
+        if: failure() # Esta etapa só será executada se o job anterior falhar
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: '🚨 FALHA NO CI/CD - Repositório: ${{ github.repository }} - Job: ${{ github.job }}'
+          body: |
+            O job "${{ github.job }}" do workflow CI/CD no repositório ${{ github.repository }} falhou.
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Por favor, verifique os logs para mais detalhes.
+          to: ${{ secrets.MAIL_TO }}
+          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
 
   versioning_and_deploy_backend:
     if: startsWith(github.ref, 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/db-v'))
@@ -291,6 +327,24 @@ jobs:
           echo "A imagem ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:${{ steps.version_step.outputs.NEW_VERSION }} foi publicada no Docker Hub."
           echo "AGORA VOCÊ PRECISA ADICIONAR SEUS COMANDOS DE DEPLOY REAIS AQUI NESTE BLOCO 'run:'."
           echo "Isso geralmente envolve puxar a imagem do Docker Hub e executá-la no seu ambiente de produção."
+
+      - name: Enviar Notificação de Erro (se o job falhar)
+        if: failure() # Esta etapa só será executada se o job anterior falhar
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: '🚨 FALHA NO CI/CD - Repositório: ${{ github.repository }} - Job: ${{ github.job }}'
+          body: |
+            O job "${{ github.job }}" do workflow CI/CD no repositório ${{ github.repository }} falhou.
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Por favor, verifique os logs para mais detalhes.
+          to: ${{ secrets.MAIL_TO }}
+          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
 
       - name: Enviar Notificação de Sucesso (Opcional - Backend)
         run: echo "Notificação de deploy de backend enviada (passo real a ser implementado se desejar)."
