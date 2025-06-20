@@ -5,21 +5,21 @@ export class AuthResponseDto {
     description: 'Token de acesso JWT',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
-  accessToken: string;
+  token: string;
 
   @ApiProperty({
-    description: 'Tipo do usuário',
-    example: 'cliente'
-  })
-  tipo: string;
-
-  @ApiProperty({
-    description: 'Dados do usuário',
+    description: 'Dados do usuário autenticado',
     example: {
       id: '550e8400-e29b-41d4-a716-446655440000',
       nome: 'João Silva',
-      email: 'joao.silva@email.com'
+      email: 'joao.silva@email.com',
+      tipo: 'cliente'
     }
   })
-  usuario: any;
+  user: {
+    id: string;
+    nome: string;
+    email: string;
+    tipo: string;
+  };
 } 
