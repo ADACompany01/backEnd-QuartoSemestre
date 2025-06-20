@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 const lighthouseModule = require('lighthouse');
 import * as chromeLauncher from 'chrome-launcher';
+import chromium from 'chromium';
 
 @Injectable()
 export class LighthouseService {
   async runLighthouse(url: string) {
     const chrome = await chromeLauncher.launch({
+      chromePath: process.env.CHROME_PATH || chromium.path,
       chromeFlags: ['--headless', '--disable-gpu', '--no-sandbox'],
     });
 
