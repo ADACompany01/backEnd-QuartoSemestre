@@ -332,9 +332,9 @@ jobs:
         if: success() && steps.version_step.outputs.NEW_VERSION != ''
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
         run: |
-          echo "Iniciando execução das migrações do Sequelize..."
+          echo "Iniciando execução das migrações do Sequelize no ambiente de produção..."
           
-          npm install --prefix .
+          npm install 
           
           npx sequelize db:migrate
           echo "Migrações do banco de dados concluídas com sucesso!"
