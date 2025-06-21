@@ -327,20 +327,6 @@ jobs:
           echo "Disparando novo deploy no Render para a versão: ${{ steps.version_step.outputs.NEW_VERSION }}"
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           echo "Comando de deploy para o Render enviado."
-
-      - name: Executar Migrações do Banco de Dados
-        if: success() && steps.version_step.outputs.NEW_VERSION != ''
-        working-directory: API_NEST/API_ADA_COMPANY_NESTJS
-        run: |
-          echo "Iniciando execução das migrações do Sequelize no ambiente de produção..."
-          
-          npm install 
-          
-          npm run migration:run -- --debug # ou -- --verbose
-          echo "Migrações do banco de dados concluídas com sucesso!"
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NODE_ENV: production
           
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
