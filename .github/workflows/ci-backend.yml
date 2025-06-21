@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   # NOVO JOB: build_and_publish_database_image - Constrói e publica a imagem Docker do PostgreSQL
