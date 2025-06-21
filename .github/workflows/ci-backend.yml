@@ -336,7 +336,7 @@ jobs:
           
           npm install 
           
-          npx sequelize db:migrate
+          ./node_modules/.bin/sequelize db:migrate 
           echo "Migrações do banco de dados concluídas com sucesso!"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
