@@ -118,14 +118,7 @@ jobs:
         run: npm install
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
-      # --- Etapa de Testes e Lint (Simulados) ---
-      - name: Executar Linter do Backend
-        run: |
-          echo "Execução de Linter do Backend."
-          echo "Linter de conformidade executado e aprovado."
-          exit 0
-        working-directory: API_NEST/API_ADA_COMPANY_NESTJS
-
+      # --- Etapa de Testes ---
       - name: Executar Testes do Backend
         run: |
           echo "Execução de testes do Backend."
