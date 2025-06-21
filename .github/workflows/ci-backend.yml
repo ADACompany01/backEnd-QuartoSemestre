@@ -340,6 +340,7 @@ jobs:
           echo "Migrações do banco de dados concluídas com sucesso!"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: production
           
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
