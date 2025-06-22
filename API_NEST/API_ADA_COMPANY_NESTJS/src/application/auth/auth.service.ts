@@ -43,17 +43,43 @@ export class AuthService {
   async login({ email, senha }: { email: string; senha: string }) {
     const usuario = await this.usuarioRepository.findByEmail(email);
     const isPasswordValid = usuario && usuario.senha ? await bcrypt.compare(senha, usuario.senha) : false;
-
+  
     if (!usuario || !isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-
+  
+    // Se for funcionário, verifica se existe na tabela de funcionários
+    if (usuario.tipo_usuario === 'funcionario') {
+      try {
+        const funcionario = await this.funcionarioRepository.findByEmail(email);
+        if (!funcionario) {
+          throw new UnauthorizedException('Funcionário não encontrado no sistema');
+        }
+      } catch (error) {
+        this.logger.error(`Erro ao verificar funcionário: ${error.message}`);
+        throw new UnauthorizedException('Erro ao verificar credenciais de funcionário');
+      }
+    }
+  
+    // Se for cliente, verifica se existe na tabela de clientes
+    if (usuario.tipo_usuario === 'cliente') {
+      try {
+        const cliente = await this.getClienteByEmailUseCase.execute(email);
+        if (!cliente) {
+          throw new UnauthorizedException('Cliente não encontrado no sistema');
+        }
+      } catch (error) {
+        this.logger.error(`Erro ao verificar cliente: ${error.message}`);
+        throw new UnauthorizedException('Erro ao verificar credenciais de cliente');
+      }
+    }
+  
     const payload = {
       id_usuario: String(usuario.id_usuario),
       email: usuario.email,
       tipo_usuario: usuario.tipo_usuario
     };
-
+  
     return {
       token: this.jwtService.sign(payload, {
         secret: this.getJwtSecret(),
@@ -79,7 +105,8 @@ export class AuthService {
       return {
         id_usuario: String(usuario.id_usuario),
         email: usuario.email,
-        tipo_usuario: usuario.tipo_usuario
+        tipo_usuario: usuario.tipo_usuario,
+        nome: usuario.nome_completo
       };
     }
 
