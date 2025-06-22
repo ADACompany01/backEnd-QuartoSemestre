@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { FuncionarioRepository } from '../../domain/repositories/funcionario.repository.interface';
 import { GetClienteByEmailUseCase } from '../use-cases/cliente/get-cliente-by-email.use-case';
+import { GetFuncionarioByEmailUseCase } from '../use-cases/funcionario/get-funcionario-by-email.use-case';
 import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from '../../infrastructure/database/entities/usuario.entity';
 import { UsuarioRepository } from '../../infrastructure/database/repositories/usuario.repository';
@@ -22,6 +23,7 @@ export class AuthService {
     private funcionarioRepository: FuncionarioRepository,
     private getClienteByEmailUseCase: GetClienteByEmailUseCase,
     private usuarioRepository: UsuarioRepository,
+    private getFuncionarioByEmailUseCase: GetFuncionarioByEmailUseCase
   ) { }
 
   private getJwtSecret(): string {
@@ -51,7 +53,7 @@ export class AuthService {
     // Se for funcionário, verifica se existe na tabela de funcionários
     if (usuario.tipo_usuario === 'funcionario') {
       try {
-        const funcionario = await this.funcionarioRepository.findByEmail(email);
+        const funcionario = await this.getFuncionarioByEmailUseCase.execute(email);
         if (!funcionario) {
           throw new UnauthorizedException('Funcionário não encontrado no sistema');
         }
