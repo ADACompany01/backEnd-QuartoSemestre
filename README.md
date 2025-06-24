@@ -27,10 +27,11 @@ O projeto é composto por dois repositórios principais:
 
 ## Integrantes
 
-- Nome 1 - RA/ID <!-- AJUSTE AQUI -->
-- Nome 2 - RA/ID <!-- AJUSTE AQUI -->
-- Nome 3 - RA/ID <!-- AJUSTE AQUI -->
-- Nome 4 - RA/ID <!-- AJUSTE AQUI -->
+- Nome 1 - Luiz Riato
+- Nome 2 - Matheus Prusch
+- Nome 3 - Maycon Sanches
+- Nome 4 - Pietro Adrian
+- Nome 5 - Samuel Pregnolatto
 
 ---
 
@@ -140,9 +141,3 @@ Localização:
 - **Backend:** <!-- AJUSTE AQUI: Se houver URL pública, coloque aqui. Caso contrário, remova ou explique que roda localmente. -->
 
 ---
-
-## Observações
-
-- Certifique-se de preencher os nomes dos integrantes e as URLs públicas finais.
-- Os arquivos de Dockerfile e Docker Compose estão presentes nos repositórios, conforme solicitado.
-- Para dúvidas ou problemas, consulte os arquivos `README.md` de cada repositório ou abra uma issue. 
