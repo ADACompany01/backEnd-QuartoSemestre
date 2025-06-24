@@ -1,85 +1,123 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API de Gerenciamento da ADA Company
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Esta é a API backend para o sistema de gerenciamento de serviços da ADA Company, desenvolvida com o framework NestJS.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Sumário
 
-## Description
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Pré-requisitos](#pré-requisitos)
+- [Como Começar](#como-começar)
+  - [1. Clone o Repositório](#1-clone-o-repositório)
+  - [2. Configure as Variáveis de Ambiente](#2-configure-as-variáveis-de-ambiente)
+  - [3. Execute a Aplicação com Docker](#3-execute-a-aplicação-com-docker)
+- [Banco de Dados](#banco-de-dados)
+  - [Executando Migrations](#executando-migrations)
+  - [Populando o Banco (Seeding)](#populando-o-banco-seeding)
+- [Documentação da API](#documentação-da-api)
+- [Scripts Disponíveis](#scripts-disponíveis)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tecnologias Utilizadas
 
-## Project setup
+Este projeto foi construído utilizando as seguintes tecnologias:
 
-```bash
-$ npm install
-```
+-   **Backend**: [NestJS](https://nestjs.com/), [TypeScript](https://www.typescriptlang.org/)
+-   **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
+-   **ORM**: [Sequelize](https://sequelize.org/)
+-   **Autenticação**: [JWT](https://jwt.io/) (JSON Web Tokens) & [Passport](http://www.passportjs.org/)
+-   **Documentação da API**: [Swagger](https://swagger.io/)
+-   **Containerização**: [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/)
 
-## Compile and run the project
+## Pré-requisitos
 
-```bash
-# development
-$ npm run start
+Antes de começar, você precisará ter as seguintes ferramentas instaladas em sua máquina:
+*   [Git](https://git-scm.com)
+*   [Node.js](https://nodejs.org/en/)
+*   [Docker](https://www.docker.com/products/docker-desktop)
 
-# watch mode
-$ npm run start:dev
+## Como Começar
 
-# production mode
-$ npm run start:prod
-```
+Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento.
 
-## Run tests
+### 1. Clone o Repositório
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone <URL_DO_SEU_REPOSITORIO>
+cd backEnd-QuartoSemestre
 ```
 
-## Resources
+### 2. Configure as Variáveis de Ambiente
 
-Check out a few resources that may come in handy when working with NestJS:
+O `docker-compose` utiliza variáveis de ambiente para configurar os serviços. Você precisa criar um arquivo `.env` na raiz do projeto (`backEnd-QuartoSemestre/`).
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Crie o arquivo `.env` e adicione o seguinte conteúdo, substituindo os valores conforme necessário:
 
-## Support
+```env
+# Variáveis para o serviço do PostgreSQL no Docker
+POSTGRES_USER=docker
+POSTGRES_PASSWORD=docker
+POSTGRES_DB=ada_company_db
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# URL de conexão que a API NestJS usará para se conectar ao banco de dados
+# Note que o host é 'database', o nome do serviço no docker-compose.yml
+DATABASE_URL="postgresql://docker:docker@database:5432/ada_company_db"
 
-## Stay in touch
+# Porta em que a aplicação backend irá rodar
+PORT=3000
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Importante**: O `docker-compose.yml` está configurado para ler estas variáveis e provisionar os containers corretamente.
 
-## License
+### 3. Execute a Aplicação com Docker
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Com o Docker em execução na sua máquina, utilize o `docker-compose` para construir as imagens e iniciar os containers da aplicação e do banco de dados.
+
+Execute o seguinte comando na raiz do projeto:
+
+```bash
+docker-compose up --build -d
+```
+*   `--build`: Força a reconstrução das imagens caso haja alguma alteração no `Dockerfile`.
+*   `-d`: Executa os containers em modo "detached" (em segundo plano).
+
+Após a execução, você terá o container da API e do banco de dados rodando.
+
+## Banco de Dados
+
+Após iniciar os containers, o banco de dados estará de pé, mas vazio. É necessário executar as **migrations** para criar as tabelas e, opcionalmente, as **seeds** para popular o banco com dados iniciais.
+
+Os comandos devem ser executados dentro do container da aplicação backend.
+
+### Executando Migrations
+
+Para criar toda a estrutura de tabelas no banco de dados, execute:
+
+```bash
+docker-compose exec backend npm run migration:run
+```
+
+### Populando o Banco (Seeding)
+
+Para popular o banco de dados com dados de teste/iniciais, execute:
+
+```bash
+docker-compose exec backend npm run seed:run
+```
+
+## Documentação da API
+
+Com a aplicação em execução, a documentação da API, gerada pelo Swagger, estará disponível no seu navegador.
+
+Acesse: [http://localhost:3000/api](http://localhost:3000/api)
+
+Lá você encontrará todos os endpoints disponíveis, seus parâmetros e poderá testá-los diretamente.
+
+## Scripts Disponíveis
+
+Além da execução via Docker, o `package.json` contém vários scripts úteis para desenvolvimento (caso queira rodar a aplicação localmente, sem Docker).
+
+-   `npm run start:dev`: Inicia a aplicação em modo de desenvolvimento com watch mode.
+-   `npm run build`: Compila o código TypeScript para JavaScript.
+-   `npm run test`: Roda os testes unitários.
+-   `npm run db:reset`: Reseta o banco de dados (limpa, executa migrations e seeds).
+
+Para executar estes comandos, você precisaria de uma instância do banco de dados rodando e um arquivo `.env` configurado para a aplicação local.
