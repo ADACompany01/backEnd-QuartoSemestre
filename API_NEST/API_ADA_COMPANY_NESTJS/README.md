@@ -1,123 +1,113 @@
-# API de Gerenciamento da ADA Company
+# ADA Company - Backend
 
-Esta é a API backend para o sistema de gerenciamento de serviços da ADA Company, desenvolvida com o framework NestJS.
+Este repositório contém o backend do projeto ADA Company, desenvolvido em NestJS.
 
 ## Sumário
-
+- [Sobre o Projeto](#sobre-o-projeto)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Pré-requisitos](#pré-requisitos)
-- [Como Começar](#como-começar)
-  - [1. Clone o Repositório](#1-clone-o-repositório)
-  - [2. Configure as Variáveis de Ambiente](#2-configure-as-variáveis-de-ambiente)
-  - [3. Execute a Aplicação com Docker](#3-execute-a-aplicação-com-docker)
-- [Banco de Dados](#banco-de-dados)
-  - [Executando Migrations](#executando-migrations)
-  - [Populando o Banco (Seeding)](#populando-o-banco-seeding)
-- [Documentação da API](#documentação-da-api)
-- [Scripts Disponíveis](#scripts-disponíveis)
+- [Como Rodar Localmente](#como-rodar-localmente)
+- [Docker](#docker)
+- [Integração com o Banco de Dados](#integração-com-o-banco-de-dados)
+- [Integração com o Frontend](#integração-com-o-frontend)
+- [Endpoints Principais](#endpoints-principais)
+- [Links Úteis](#links-úteis)
+
+---
+
+## Sobre o Projeto
+
+API responsável por gerenciar as regras de negócio, autenticação, persistência e exposição de dados do sistema ADA Company.
+
+---
 
 ## Tecnologias Utilizadas
+- Node.js
+- NestJS
+- TypeScript
+- Sequelize (ORM)
+- PostgreSQL (banco de dados)
 
-Este projeto foi construído utilizando as seguintes tecnologias:
+---
 
--   **Backend**: [NestJS](https://nestjs.com/), [TypeScript](https://www.typescriptlang.org/)
--   **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
--   **ORM**: [Sequelize](https://sequelize.org/)
--   **Autenticação**: [JWT](https://jwt.io/) (JSON Web Tokens) & [Passport](http://www.passportjs.org/)
--   **Documentação da API**: [Swagger](https://swagger.io/)
--   **Containerização**: [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/)
+## Como Rodar Localmente
 
-## Pré-requisitos
+1. **Clone o repositório:**
+   ```sh
+   git clone https://github.com/ADACompany01/backEnd-QuartoSemestre.git
+   cd backEnd-QuartoSemestre/API_NEST/API_ADA_COMPANY_NESTJS
+   ```
+2. **Instale as dependências:**
+   ```sh
+   npm install
+   ```
+3. **Configure as variáveis de ambiente:**
+   - Crie um arquivo `.env` com as configurações necessárias, por exemplo:
+     ```env
+     DATABASE_URL=postgresql://adacompanysteam:2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee@localhost:5432/adacompanybd
+     JWT_SECRET=ada_company_secret_key_2025
+     ```
+4. **Execute as migrations/seeds se necessário.**
+5. **Inicie a aplicação:**
+   ```sh
+   npm run start:dev
+   ```
+6. Acesse em: [http://localhost:3000](http://localhost:3000)
 
-Antes de começar, você precisará ter as seguintes ferramentas instaladas em sua máquina:
-*   [Git](https://git-scm.com)
-*   [Node.js](https://nodejs.org/en/)
-*   [Docker](https://www.docker.com/products/docker-desktop)
+---
 
-## Como Começar
+## Docker
 
-Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento.
+Para rodar o backend em um container Docker:
 
-### 1. Clone o Repositório
+1. **Build da imagem:**
+   ```sh
+   docker build -t ada-company-backend .
+   ```
+2. **Execute o container:**
+   ```sh
+   docker run -d -p 3000:3000 \
+     -e DATABASE_URL=postgresql://adacompanysteam:2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee@host.docker.internal:5432/adacompanybd \
+     -e JWT_SECRET=ada_company_secret_key_2025 \
+     --name ada-backend ada-company-backend
+   ```
+   > Ajuste a variável `DATABASE_URL` conforme o endereço do banco de dados.
 
-```bash
-git clone <URL_DO_SEU_REPOSITORIO>
-cd backEnd-QuartoSemestre
-```
+---
 
-### 2. Configure as Variáveis de Ambiente
+## Integração com o Banco de Dados
 
-O `docker-compose` utiliza variáveis de ambiente para configurar os serviços. Você precisa criar um arquivo `.env` na raiz do projeto (`backEnd-QuartoSemestre/`).
+- O backend utiliza PostgreSQL.
+- Certifique-se de que o banco esteja rodando e acessível pela URL configurada.
+- Parâmetros padrão:
+  - **Usuário:** `adacompanysteam`
+  - **Senha:** `2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee`
+  - **Banco:** `adacompanybd`
+  - **Host:** `localhost` ou `database` (em ambiente Docker Compose)
+  - **Porta:** `5432`
 
-Crie o arquivo `.env` e adicione o seguinte conteúdo, substituindo os valores conforme necessário:
+---
 
-```env
-# Variáveis para o serviço do PostgreSQL no Docker
-POSTGRES_USER=docker
-POSTGRES_PASSWORD=docker
-POSTGRES_DB=ada_company_db
+## Integração com o Frontend
 
-# URL de conexão que a API NestJS usará para se conectar ao banco de dados
-# Note que o host é 'database', o nome do serviço no docker-compose.yml
-DATABASE_URL="postgresql://docker:docker@database:5432/ada_company_db"
+- O frontend consome a API exposta pelo backend em: `http://localhost:3000` (ou conforme configurado).
+- Certifique-se de que o backend esteja rodando antes de acessar o frontend.
 
-# Porta em que a aplicação backend irá rodar
-PORT=3000
-```
+---
 
-**Importante**: O `docker-compose.yml` está configurado para ler estas variáveis e provisionar os containers corretamente.
+## Endpoints Principais
 
-### 3. Execute a Aplicação com Docker
+- `GET /health` — Health check da API
+- `POST /auth/login` — Autenticação de usuário
+- `GET /users` — Listagem de usuários
+- <!-- Adicione outros endpoints relevantes aqui -->
 
-Com o Docker em execução na sua máquina, utilize o `docker-compose` para construir as imagens e iniciar os containers da aplicação e do banco de dados.
+---
 
-Execute o seguinte comando na raiz do projeto:
+## Links Úteis
+- **Repositório do Frontend:** [ADACompany01/frontEnd-QuartoSemestre](https://github.com/ADACompany01/frontEnd-QuartoSemestre.git)
+- **Documentação Geral:** Consulte o README na raiz do backend para detalhes completos do projeto.
 
-```bash
-docker-compose up --build -d
-```
-*   `--build`: Força a reconstrução das imagens caso haja alguma alteração no `Dockerfile`.
-*   `-d`: Executa os containers em modo "detached" (em segundo plano).
+---
 
-Após a execução, você terá o container da API e do banco de dados rodando.
-
-## Banco de Dados
-
-Após iniciar os containers, o banco de dados estará de pé, mas vazio. É necessário executar as **migrations** para criar as tabelas e, opcionalmente, as **seeds** para popular o banco com dados iniciais.
-
-Os comandos devem ser executados dentro do container da aplicação backend.
-
-### Executando Migrations
-
-Para criar toda a estrutura de tabelas no banco de dados, execute:
-
-```bash
-docker-compose exec backend npm run migration:run
-```
-
-### Populando o Banco (Seeding)
-
-Para popular o banco de dados com dados de teste/iniciais, execute:
-
-```bash
-docker-compose exec backend npm run seed:run
-```
-
-## Documentação da API
-
-Com a aplicação em execução, a documentação da API, gerada pelo Swagger, estará disponível no seu navegador.
-
-Acesse: [http://localhost:3000/api](http://localhost:3000/api)
-
-Lá você encontrará todos os endpoints disponíveis, seus parâmetros e poderá testá-los diretamente.
-
-## Scripts Disponíveis
-
-Além da execução via Docker, o `package.json` contém vários scripts úteis para desenvolvimento (caso queira rodar a aplicação localmente, sem Docker).
-
--   `npm run start:dev`: Inicia a aplicação em modo de desenvolvimento com watch mode.
--   `npm run build`: Compila o código TypeScript para JavaScript.
--   `npm run test`: Roda os testes unitários.
--   `npm run db:reset`: Reseta o banco de dados (limpa, executa migrations e seeds).
-
-Para executar estes comandos, você precisaria de uma instância do banco de dados rodando e um arquivo `.env` configurado para a aplicação local.
+## Contato
+Dúvidas ou sugestões? Abra uma issue ou entre em contato com os integrantes do projeto.

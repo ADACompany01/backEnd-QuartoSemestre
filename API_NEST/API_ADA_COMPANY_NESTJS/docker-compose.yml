@@ -1,7 +1,7 @@
 services:
   database:
     build:
-      context: ./database/postgres
+      context: ../../database/postgres
     container_name: ada-postgres-db
     ports:
       - "5432:5432"
@@ -23,7 +23,7 @@ services:
 
   backend:
     build:
-      context: ./API_NEST/API_ADA_COMPANY_NESTJS
+      context: .
       dockerfile: dockerfile
     ports:
       - "3000:3000"
@@ -44,7 +44,10 @@ services:
       start_period: 30s
 
   frontend:
-    image: adacompany01/ada-company-frontend:latest
+    build:
+      context: ../../frontEnd-QuartoSemestre
+      dockerfile: dockerfile
+    container_name: ada-frontend-app
     ports:
       - "80:80"
     environment:
