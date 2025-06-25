@@ -53,16 +53,35 @@ Sistema completo para gestão de serviços, clientes e funcionários, com interf
 
 ## ✅ Requisitos Funcionais
 
-- **Cadastro de Usuários:** O sistema deve permitir o cadastro de diferentes tipos de usuários (clientes, funcionários).
-- **Autenticação e Autorização:** O sistema deve permitir login seguro e garantir que apenas usuários autenticados acessem funcionalidades restritas.
-- **Gestão de Serviços:** O sistema deve permitir o cadastro, edição, exclusão e listagem de serviços oferecidos pela empresa.
-- **Gestão de Clientes:** O sistema deve permitir o cadastro, edição, exclusão e listagem de clientes.
-- **Gestão de Funcionários:** O sistema deve permitir o cadastro, edição, exclusão e listagem de funcionários.
-- **Orçamento:** O sistema deve permitir que clientes solicitem orçamentos e acompanhem o status.
-- **Dashboard:** O sistema deve apresentar um painel com informações resumidas (quantidade de clientes, serviços, orçamentos, etc).
-- **Integração Frontend/Backend:** O frontend deve consumir a API do backend para todas as operações de CRUD.
-- **Notificações:** O cliente deve acompanhar o status de pedidos através da pagina de acesso no frontend.
-- **Avaliação de url via API:** O cliente deve conseguir avaliar o nível de acessibilidade do seu site informando a url dele.
+- **Cadastro de Usuários:**
+  O sistema deve permitir o cadastro de diferentes tipos de usuários (clientes, funcionários).
+
+- **Autenticação e Autorização:**
+  O sistema deve permitir login seguro e garantir que apenas usuários autenticados acessem funcionalidades restritas.
+
+- **Gestão de Serviços:**
+  O sistema deve permitir o cadastro, edição, exclusão e listagem de serviços oferecidos pela empresa.
+
+- **Gestão de Clientes:**
+  O sistema deve permitir o cadastro, edição, exclusão e listagem de clientes.
+
+- **Gestão de Funcionários:**
+  O sistema deve permitir o cadastro, edição, exclusão e listagem de funcionários.
+
+- **Orçamento:**
+  O sistema deve permitir que clientes solicitem orçamentos e acompanhem o status.
+
+- **Dashboard:**
+  O sistema deve apresentar um painel com informações resumidas (quantidade de clientes, serviços, orçamentos, etc).
+
+- **Integração Frontend/Backend:**
+  O frontend deve consumir a API do backend para todas as operações de CRUD.
+
+- **Notificações:**
+  O cliente deve acompanhar o status de pedidos através da página de acesso no frontend.
+
+- **Avaliação de url via API:**
+  O cliente deve conseguir avaliar o nível de acessibilidade do seu site informando a url dele.
 
 ---
 
