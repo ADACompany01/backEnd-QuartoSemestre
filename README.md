@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/hero/AdaHome.png" alt="ADA Company Banner" width="600"/>
+  <img src="assets/hero/AdaHome.png" alt="ADA Company Banner" width="600"/>
 </p>
 
 # ADA Company - Projeto Final
@@ -38,14 +38,14 @@ Sistema completo para gestão de serviços, clientes e funcionários, com interf
 ## 🖼️ Demonstração Visual
 
 <p align="center">
-  <img src="../assets/hero/heroImage.png" alt="Tela Inicial" width="400"/>
-  <img src="../assets/about/aboutImage.png" alt="Sobre o Projeto" width="400"/>
+  <img src="assets/hero/heroImage.png" alt="Tela Inicial" width="400"/>
+  <img src="assets/about/aboutImage.png" alt="Sobre o Projeto" width="400"/>
 </p>
 
 <p align="center">
-  <img src="../assets/cards/site-idosos.jpg" alt="Card Idosos" width="250"/>
-  <img src="../assets/cards/site-infantil.jpg" alt="Card Infantil" width="250"/>
-  <img src="../assets/cards/site-acessibilidade.jpg" alt="Card Acessibilidade" width="250"/>
+  <img src="assets/cards/site-idosos.jpg" alt="Card Idosos" width="250"/>
+  <img src="assets/cards/site-infantil.jpg" alt="Card Infantil" width="250"/>
+  <img src="assets/cards/site-acessibilidade.jpg" alt="Card Acessibilidade" width="250"/>
 </p>
 
 ---
