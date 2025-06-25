@@ -15,17 +15,18 @@
 
 1. [Sobre o Projeto](#sobre-o-projeto)
 2. [Demonstração Visual](#demonstração-visual)
-3. [Tecnologias Utilizadas](#tecnologias-utilizadas)
-4. [Organização dos Repositórios](#organização-dos-repositórios)
-5. [Como Executar](#como-executar)
-6. [Documentação Docker](#documentação-docker)
-7. [Estrutura do Banco de Dados](#estrutura-do-banco-de-dados)
-8. [Documentação da API](#documentação-da-api)
-9. [Exemplos de Integração](#exemplos-de-integração)
-10. [Links das Aplicações Publicadas](#links-das-aplicações-publicadas)
-11. [Integrantes](#integrantes)
-12. [Licença](#licença)
-13. [Referências e Suporte](#referências-e-suporte)
+3. [Requisitos Funcionais](#requisitos-funcionais)
+4. [Tecnologias Utilizadas](#tecnologias-utilizadas)
+5. [Organização dos Repositórios](#organização-dos-repositórios)
+6. [Como Executar](#como-executar)
+7. [Documentação Docker](#documentação-docker)
+8. [Estrutura do Banco de Dados](#estrutura-do-banco-de-dados)
+9. [Documentação da API](#documentação-da-api)
+10. [Exemplos de Integração](#exemplos-de-integração)
+11. [Links das Aplicações Publicadas](#links-das-aplicações-publicadas)
+12. [Integrantes](#integrantes)
+13. [Licença](#licença)
+14. [Referências e Suporte](#referências-e-suporte)
 
 ---
 
@@ -47,6 +48,21 @@ Sistema completo para gestão de serviços, clientes e funcionários, com interf
   <img src="assets/cards/site-infantil.jpg" alt="Card Infantil" width="250"/>
   <img src="assets/cards/site-acessibilidade.jpg" alt="Card Acessibilidade" width="250"/>
 </p>
+
+---
+
+## ✅ Requisitos Funcionais
+
+- **Cadastro de Usuários:** O sistema deve permitir o cadastro de diferentes tipos de usuários (clientes, funcionários).
+- **Autenticação e Autorização:** O sistema deve permitir login seguro e garantir que apenas usuários autenticados acessem funcionalidades restritas.
+- **Gestão de Serviços:** O sistema deve permitir o cadastro, edição, exclusão e listagem de serviços oferecidos pela empresa.
+- **Gestão de Clientes:** O sistema deve permitir o cadastro, edição, exclusão e listagem de clientes.
+- **Gestão de Funcionários:** O sistema deve permitir o cadastro, edição, exclusão e listagem de funcionários.
+- **Orçamento:** O sistema deve permitir que clientes solicitem orçamentos e acompanhem o status.
+- **Dashboard:** O sistema deve apresentar um painel com informações resumidas (quantidade de clientes, serviços, orçamentos, etc).
+- **Integração Frontend/Backend:** O frontend deve consumir a API do backend para todas as operações de CRUD.
+- **Notificações:** O cliente deve acompanhar o status de pedidos através da pagina de acesso no frontend.
+- **Avaliação de url via API:** O cliente deve conseguir avaliar o nível de acessibilidade do seu site informando a url dele.
 
 ---
 
@@ -172,222 +188,3 @@ COPY --from=builder /app/node_modules ./node_modules
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
 ```
-
-### Dockerfile Frontend
-
-```dockerfile
-# Etapa 1: build
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-COPY . .
-RUN npm install
-RUN npm run build
-# Etapa 2: servidor Nginx para servir os arquivos
-FROM nginx:stable-alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-#### Comandos Docker Úteis
-
-```sh
-docker-compose ps
-docker-compose logs
-docker-compose down
-docker-compose up -d --build --force-recreate
-docker exec -it ada-postgres-db psql -U adacompanysteam -d adacompanybd
-docker exec ada-postgres-db pg_dump -U adacompanysteam adacompanybd > backup.sql
-```
-
----
-
-## 🗄️ Estrutura do Banco de Dados
-
-```
-usuarios
-├── id_usuario (UUID, PK)
-├── email (STRING, UNIQUE)
-└── senha (STRING)
-
-clientes
-├── id_cliente (UUID, PK)
-├── nome_completo (STRING)
-├── cnpj (STRING, UNIQUE)
-├── telefone (STRING)
-├── email (STRING, UNIQUE)
-└── id_usuario (UUID, FK -> usuarios)
-
-funcionarios
-├── id_funcionario (UUID, PK)
-├── nome_completo (STRING)
-├── email (STRING, UNIQUE)
-├── telefone (STRING)
-└── id_usuario (UUID, FK -> usuarios)
-
-pacotes
-├── id_pacote (UUID, PK)
-├── id_cliente (UUID, FK -> clientes)
-├── tipo_pacote (STRING) - A, AA, AAA
-└── valor_base (DECIMAL)
-
-orcamentos
-├── cod_orcamento (UUID, PK)
-├── valor_orcamento (DECIMAL)
-├── data_orcamento (DATE)
-├── data_validade (DATE)
-└── id_pacote (UUID, FK -> pacotes)
-
-contratos
-├── id_contrato (UUID, PK)
-├── valor_contrato (DECIMAL)
-├── cod_orcamento (UUID, FK -> orcamentos)
-├── status_contrato (STRING) - EM_ANALISE, EM_ANDAMENTO, CANCELADO, CONCLUIDO
-├── data_inicio (DATE)
-└── data_entrega (DATE)
-```
-
-Relacionamentos:
-- **usuarios** ↔ **clientes** (1:1)
-- **usuarios** ↔ **funcionarios** (1:1)
-- **clientes** ↔ **pacotes** (1:N)
-- **pacotes** ↔ **orcamentos** (1:1)
-- **orcamentos** ↔ **contratos** (1:1)
-
----
-
-## 📋 Documentação da API
-
-A API RESTful foi desenvolvida utilizando NestJS e oferece endpoints para todas as funcionalidades do sistema. A documentação completa está disponível via Swagger na URL `/docs` quando o servidor estiver rodando.
-
-Principais endpoints:
-- `GET /auth/token` - Obter token de teste
-- `POST /auth/login` - Login de usuário
-- `POST /clientes/cadastro` - Cadastrar cliente (público)
-- `GET /clientes` - Listar clientes (funcionários)
-- `POST /pacotes` - Criar pacote
-- `POST /orcamentos` - Criar orçamento
-- `POST /contratos` - Criar contrato
-
-Veja a lista completa e exemplos na seção seguinte.
-
----
-
-## 🔌 Exemplos de Integração
-
-### Autenticação
-
-```bash
-GET /auth/token
-```
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-```bash
-POST /auth/login
-Content-Type: application/json
-{
-  "email": "usuario@email.com",
-  "senha": "senha123"
-}
-```
-
-### Clientes
-
-```bash
-POST /clientes/cadastro
-Content-Type: application/json
-{
-  "nome_completo": "Empresa ABC Ltda",
-  "cnpj": "12.345.678/0001-90",
-  "telefone": "(11) 99999-9999",
-  "email": "contato@empresaabc.com"
-}
-```
-
-### Pacotes
-
-```bash
-POST /pacotes
-Authorization: Bearer <token>
-Content-Type: application/json
-{
-  "id_cliente": "uuid-do-cliente",
-  "tipo_pacote": "AA",
-  "valor_base": 1500.00
-}
-```
-
-### Orçamentos
-
-```bash
-POST /orcamentos
-Authorization: Bearer <token>
-Content-Type: application/json
-{
-  "valor_orcamento": 2000.00,
-  "data_orcamento": "2023-10-26T10:00:00Z",
-  "data_validade": "2023-11-26T10:00:00Z",
-  "id_pacote": "uuid-do-pacote"
-}
-```
-
-### Contratos
-
-```bash
-POST /contratos
-Authorization: Bearer <token>
-Content-Type: application/json
-{
-  "valor_contrato": 2000.00,
-  "cod_orcamento": "uuid-do-orcamento",
-  "status_contrato": "EM_ANALISE",
-  "data_inicio": "2023-10-26T10:00:00Z",
-  "data_entrega": "2023-12-26T10:00:00Z"
-}
-```
-
----
-
-## 🌐 Links das Aplicações Publicadas
-
-- **Frontend:** [https://newadacompany-3drnxk22f-ada-companys-projects.vercel.app/](https://newadacompany-3drnxk22f-ada-companys-projects.vercel.app/)
-- **Backend:** [https://backend-adacompany.onrender.com/](https://backend-adacompany.onrender.com/)
-
----
-
-## 👥 Integrantes
-
-- Luiz Riato
-- Matheus Prusch
-- Maycon Sanches
-- Pietro Adrian
-- Samuel Pregnolatto
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
-
----
-
-## 📚 Referências e Suporte
-
-- [Documentação React](https://react.dev/)
-- [Documentação NestJS](https://nestjs.com/)
-- [Documentação PostgreSQL](https://www.postgresql.org/)
-- [Documentação Docker](https://www.docker.com/)
-- [Swagger](https://swagger.io/)
-
-Para dúvidas ou problemas:
-- Abra uma issue no repositório correspondente
-- Entre em contato com a equipe de desenvolvimento
-- Consulte a documentação da API em `/docs` (Swagger) 

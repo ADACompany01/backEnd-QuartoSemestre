@@ -109,5 +109,20 @@ Para rodar o backend em um container Docker:
 
 ---
 
+## 🛡️ Requisitos Não Funcionais
+
+- **Performance:** O sistema deve responder às requisições do usuário de forma rápida e eficiente.
+- **Segurança:**
+  - As senhas dos usuários devem ser armazenadas de forma criptografada.
+  - O acesso à API deve ser protegido por autenticação JWT.
+- **Escalabilidade:** O sistema deve ser capaz de ser executado em containers Docker, facilitando a escalabilidade horizontal.
+- **Usabilidade:** A interface do frontend deve ser responsiva e acessível em dispositivos móveis e desktops.
+- **Disponibilidade:** O sistema deve estar disponível 99% do tempo, exceto em períodos programados de manutenção.
+- **Documentação:** O projeto deve conter documentação clara para instalação, execução e uso das APIs.
+- **Backup:** O banco de dados deve permitir backup e restauração dos dados (pode ser feito via Docker volume).
+- **Compatibilidade:** O sistema deve ser compatível com os principais navegadores modernos (Chrome, Firefox, Edge).
+
+---
+
 ## Contato
 Dúvidas ou sugestões? Abra uma issue ou entre em contato com os integrantes do projeto.
