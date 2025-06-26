@@ -101,7 +101,7 @@ jobs:
             Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Por favor, verifique os logs para mais detalhes.
           to: ${{ secrets.MAIL_TO }}
-          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
+          from: ${{ secrets.MAIL_FROM }}
 
   build_and_test_backend:
     needs: build_and_publish_database_image
@@ -166,7 +166,7 @@ jobs:
             Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Por favor, verifique os logs para mais detalhes.
           to: ${{ secrets.MAIL_TO }}
-          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
+          from: ${{ secrets.MAIL_FROM }}
 
   versioning_and_deploy_backend:
     if: startsWith(github.ref, 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/db-v'))
@@ -348,4 +348,4 @@ jobs:
             Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Por favor, verifique os logs para mais detalhes.
           to: ${{ secrets.MAIL_TO }}
-          from: GitHub Actions Notifier <${{ secrets.MAIL_USERNAME }}> # Nome e email do remetente
+          from: ${{ secrets.MAIL_FROM }}
