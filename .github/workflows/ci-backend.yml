@@ -102,6 +102,7 @@ jobs:
             Por favor, verifique os logs para mais detalhes.
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
+          secure: true
 
   build_and_test_backend:
     needs: build_and_publish_database_image
