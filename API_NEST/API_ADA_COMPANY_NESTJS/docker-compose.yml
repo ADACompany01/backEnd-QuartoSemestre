@@ -11,7 +11,7 @@ services:
       POSTGRES_DB: adacompanybd
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./database/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../../database/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -28,7 +28,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://adacompanysteam:2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee@database:5432/adacompanybd
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USERNAME: adacompanysteam
+      DB_PASSWORD: 2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee
+      DB_DATABASE: adacompanybd
       JWT_SECRET: "ada_company_secret_key_2025"
     depends_on:
       database:
@@ -36,25 +40,16 @@ services:
     restart: always
     networks:
       - ada_network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   frontend:
     build:
-      context: ../../frontEnd-QuartoSemestre
-      dockerfile: dockerfile
+      context: ../../../frontEnd-QuartoSemestre
+      dockerfile: Dockerfile
     container_name: ada-frontend-app
     ports:
       - "80:80"
     environment:
       REACT_APP_BACKEND_URL: "http://backend:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
     restart: always
     networks:
       - ada_network
