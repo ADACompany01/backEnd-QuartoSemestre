@@ -58,9 +58,13 @@ jobs:
           
           echo "Nova versão proposta para o DB: $NEW_DB_VERSION"
 
-          # Criar e empurrar a nova tag (prefixada com db-)
-          git tag "$NEW_DB_VERSION"
-          git push origin "$NEW_DB_VERSION"
+          # Só criar e empurrar a nova tag se ela não existir
+          if git tag --list | grep -q "^$NEW_DB_VERSION$"; then
+            echo "Tag $NEW_DB_VERSION já existe. Pulando criação."
+          else
+            git tag "$NEW_DB_VERSION"
+            git push origin "$NEW_DB_VERSION"
+          fi
 
           echo "db_new_version=$NEW_DB_VERSION" >> "$GITHUB_OUTPUT"
 
