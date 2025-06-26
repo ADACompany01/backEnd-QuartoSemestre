@@ -120,10 +120,6 @@ jobs:
         run: npm install
         working-directory: API_NEST/API_ADA_COMPANY_NESTJS
 
-      # --- Etapa de Testes ---
-      - name: Forçar falha para teste de e-mail (REMOVER DEPOIS)
-        run: exit 1
-
       - name: Executar Testes do Backend
         run: |
           echo "Execução de testes do Backend."
