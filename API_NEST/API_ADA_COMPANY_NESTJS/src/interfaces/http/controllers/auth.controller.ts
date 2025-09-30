@@ -1,13 +1,18 @@
-import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { AuthService } from '../../../application/auth/auth.service';
 import { Public } from '../decorators/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthResponseDto } from '../dtos/responses/auth-response.dto';
+import { LoggingService } from '../../../application/services/logging.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @Inject('LoggingService')
+    private readonly loggingService: LoggingService,
+  ) {}
 
   @ApiOperation({ summary: 'Gerar token para teste' })
   @ApiResponse({ 
@@ -52,6 +57,26 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   async login(@Body() body: { email: string; senha: string }) {
-    return this.authService.login(body);
+    try {
+      const result = await this.authService.login(body);
+      
+      // Log de login bem-sucedido
+      await this.loggingService.info(
+        `Login realizado com sucesso para o email: ${body.email}`,
+        'AuthController',
+        { email: body.email, userId: result.user?.id }
+      );
+      
+      return result;
+    } catch (error) {
+      // Log de tentativa de login falhada
+      await this.loggingService.warn(
+        `Tentativa de login falhada para o email: ${body.email}`,
+        'AuthController',
+        { email: body.email, error: error.message }
+      );
+      
+      throw error;
+    }
   }
 } 

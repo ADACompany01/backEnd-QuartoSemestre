@@ -19,6 +19,7 @@ import { Funcionario as FuncionarioEntity } from '../../infrastructure/database/
 import { Cliente as ClienteEntity } from '../../infrastructure/database/entities/cliente.entity';
 import { FuncionarioRepositoryImpl } from '../../infrastructure/database/repositories/funcionario.repository';
 import { ClienteRepositoryImpl } from '../../infrastructure/database/repositories/cliente.repository';
+import { LogModule } from '../../modules/log.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ClienteRepositoryImpl } from '../../infrastructure/database/repositorie
     PassportModule,
     FuncionarioModule,
     ClienteModule,
+    LogModule,
     SequelizeModule.forFeature([Usuario, FuncionarioEntity, ClienteEntity]),
   ],
   controllers: [AuthController],

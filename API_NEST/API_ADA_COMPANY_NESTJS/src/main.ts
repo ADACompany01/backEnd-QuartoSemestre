@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { LoggingInterceptor } from './interfaces/http/interceptors/logging.interceptor';
+import { LoggingExceptionFilter } from './interfaces/http/filters/logging-exception.filter';
 
 async function bootstrap() {
   const port = 3000;
@@ -19,6 +21,10 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  // Adicionar interceptors e filtros globais para logging
+  app.useGlobalInterceptors(app.get(LoggingInterceptor));
+  app.useGlobalFilters(app.get(LoggingExceptionFilter));
   
   // Configuração do Swagger
   const config = new DocumentBuilder()
@@ -31,6 +37,7 @@ async function bootstrap() {
     .addTag('pacotes', 'Gerenciamento de pacotes')
     .addTag('orcamentos', 'Gerenciamento de orçamentos')
     .addTag('contratos', 'Gerenciamento de contratos')
+    .addTag('logs', 'Sistema de logs da aplicação')
     .addBearerAuth()
     .build();
     

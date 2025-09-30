@@ -34,6 +34,10 @@ services:
       DB_PASSWORD: 2N1lrqwIaBxO4eCZU7w0mjGCBXX7QVee
       DB_DATABASE: adacompanybd
       JWT_SECRET: "ada_company_secret_key_2025"
+      AWS_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "your-access-key"
+      AWS_SECRET_ACCESS_KEY: "your-secret-key"
+      DYNAMODB_TABLE_LOGS: "ada-company-logs"
     depends_on:
       database:
         condition: service_healthy
