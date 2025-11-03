@@ -147,72 +147,6 @@ jobs:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist 
 
-      - name: 🔐 Verificar Secrets Essenciais
-        if: steps.version_step.outputs.NEW_VERSION != ''
-        run: |
-          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
-            echo "ERRO: O secret DOCKER_USERNAME não está configurado."
-            exit 1
-          fi
-          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
-            echo "ERRO: O secret DOCKER_PASSWORD não está configurado."
-            exit 1
-          fi
-          echo "Secrets verificados com sucesso."    
-
-      - name: 🚀 Deploy Backend e Banco de Dados na EC2
-        if: steps.version_step.outputs.NEW_VERSION != '' 
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            # 0. Garante que a rede para os containers exista
-            docker network create ada-net || true
-            
-            # --- 1. Deploy do Banco de Dados ---
-            echo "Fazendo pull da imagem do banco de dados..."
-            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
-            
-            echo "Parando e removendo container antigo do banco de dados (postgres-db)..."
-            docker stop postgres-db || true
-            docker rm postgres-db || true
-            
-            echo "Iniciando novo container do banco de dados..."
-            docker run -d \
-              --name postgres-db \
-              --network ada-net \
-              --restart always \
-              -e POSTGRES_USER=adaservicesteam \
-              -e POSTGRES_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
-              -e POSTGRES_DB=adacompanydb \
-              -v pgdata:/var/lib/postgresql/data \
-              -p 5432:5432 \
-              ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
-            
-            # --- 2. Deploy do Backend ---
-            echo "Fazendo pull da imagem do backend..."
-            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
-            
-            echo "Parando e removendo container antigo do backend (api-backend)..."
-            docker stop api-backend || true
-            docker rm api-backend || true
-            
-            echo "Iniciando novo container do backend..."
-            # O 'DB_HOST=postgres-db' funciona por causa da rede 'ada-net'
-            # Ajuste as variáveis DB_USER e DB_NAME se forem diferentes
-            docker run -d \
-              --name api-backend \
-              --network ada-net \
-              --restart always \
-              -p 3000:3000 \
-              -e DB_HOST=postgres-db \
-              -e DB_USER=postgres \
-              -e DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
-              -e DB_NAME=ada_company \
-              ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
-
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
         uses: dawidd6/action-send-mail@v3
@@ -412,3 +346,69 @@ jobs:
             Por favor, verifique os logs para mais detalhes.
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
+
+      - name: 🔐 Verificar Secrets Essenciais
+        if: steps.version_step.outputs.NEW_VERSION != ''
+        run: |
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+            echo "ERRO: O secret DOCKER_USERNAME não está configurado."
+            exit 1
+          fi
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+            echo "ERRO: O secret DOCKER_PASSWORD não está configurado."
+            exit 1
+          fi
+          echo "Secrets verificados com sucesso."    
+
+      - name: 🚀 Deploy Backend e Banco de Dados na EC2
+        if: steps.version_step.outputs.NEW_VERSION != '' 
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            # 0. Garante que a rede para os containers exista
+            docker network create ada-net || true
+            
+            # --- 1. Deploy do Banco de Dados ---
+            echo "Fazendo pull da imagem do banco de dados..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            
+            echo "Parando e removendo container antigo do banco de dados (postgres-db)..."
+            docker stop postgres-db || true
+            docker rm postgres-db || true
+            
+            echo "Iniciando novo container do banco de dados..."
+            docker run -d \
+              --name postgres-db \
+              --network ada-net \
+              --restart always \
+              -e POSTGRES_USER=postgres \
+              -e POSTGRES_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
+              -e POSTGRES_DB=ada_company \
+              -v pgdata:/var/lib/postgresql/data \
+              -p 5432:5432 \
+              ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            
+            # --- 2. Deploy do Backend ---
+            echo "Fazendo pull da imagem do backend..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
+            
+            echo "Parando e removendo container antigo do backend (api-backend)..."
+            docker stop api-backend || true
+            docker rm api-backend || true
+            
+            echo "Iniciando novo container do backend..."
+            # O 'DB_HOST=postgres-db' funciona por causa da rede 'ada-net'
+            # Ajuste as variáveis DB_USER e DB_NAME se forem diferentes
+            docker run -d \
+              --name api-backend \
+              --network ada-net \
+              --restart always \
+              -p 3000:3000 \
+              -e DB_HOST=postgres-db \
+              -e DB_USER=postgres \
+              -e DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
+              -e DB_NAME=ada_company \
+              ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
