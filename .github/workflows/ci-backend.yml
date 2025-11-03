@@ -172,7 +172,7 @@ jobs:
               --network ada-net \
               --restart always \
               -e POSTGRES_USER=adaservicesteam \
-              -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e POSTGRES_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
               -e POSTGRES_DB=adacompanydb \
               -v pgdata:/var/lib/postgresql/data \
               -p 5432:5432 \
@@ -196,7 +196,7 @@ jobs:
               -p 3000:3000 \
               -e DB_HOST=postgres-db \
               -e DB_USER=postgres \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
               -e DB_NAME=ada_company \
               ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
 
