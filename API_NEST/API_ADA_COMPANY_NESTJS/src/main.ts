@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-   origin: ['http://localhost:3000', 'http://adacompany.duckdns.org'], // ajuste os domínios
+   origin: ['http://localhost:3000', 'http://adacompany.duckdns.org:8080'], // ajuste os domínios
    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
    credentials: true,
   });
