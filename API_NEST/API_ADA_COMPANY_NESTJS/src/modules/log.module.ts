@@ -12,6 +12,8 @@ import { GetLogsByDateRangeUseCase } from '../application/use-cases/log/get-logs
 import { DeleteOldLogsUseCase } from '../application/use-cases/log/delete-old-logs.use-case';
 import { GetLogStatsUseCase } from '../application/use-cases/log/get-log-stats.use-case';
 import { LoggingService } from '../application/services/logging.service';
+import { LoggingInterceptor } from '../interfaces/http/interceptors/logging.interceptor';
+import { LoggingExceptionFilter } from '../interfaces/http/filters/logging-exception.filter';
 
 @Module({
   imports: [DynamoDBModule],
@@ -28,6 +30,8 @@ import { LoggingService } from '../application/services/logging.service';
     DeleteOldLogsUseCase,
     GetLogStatsUseCase,
     LoggingService,
+    LoggingInterceptor,
+    LoggingExceptionFilter,
     {
       provide: 'CreateLogUseCase',
       useClass: CreateLogUseCase,
