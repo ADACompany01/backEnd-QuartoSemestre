@@ -14,17 +14,32 @@ import { UsuarioRepository } from './repositories/usuario.repository';
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        dialect: 'postgres',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD', 'postgres'),
-        database: configService.get('DB_DATABASE', 'ada_company'),
-        autoLoadModels: true,
-        synchronize: true,
-        models: [Usuario, Cliente, Funcionario, Orcamento, Contrato, Pacote],
-      }),
+      useFactory: (configService: ConfigService) => {
+        
+        // --- LEITURA DAS VARIÁVEIS DE AMBIENTE (NOMES CORRIGIDOS) ---
+        const dbHost = configService.get<string>('DB_HOST');
+        const dbPort = configService.get<number>('DB_PORT', 5432); // 5432 é um padrão OK
+        const dbUser = configService.get<string>('DB_USER');       // Corrigido de DB_USERNAME
+        const dbPassword = configService.get<string>('DB_PASSWORD');
+        const dbName = configService.get<string>('DB_NAME');       // Corrigido de DB_DATABASE
+
+        // Verificação para garantir que as variáveis existem
+        if (!dbHost || !dbUser || !dbPassword || !dbName) {
+          throw new Error('Variáveis de ambiente do banco de dados (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME) não estão configuradas.');
+        }
+
+        return {
+          dialect: 'postgres',
+          host: dbHost,
+          port: dbPort,
+          username: dbUser,
+          password: dbPassword,
+          database: dbName,
+          autoLoadModels: true,
+          synchronize: true, // (Nota: 'true' não é ideal para produção real)
+          models: [Usuario, Cliente, Funcionario, Orcamento, Contrato, Pacote],
+        };
+      },
     }),
     SequelizeModule.forFeature([Usuario, Cliente, Funcionario, Orcamento, Contrato, Pacote]),
   ],
@@ -36,4 +51,4 @@ import { UsuarioRepository } from './repositories/usuario.repository';
     SequelizeModule.forFeature([Usuario, Cliente, Funcionario, Orcamento, Contrato, Pacote])
   ]
 })
-export class DatabaseModule {} 
+export class DatabaseModule {}
