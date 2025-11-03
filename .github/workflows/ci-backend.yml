@@ -154,8 +154,8 @@ jobs:
             echo "ERRO: O secret DOCKER_USERNAME não está configurado."
             exit 1
           fi
-          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
-            echo "ERRO: O secret DB_PASSWORD não está configurado."
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+            echo "ERRO: O secret DOCKER_PASSWORD não está configurado."
             exit 1
           fi
           echo "Secrets verificados com sucesso."    
