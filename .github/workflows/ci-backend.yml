@@ -8,104 +8,104 @@ on:
 
 jobs:
   # NOVO JOB: build_and_publish_database_image - Constrói e publica a imagem Docker do PostgreSQL
-  build_and_publish_database_image:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # Necessário para criar e empurrar tags para o Docker Hub
+  # build_and_publish_database_image:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write # Necessário para criar e empurrar tags para o Docker Hub
 
-    steps:
-      - name: Checkout do Código (para o DB)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Necessário para a lógica de tags
+  #   steps:
+  #     - name: Checkout do Código (para o DB)
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0 # Necessário para a lógica de tags
 
-      - name: Configurar Docker Buildx (para o DB)
-        uses: docker/setup-buildx-action@v3
+  #     - name: Configurar Docker Buildx (para o DB)
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers (para o DB)
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache-db # Cache separado para o DB
-          key: ${{ runner.os }}-buildx-db-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-db-
+  #     - name: Cache Docker layers (para o DB)
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: /tmp/.buildx-cache-db # Cache separado para o DB
+  #         key: ${{ runner.os }}-buildx-db-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-buildx-db-
 
-      - name: Fazer Login no Docker Hub (para o DB)
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+  #     - name: Fazer Login no Docker Hub (para o DB)
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Definir Versão da Imagem do Banco de Dados
-        id: db_versioning
-        run: |
-          git fetch origin --tags # Buscar todas as tags existentes do repositório
-          # Usamos um prefixo "db-v" para as tags do banco de dados, para diferenciá-las das tags das aplicações
-          LATEST_DB_TAG=$(git describe --tags --abbrev=0 --match "db-v*" 2>/dev/null || echo "db-v0.0.0")
-          echo "Última tag DB encontrada: $LATEST_DB_TAG"
+  #     - name: Definir Versão da Imagem do Banco de Dados
+  #       id: db_versioning
+  #       run: |
+  #         git fetch origin --tags # Buscar todas as tags existentes do repositório
+  #         # Usamos um prefixo "db-v" para as tags do banco de dados, para diferenciá-las das tags das aplicações
+  #         LATEST_DB_TAG=$(git describe --tags --abbrev=0 --match "db-v*" 2>/dev/null || echo "db-v0.0.0")
+  #         echo "Última tag DB encontrada: $LATEST_DB_TAG"
 
-          DB_VERSION_WITHOUT_PREFIX=${LATEST_DB_TAG#db-v}
-          if [ -z "$DB_VERSION_WITHOUT_PREFIX" ]; then
-              DB_MAJOR=0
-              DB_MINOR=0
-              DB_PATCH=0
-          else
-            IFS='.' read -r DB_MAJOR DB_MINOR DB_PATCH <<< "$DB_VERSION_WITHOUT_PREFIX"
-          fi
+  #         DB_VERSION_WITHOUT_PREFIX=${LATEST_DB_TAG#db-v}
+  #         if [ -z "$DB_VERSION_WITHOUT_PREFIX" ]; then
+  #             DB_MAJOR=0
+  #             DB_MINOR=0
+  #             DB_PATCH=0
+  #         else
+  #           IFS='.' read -r DB_MAJOR DB_MINOR DB_PATCH <<< "$DB_VERSION_WITHOUT_PREFIX"
+  #         fi
 
-          NEW_DB_PATCH=$((DB_PATCH + 1))
-          NEW_DB_VERSION="db-v${DB_MAJOR}.${DB_MINOR}.${NEW_DB_PATCH}"
+  #         NEW_DB_PATCH=$((DB_PATCH + 1))
+  #         NEW_DB_VERSION="db-v${DB_MAJOR}.${DB_MINOR}.${NEW_DB_PATCH}"
           
-          echo "Nova versão proposta para o DB: $NEW_DB_VERSION"
+  #         echo "Nova versão proposta para o DB: $NEW_DB_VERSION"
 
-          # Só criar e empurrar a nova tag se ela não existir
-          if git tag --list | grep -q "^$NEW_DB_VERSION$"; then
-            echo "Tag $NEW_DB_VERSION já existe. Pulando criação."
-          else
-            git tag "$NEW_DB_VERSION"
-            git push origin "$NEW_DB_VERSION"
-          fi
+  #         # Só criar e empurrar a nova tag se ela não existir
+  #         if git tag --list | grep -q "^$NEW_DB_VERSION$"; then
+  #           echo "Tag $NEW_DB_VERSION já existe. Pulando criação."
+  #         else
+  #           git tag "$NEW_DB_VERSION"
+  #           git push origin "$NEW_DB_VERSION"
+  #         fi
 
-          echo "db_new_version=$NEW_DB_VERSION" >> "$GITHUB_OUTPUT"
+  #         echo "db_new_version=$NEW_DB_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Buildar e Publicar Imagem Docker do Banco de Dados
-        uses: docker/build-push-action@v5
-        with:
-          context: database/postgres
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
-            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ github.ref_name }}
-            ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ steps.db_versioning.outputs.db_new_version }}
-          cache-from: type=local,src=/tmp/.buildx-cache-db
-          cache-to: type=local,dest=/tmp/.buildx-cache-db-new,mode=max
+  #     - name: Buildar e Publicar Imagem Docker do Banco de Dados
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: database/postgres
+  #         push: true
+  #         tags: |
+  #           ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+  #           ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ github.ref_name }}
+  #           ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:${{ steps.db_versioning.outputs.db_new_version }}
+  #         cache-from: type=local,src=/tmp/.buildx-cache-db
+  #         cache-to: type=local,dest=/tmp/.buildx-cache-db-new,mode=max
 
-      - name: Mover Cache de Buildx (para o DB)
-        run: |
-          rm -rf /tmp/.buildx-cache-db
-          mv /tmp/.buildx-cache-db-new /tmp/.buildx-cache-db
+  #     - name: Mover Cache de Buildx (para o DB)
+  #       run: |
+  #         rm -rf /tmp/.buildx-cache-db
+  #         mv /tmp/.buildx-cache-db-new /tmp/.buildx-cache-db
 
-      - name: Enviar Notificação de Erro (se o job falhar)
-        if: failure() # Esta etapa só será executada se o job anterior falhar
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.MAIL_SERVER }}
-          server_port: ${{ secrets.MAIL_PORT }}
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: '🚨 FALHA NO CI/CD - Repositório: ${{ github.repository }} - Job: ${{ github.job }}'
-          body: |
-            O job "${{ github.job }}" do workflow CI/CD no repositório ${{ github.repository }} falhou.
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            Por favor, verifique os logs para mais detalhes.
-          to: ${{ secrets.MAIL_TO }}
-          from: ${{ secrets.MAIL_FROM }}
-          secure: true
+  #     - name: Enviar Notificação de Erro (se o job falhar)
+  #       if: failure() # Esta etapa só será executada se o job anterior falhar
+  #       uses: dawidd6/action-send-mail@v3
+  #       with:
+  #         server_address: ${{ secrets.MAIL_SERVER }}
+  #         server_port: ${{ secrets.MAIL_PORT }}
+  #         username: ${{ secrets.MAIL_USERNAME }}
+  #         password: ${{ secrets.MAIL_PASSWORD }}
+  #         subject: '🚨 FALHA NO CI/CD - Repositório: ${{ github.repository }} - Job: ${{ github.job }}'
+  #         body: |
+  #           O job "${{ github.job }}" do workflow CI/CD no repositório ${{ github.repository }} falhou.
+  #           Branch: ${{ github.ref_name }}
+  #           Commit: ${{ github.sha }}
+  #           Link do Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  #           Por favor, verifique os logs para mais detalhes.
+  #         to: ${{ secrets.MAIL_TO }}
+  #         from: ${{ secrets.MAIL_FROM }}
+  #         secure: true
 
   build_and_test_backend:
-    needs: build_and_publish_database_image
+    # needs: build_and_publish_database_image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do Código
@@ -371,7 +371,7 @@ jobs:
             docker network create ada-net || true
             
             echo "--- 1. Deploy do Banco de Dados ---"
-            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            docker pull postgres:latest
             docker stop postgres-db || true
             docker rm postgres-db || true
             
