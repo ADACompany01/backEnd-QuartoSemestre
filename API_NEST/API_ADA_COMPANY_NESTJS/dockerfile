@@ -1,27 +1,38 @@
-# Etapa 1: build (Nenhuma mudança aqui)
+# --- ETAPA 1: BUILD ---
+# Usa uma imagem Node "builder"
 FROM node:20-alpine AS builder
+
 WORKDIR /app
+
+# Copia os package.json primeiro para aproveitar o cache
 COPY package*.json ./
-COPY tsconfig*.json ./
-COPY . .
+
+# Instala todas as dependências (incluindo devDependencies para o build)
 RUN npm install
+
+# Copia o resto do código-fonte
+COPY . .
+
+# Executa o build do NestJS
 RUN npm run build
 
-# Etapa 2: imagem final (Versão Corrigida)
+# --- ETAPA 2: PRODUCTION ---
+# Inicia de uma imagem Node limpa e leve
 FROM node:20-alpine
+
 WORKDIR /app
 
-# 1. Copia o package.json
-COPY --from=builder /app/package*.json ./
+# Copia os package.json novamente
+COPY package*.json ./
 
-# 2. Instala APENAS as dependências de PRODUÇÃO
+# Instala SOMENTE as dependências de produção
 RUN npm install --production
 
-# 3. Copia os arquivos compilados (javascript)
-# Verifique este caminho! Se seu build gera 'dist/main.js',
-# esta linha deve ser 'COPY --from=builder /app/dist ./dist'
-COPY --from=builder /app/dist ./dist 
+# Copia a pasta 'dist' compilada da etapa 'builder'
+COPY --from=builder /app/dist ./dist
 
-# 4. Expõe a porta e inicia
+# Expõe a porta 3000 (ou a porta que seu NestJS usa)
 EXPOSE 3000
+
+# O comando que realmente inicia o servidor
 CMD ["node", "dist/main.js"]
