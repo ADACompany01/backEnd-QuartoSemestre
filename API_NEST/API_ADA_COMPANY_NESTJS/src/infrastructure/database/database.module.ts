@@ -19,9 +19,9 @@ import { UsuarioRepository } from './repositories/usuario.repository';
         // --- LEITURA DAS VARIÁVEIS DE AMBIENTE (NOMES CORRIGIDOS) ---
         const dbHost = configService.get<string>('DB_HOST');
         const dbPort = configService.get<number>('DB_PORT', 5432); // 5432 é um padrão OK
-        const dbUser = configService.get<string>('DB_USER');       // Corrigido de DB_USERNAME
+        const dbUser = configService.get<string>('DB_USERNAME');       // Corrigido de DB_USERNAME
         const dbPassword = configService.get<string>('DB_PASSWORD');
-        const dbName = configService.get<string>('DB_NAME');       // Corrigido de DB_DATABASE
+        const dbName = configService.get<string>('DB_DATABASE', 'ada_company');       // Corrigido de DB_DATABASE
 
         // Verificação para garantir que as variáveis existem
         if (!dbHost || !dbUser || !dbPassword || !dbName) {

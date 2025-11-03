@@ -368,49 +368,42 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            # 0. Garante que a rede para os containers exista
             docker network create ada-net || true
             
-            # --- 1. Deploy do Banco de Dados ---
-            echo "Fazendo pull da imagem do banco de dados..."
+            echo "--- 1. Deploy do Banco de Dados ---"
             docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
-            
-            echo "Parando e removendo container antigo do banco de dados (postgres-db)..."
             docker stop postgres-db || true
             docker rm postgres-db || true
             
-            echo "Iniciando novo container do banco de dados..."
+            echo "Iniciando container do banco de dados..."
+            # Usando os secrets do GitHub para criar o banco
             docker run -d \
               --name postgres-db \
               --network ada-net \
               --restart always \
-              -e POSTGRES_USER=postgres \
+              -e POSTGRES_USER=${{ secrets.DB_USERNAME }} \
               -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e POSTGRES_DB=ada_company \
+              -e POSTGRES_DB=${{ secrets.DB_DATABASE }} \
               -v pgdata:/var/lib/postgresql/data \
               -p 5432:5432 \
               ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
             
-            # --- 2. Deploy do Backend ---
-            echo "Fazendo pull da imagem do backend..."
+            echo "--- 2. Deploy do Backend ---"
             docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
-            
-            echo "Parando e removendo container antigo do backend (api-backend)..."
             docker stop api-backend || true
             docker rm api-backend || true
             
-            echo "Iniciando novo container do backend..."
-            # O 'DB_HOST=postgres-db' funciona por causa da rede 'ada-net'
-            # Ajuste as variáveis DB_USER e DB_NAME se forem diferentes
+            echo "Iniciando container do backend..."
+            # Usando os nomes que o database.module.ts espera
             docker run -d \
               --name api-backend \
               --network ada-net \
               --restart always \
               -p 3000:3000 \
               -e DB_HOST=postgres-db \
-              -e DB_USER=postgres \
+              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e DB_NAME=ada_company \
+              -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
 
