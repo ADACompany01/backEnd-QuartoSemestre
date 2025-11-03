@@ -147,6 +147,29 @@ jobs:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
 
+      - name: Deploy do Backend na EC2
+        if: steps.version_step.outputs.NEW_VERSION != ''
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            # Puxa a nova imagem da API
+            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
+
+            # Para e remove o container antigo (se existir)
+            docker stop api-backend || true
+            docker rm api-backend || true
+
+            # Inicia o novo container da API
+            # Mapeia a porta 3000 interna para a porta 3000 da EC2
+            docker run -d \
+              -p 3000:3000 \
+              --name api-backend \
+              --restart always \
+              ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest 
+
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
         uses: dawidd6/action-send-mail@v3
@@ -322,12 +345,12 @@ jobs:
           rm -rf /tmp/.buildx-cache-backend
           mv /tmp/.buildx-cache-backend-new /tmp/.buildx-cache-backend
 
-      - name: Deploy da Aplicação no Render
-        if: steps.version_step.outputs.NEW_VERSION != ''
-        run: |
-          echo "Disparando novo deploy no Render para a versão: ${{ steps.version_step.outputs.NEW_VERSION }}"
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-          echo "Comando de deploy para o Render enviado."
+      # - name: Deploy da Aplicação no Render
+      #   if: steps.version_step.outputs.NEW_VERSION != ''
+      #   run: |
+      #     echo "Disparando novo deploy no Render para a versão: ${{ steps.version_step.outputs.NEW_VERSION }}"
+      #     curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      #     echo "Comando de deploy para o Render enviado."
           
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
