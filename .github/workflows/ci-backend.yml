@@ -147,6 +147,25 @@ jobs:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
 
+      # ... (depois do passo "Mover Cache (para o Backend)")
+
+      - name: 🔐 Verificar Secrets Essenciais
+        if: steps.version_step.outputs.NEW_VERSION != ''
+        run: |
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+            echo "ERRO: O secret DOCKER_USERNAME não está configurado."
+            exit 1
+          fi
+          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
+            echo "ERRO: O secret DB_PASSWORD não está configurado."
+            exit 1
+          fi
+          echo "Secrets verificados com sucesso."
+
+      - name: 🚀 Deploy Backend e Banco de Dados na EC2
+        if: steps.version_step.outputs.NEW_VERSION != ''
+        # ... (o resto do seu script de deploy) ...    
+
       - name: 🚀 Deploy Backend e Banco de Dados na EC2
         if: steps.version_step.outputs.NEW_VERSION != '' 
         uses: appleboy/ssh-action@master
