@@ -147,28 +147,56 @@ jobs:
           name: backend-build-artifact
           path: API_NEST/API_ADA_COMPANY_NESTJS/dist
 
-      - name: Deploy do Backend na EC2
-        if: steps.version_step.outputs.NEW_VERSION != ''
+      - name: 🚀 Deploy Backend e Banco de Dados na EC2
+        if: steps.version_step.outputs.NEW_VERSION != '' 
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            # Puxa a nova imagem da API
+            # 0. Garante que a rede para os containers exista
+            docker network create ada-net || true
+            
+            # --- 1. Deploy do Banco de Dados ---
+            echo "Fazendo pull da imagem do banco de dados..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            
+            echo "Parando e removendo container antigo do banco de dados (postgres-db)..."
+            docker stop postgres-db || true
+            docker rm postgres-db || true
+            
+            echo "Iniciando novo container do banco de dados..."
+            docker run -d \
+              --name postgres-db \
+              --network ada-net \
+              --restart always \
+              -e POSTGRES_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
+              -v pgdata:/var/lib/postgresql/data \
+              -p 5432:5432 \
+              ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
+            
+            # --- 2. Deploy do Backend ---
+            echo "Fazendo pull da imagem do backend..."
             docker pull ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
-
-            # Para e remove o container antigo (se existir)
+            
+            echo "Parando e removendo container antigo do backend (api-backend)..."
             docker stop api-backend || true
             docker rm api-backend || true
-
-            # Inicia o novo container da API
-            # Mapeia a porta 3000 interna para a porta 3000 da EC2
+            
+            echo "Iniciando novo container do backend..."
+            # O 'DB_HOST=postgres-db' funciona por causa da rede 'ada-net'
+            # Ajuste as variáveis DB_USER e DB_NAME se forem diferentes
             docker run -d \
-              -p 3000:3000 \
               --name api-backend \
+              --network ada-net \
               --restart always \
-              ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest 
+              -p 3000:3000 \
+              -e DB_HOST=postgres-db \
+              -e DB_USER=postgres \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_NAME=ada_company \
+              ${{ secrets.DOCKER_USERNAME }}/ada-company-backend:latest
 
       - name: Enviar Notificação de Erro (se o job falhar)
         if: failure() # Esta etapa só será executada se o job anterior falhar
