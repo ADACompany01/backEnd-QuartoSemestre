@@ -171,7 +171,9 @@ jobs:
               --name postgres-db \
               --network ada-net \
               --restart always \
-              -e POSTGRES_PASSWORD=${{ secrets.DOCKER_PASSWORD }} \
+              -e POSTGRES_USER=adaservicesteam \
+              -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e POSTGRES_DB=adacompanydb \
               -v pgdata:/var/lib/postgresql/data \
               -p 5432:5432 \
               ${{ secrets.DOCKER_USERNAME }}/ada-company-postgres:latest
